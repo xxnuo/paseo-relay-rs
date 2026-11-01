@@ -1,5 +1,62 @@
 # Relay performance decisions and work log
 
+## 2026-11-01: real production client/daemon stress acceptance
+
+The suite in `scripts/test-real-clients.py` uses Paseo source at
+`a8e0effb325d07dbe02a998b6ff6fce623b3fec1` (0.14.0), with actual production
+SDK, daemon, secure ingress, Noise/legacy crypto and protocol modules. Source
+imports/hashes and the unchanged reference checkout are verified. It does not
+use the retired Cloudflare Durable Object adapter or fake agent clients.
+
+| Rust run | Persistent clients | Mixed load | Successful API operations | Ping p99 | Peak relay cgroup memory |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| [First](real-clients-rust-64/client-results.json), fixture `d6b78c9` | 64 | 60 s | 360,737 | 17.286 ms | 70.25 MiB |
+| [Repeat](real-clients-rust-64-repeat/client-results.json), fixture `3bf24c2` | 64 | 60 s | 363,830 | 16.548 ms | 70.64 MiB |
+
+The relay is limited to 1 CPU/512 MiB with one Tokio worker. Two persistent
+real daemons and 64 SDK clients share a separate Node driver outside that
+quota; driver peak RSS was about 1.14 GiB and its event-loop p99 about 24 ms.
+This can limit offered load and contributes to application RPC latency. These
+numbers are not relay-internal latency, maximum capacity or full VPS RAM usage.
+
+Each run passes all 16 scenarios: normal protected admission; a client arriving
+before its daemon with a charged ingress lease; rejected credentials/key;
+legacy compatibility and protected-only policy; replay/tag corruption rejection;
+64 independent downloads and uploads checked by SHA256; two real PTYs; mixed
+ping/agent-list/small-file traffic; production heartbeats; network impairment;
+slow-reader isolation; client reconnect; three churn batches; relay restart;
+and daemon restart with retained identity. The first daemon-start phase is
+counted as one scenario. Mixed operation counts include pings, list requests
+and verified file reads; intentional security rejections are separate.
+
+Network impairment is actual tc netem inside the owned relay namespace:
+100-ms egress delay, 10-ms jitter and configured 0.5% packet loss. It dropped
+6 and 8 packets in the two Rust runs; application requests and file hashes still
+passed. This is simulated networking, not real WAN acceptance. The paused
+8-MiB reader's buffers absorbed traffic without sampled relay pressure in
+these large runs; peer progress and final hash passed. Actual charged-wait
+behavior was separately proven by the early-client/late-daemon scenario.
+
+All 64 clients recovered after relay restart in about 2.65–2.66 s. Restarting
+one daemon recovered its 32 clients in about 1.42–1.44 s while the other 32
+remained usable. These are observations from deliberate local restarts, not
+production recovery guarantees. The final fixture additionally requires every
+client/daemon close to succeed and zero physical client sockets to remain.
+Final relay sockets/ingress and Docker OOM events are zero.
+
+The [original Elixir image](real-clients-elixir-reference-repeat/client-results.json)
+passes the same 16 scenarios at four clients/two load seconds, including the
+stricter cleanup guard. It is a compatibility reference, not an equal-load
+performance comparison; its small packet-loss scenario recorded zero dropped
+packets. Development fixture failures and fixes are explained in [TDD.md](../TDD.md).
+
+[Summary](real-clients-summary.json), [acceptance](real-clients-acceptance.json)
+and the adjacent raw datasets retain per-phase checks, file hashes, exact images,
+module/input fingerprints, client wire observations, metrics/cgroup samples and
+OOM event logs across restart. No Rust application change was required. No paid
+model/provider call, real mobile/Electron/browser UI, TLS, Cloudflare, actual
+VPS deployment or public WAN behavior was tested.
+
 ## 2026-11-01: remove Nginx support completely
 
 The operator requested removal, including the optional image. Rust serves

@@ -1,0 +1,29 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from netem.Dockerfile
+#1 transferring dockerfile: 117B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/rust:1.97.1-alpine
+#2 DONE 0.6s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 104B done
+#3 DONE 0.0s
+
+#4 [1/2] FROM docker.io/library/rust:1.97.1-alpine@sha256:3c38f3f82c2f3d73da3b38e18d279393a04cb43ddded0e35088a8c3324d40900
+#4 resolve docker.io/library/rust:1.97.1-alpine@sha256:3c38f3f82c2f3d73da3b38e18d279393a04cb43ddded0e35088a8c3324d40900 done
+#4 DONE 0.0s
+
+#5 [2/2] RUN apk add --no-cache iproute2
+#5 CACHED
+
+#6 exporting to image
+#6 exporting layers done
+#6 exporting manifest sha256:d42ab7a3e10e608b224d402a36023ad3c19f42a6014ad8cf467d780c629e0ae4 done
+#6 exporting config sha256:73faa8342aaeb9c6158cc4ab2e91dbd674c7ca78e2e2f73eb36fd1f15ed2d887 done
+#6 exporting attestation manifest sha256:9c83b20e108c4c0ca80264a1a573e2bb957bd719b3df17399e77f5f1d7a66bfa done
+#6 exporting manifest list sha256:3f37bb064b61720b231bcf0a7c945dd7e6f255ab96a9bc6958fc3b930a738fd1 done
+#6 naming to docker.io/library/paseo-relay-netem:test done
+#6 unpacking to docker.io/library/paseo-relay-netem:test done
+#6 DONE 0.0s

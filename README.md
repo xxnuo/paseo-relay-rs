@@ -270,7 +270,7 @@ to current source; required core modules, source hashes, reference HEAD and
 unchanged Git status are verified, rejecting stale client/protocol/crypto dist.
 
 Scenarios cover v2 control/data attachment, a client arriving before its daemon,
-protected/legacy policy, bad credentials/key, replay/ciphertext corruption,
+protected/legacy encryption policy, bad credentials/key, replay/ciphertext corruption,
 concurrent RPCs and byte-verified file upload/download, a real PTY, production
 heartbeats, a paused mobile reader, reconnect churn, relay restart and daemon
 restart with retained identity. Browser-style sockets use Node's standard
@@ -294,7 +294,14 @@ loop lag. Failure/timeout is nonzero and owned containers/temp homes are cleaned
 These are real local stacks plus optional simulated network impairment, not
 Expo/Electron UI, model-provider chat, TLS, Cloudflare or global VPS acceptance.
 The Node driver also hosts the daemons, so its CPU/event loop can limit offered
-load; this is not a maximum relay-capacity benchmark.
+load; this is not a maximum relay-capacity benchmark. Run it on a sufficiently
+provisioned test host: the recorded 64-client driver used about 1.14 GiB outside
+the relay quota. Two 64-client/60-second runs passed all 16 scenarios on the
+1-CPU/512-MiB relay, with peak relay cgroup memory about 70.6 MiB. The original
+Elixir image also passed the smaller compatibility suite.
+[Acceptance report and raw evidence](benchmarks/README.md) record the results
+and measurement boundaries. Legacy here means the shared encryption mode;
+the retired Cloudflare Durable Object adapter is not used.
 
 ## Performance decision and history
 

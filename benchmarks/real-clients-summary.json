@@ -1,0 +1,308 @@
+[
+  {
+    "dataset": "benchmarks/real-clients-rust-64",
+    "scope": "64-client stress",
+    "source_test_commit": "d6b78c96e0fae5c3b1d691fc5b659bfaf195a101",
+    "paseo_commit": "a8e0effb325d07dbe02a998b6ff6fce623b3fec1",
+    "image_id": "sha256:bfcc1f61d04e6f82ca4bf7c3cf56f3be0f6d95f35de6b805dfa1edbd2cf3a7e6",
+    "clients": 64,
+    "load_seconds": 60,
+    "phases_passed": 16,
+    "mixed_operations": 360737,
+    "operations_per_second": 6007.246518642916,
+    "mixed_load": {
+      "phase": "concurrent-mixed-rpc-load",
+      "seconds": 60.050307388,
+      "clients": 64,
+      "pings": 163954,
+      "agentLists": 163954,
+      "verifiedFiles": 32829,
+      "pingMs": {
+        "p50": 7.6439250000039465,
+        "p95": 13.105126999995264,
+        "p99": 17.286066000000574,
+        "max": 51.54589899999701
+      }
+    },
+    "peak_cgroup_bytes": 73658368,
+    "max_sampled_process_resident_bytes": 71389184,
+    "max_sampled_websockets": 158,
+    "max_sampled_ingress_bytes": 524728,
+    "network_impairment": {
+      "phase": "network-delay-jitter-and-loss",
+      "seconds": 1.9084285519999975,
+      "simulatedNetwork": true,
+      "egressDelayMs": 100,
+      "jitterMs": 10,
+      "lossPercent": 0.5,
+      "secondsUnderImpairment": 1.9082620139999926,
+      "qdisc": "qdisc netem 8005: root refcnt 17 limit 1000 delay 100ms  10ms loss 0.5% seed 9892995592132261848\n Sent 1334180 bytes 2081 pkt (dropped 6, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n"
+    },
+    "slow_reader": {
+      "phase": "slow-mobile-reader-isolation",
+      "seconds": 0.5891976209999994,
+      "pressure": {
+        "ingressBytes": 0,
+        "backpressuredSources": 0
+      },
+      "pausedMs": 500,
+      "healthyPeers": 63,
+      "verifiedBytes": 8388685,
+      "expectedSha256": "aa55a2c853d6fb23b9c8031d894c5c3bac660f5685f15e0ba7e644eba68c2c0c",
+      "actualSha256": "aa55a2c853d6fb23b9c8031d894c5c3bac660f5685f15e0ba7e644eba68c2c0c"
+    },
+    "relay_recovery_seconds": 2.661188611999998,
+    "daemon_recovery_seconds": 1.4363005780000093,
+    "driver": {
+      "cpu": {
+        "user": 79076646,
+        "system": 7708728
+      },
+      "maxRssKiB": 1191288,
+      "eventLoopDelayP99Ms": 23.527423
+    },
+    "cleanup": null,
+    "wire": {
+      "upgrades": 214,
+      "frames": 792275,
+      "binary": 99869,
+      "hello": 257,
+      "ready": 255,
+      "plaintextLeaks": 0
+    },
+    "oom_events": 0,
+    "reference_checkout_unchanged": true,
+    "source_hashes_verified": true
+  },
+  {
+    "dataset": "benchmarks/real-clients-rust-64-repeat",
+    "scope": "64-client stress",
+    "source_test_commit": "3bf24c2f5650f74d1a0c5c6c9a7877cbd6b21c4e",
+    "paseo_commit": "a8e0effb325d07dbe02a998b6ff6fce623b3fec1",
+    "image_id": "sha256:bfcc1f61d04e6f82ca4bf7c3cf56f3be0f6d95f35de6b805dfa1edbd2cf3a7e6",
+    "clients": 64,
+    "load_seconds": 60,
+    "phases_passed": 16,
+    "mixed_operations": 363830,
+    "operations_per_second": 6058.706182106558,
+    "mixed_load": {
+      "phase": "concurrent-mixed-rpc-load",
+      "seconds": 60.050774714,
+      "clients": 64,
+      "pings": 165377,
+      "agentLists": 165377,
+      "verifiedFiles": 33076,
+      "pingMs": {
+        "p50": 7.621204000000944,
+        "p95": 12.920932999993965,
+        "p99": 16.547786000000997,
+        "max": 54.743005000003905
+      }
+    },
+    "peak_cgroup_bytes": 74076160,
+    "max_sampled_process_resident_bytes": 68456448,
+    "max_sampled_websockets": 132,
+    "max_sampled_ingress_bytes": 55296,
+    "network_impairment": {
+      "phase": "network-delay-jitter-and-loss",
+      "seconds": 1.8297233290000003,
+      "simulatedNetwork": true,
+      "egressDelayMs": 100,
+      "jitterMs": 10,
+      "lossPercent": 0.5,
+      "secondsUnderImpairment": 1.829560027000014,
+      "qdisc": "qdisc netem 8007: root refcnt 17 limit 1000 delay 100ms  10ms loss 0.5% seed 10606754471249675330\n Sent 1333830 bytes 2076 pkt (dropped 8, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n"
+    },
+    "slow_reader": {
+      "phase": "slow-mobile-reader-isolation",
+      "seconds": 0.5898087379999924,
+      "pressure": {
+        "ingressBytes": 0,
+        "backpressuredSources": 0
+      },
+      "pausedMs": 500,
+      "healthyPeers": 63,
+      "verifiedBytes": 8388685,
+      "expectedSha256": "4ad27ddc8ed6bad7274a9dea514b0c5876a40de9b35e5e60f41bfae89f76760d",
+      "actualSha256": "4ad27ddc8ed6bad7274a9dea514b0c5876a40de9b35e5e60f41bfae89f76760d"
+    },
+    "relay_recovery_seconds": 2.6474777590000014,
+    "daemon_recovery_seconds": 1.4185884350000124,
+    "driver": {
+      "cpu": {
+        "user": 77785359,
+        "system": 7522845
+      },
+      "maxRssKiB": 1177968,
+      "eventLoopDelayP99Ms": 24.117247
+    },
+    "cleanup": {
+      "rejected": 0,
+      "openClientSockets": 0
+    },
+    "wire": {
+      "upgrades": 214,
+      "frames": 798962,
+      "binary": 100611,
+      "hello": 260,
+      "ready": 258,
+      "plaintextLeaks": 0
+    },
+    "oom_events": 0,
+    "reference_checkout_unchanged": true,
+    "source_hashes_verified": true
+  },
+  {
+    "dataset": "benchmarks/real-clients-elixir-reference",
+    "scope": "4-client compatibility reference, not matched-load performance comparison",
+    "source_test_commit": "d6b78c96e0fae5c3b1d691fc5b659bfaf195a101",
+    "paseo_commit": "a8e0effb325d07dbe02a998b6ff6fce623b3fec1",
+    "image_id": "sha256:d9b58c7f4c0b8a804cf8c291da0b2a6265df4af730d0c66547341941ce410a78",
+    "clients": 4,
+    "load_seconds": 2,
+    "phases_passed": 16,
+    "mixed_operations": 8343,
+    "operations_per_second": 4165.31270704963,
+    "mixed_load": {
+      "phase": "concurrent-mixed-rpc-load",
+      "seconds": 2.0029708659999996,
+      "clients": 4,
+      "pings": 3791,
+      "agentLists": 3791,
+      "verifiedFiles": 761,
+      "pingMs": {
+        "p50": 0.7002520000005461,
+        "p95": 1.3673459999999977,
+        "p99": 1.6471100000007937,
+        "max": 3.501220000000103
+      }
+    },
+    "peak_cgroup_bytes": 148865024,
+    "max_sampled_process_resident_bytes": null,
+    "max_sampled_websockets": 11,
+    "max_sampled_ingress_bytes": 3712,
+    "network_impairment": {
+      "phase": "network-delay-jitter-and-loss",
+      "seconds": 1.5294563600000002,
+      "simulatedNetwork": true,
+      "egressDelayMs": 100,
+      "jitterMs": 10,
+      "lossPercent": 0.5,
+      "secondsUnderImpairment": 1.529307439,
+      "qdisc": "qdisc netem 8006: root refcnt 17 limit 1000 delay 100ms  10ms loss 0.5% seed 4215278857001907030\n Sent 94816 bytes 144 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n"
+    },
+    "slow_reader": {
+      "phase": "slow-mobile-reader-isolation",
+      "seconds": 0.5795576499999988,
+      "pressure": {
+        "ingressBytes": 0,
+        "backpressuredSources": 0
+      },
+      "pausedMs": 500,
+      "healthyPeers": 3,
+      "verifiedBytes": 8388685,
+      "expectedSha256": "bfef9729191b191f747e10b328bd23be08f5b801656dd99f82ec2a1b45e70ac7",
+      "actualSha256": "bfef9729191b191f747e10b328bd23be08f5b801656dd99f82ec2a1b45e70ac7"
+    },
+    "relay_recovery_seconds": 1.9170551210000013,
+    "daemon_recovery_seconds": 1.1672808669999977,
+    "driver": {
+      "cpu": {
+        "user": 6841731,
+        "system": 717819
+      },
+      "maxRssKiB": 1038128,
+      "eventLoopDelayP99Ms": 16.130047
+    },
+    "cleanup": null,
+    "wire": {
+      "upgrades": 36,
+      "frames": 18630,
+      "binary": 2406,
+      "hello": 32,
+      "ready": 30,
+      "plaintextLeaks": 0
+    },
+    "oom_events": 0,
+    "reference_checkout_unchanged": true,
+    "source_hashes_verified": true
+  },
+  {
+    "dataset": "benchmarks/real-clients-elixir-reference-repeat",
+    "scope": "4-client compatibility reference, not matched-load performance comparison",
+    "source_test_commit": "3bf24c2f5650f74d1a0c5c6c9a7877cbd6b21c4e",
+    "paseo_commit": "a8e0effb325d07dbe02a998b6ff6fce623b3fec1",
+    "image_id": "sha256:d9b58c7f4c0b8a804cf8c291da0b2a6265df4af730d0c66547341941ce410a78",
+    "clients": 4,
+    "load_seconds": 2,
+    "phases_passed": 16,
+    "mixed_operations": 8108,
+    "operations_per_second": 4049.857783185139,
+    "mixed_load": {
+      "phase": "concurrent-mixed-rpc-load",
+      "seconds": 2.0020456110000007,
+      "clients": 4,
+      "pings": 3685,
+      "agentLists": 3685,
+      "verifiedFiles": 738,
+      "pingMs": {
+        "p50": 0.7194899999994959,
+        "p95": 1.442152999999962,
+        "p99": 1.761540999999852,
+        "max": 10.610720000000583
+      }
+    },
+    "peak_cgroup_bytes": 122261504,
+    "max_sampled_process_resident_bytes": null,
+    "max_sampled_websockets": 12,
+    "max_sampled_ingress_bytes": 3488,
+    "network_impairment": {
+      "phase": "network-delay-jitter-and-loss",
+      "seconds": 1.510264626,
+      "simulatedNetwork": true,
+      "egressDelayMs": 100,
+      "jitterMs": 10,
+      "lossPercent": 0.5,
+      "secondsUnderImpairment": 1.5101462830000019,
+      "qdisc": "qdisc netem 8008: root refcnt 17 limit 1000 delay 100ms  10ms loss 0.5% seed 14290651497798405808\n Sent 89034 bytes 140 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 5941b 4p requeues 0\n"
+    },
+    "slow_reader": {
+      "phase": "slow-mobile-reader-isolation",
+      "seconds": 0.5770939419999995,
+      "pressure": {
+        "ingressBytes": 0,
+        "backpressuredSources": 0
+      },
+      "pausedMs": 500,
+      "healthyPeers": 3,
+      "verifiedBytes": 8388685,
+      "expectedSha256": "d5d114c82b9d501a456077de76011cfcd9ea8e81b46ea03a22669e89c812c950",
+      "actualSha256": "d5d114c82b9d501a456077de76011cfcd9ea8e81b46ea03a22669e89c812c950"
+    },
+    "relay_recovery_seconds": 1.868471031000001,
+    "daemon_recovery_seconds": 1.1719941180000024,
+    "driver": {
+      "cpu": {
+        "user": 6937670,
+        "system": 662326
+      },
+      "maxRssKiB": 1027228,
+      "eventLoopDelayP99Ms": 15.302655
+    },
+    "cleanup": {
+      "rejected": 0,
+      "openClientSockets": 0
+    },
+    "wire": {
+      "upgrades": 36,
+      "frames": 18113,
+      "binary": 2336,
+      "hello": 32,
+      "ready": 30,
+      "plaintextLeaks": 0
+    },
+    "oom_events": 0,
+    "reference_checkout_unchanged": true,
+    "source_hashes_verified": true
+  }
+]

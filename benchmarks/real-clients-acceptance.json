@@ -1,0 +1,32 @@
+{
+  "host": "Linux-7.2.11-arch1-1-x86_64-with-glibc2.44",
+  "cpu": "Intel(R) Core(TM) i5-14400",
+  "network_helper_image_id": "sha256:3f37bb064b61720b231bcf0a7c945dd7e6f255ab96a9bc6958fc3b930a738fd1",
+  "stress_runs_passed": 2,
+  "compatibility_runs_passed": 2,
+  "scenarios_per_run": 16,
+  "final_cleanup_rejections": 0,
+  "final_open_client_sockets": 0,
+  "source_reference_commit": "a8e0effb325d07dbe02a998b6ff6fce623b3fec1",
+  "source_reference_unchanged": true,
+  "limits": {
+    "cpus": 1,
+    "memory_bytes": 536870912,
+    "runtime_workers": 1
+  },
+  "application_source_changes": "none",
+  "scope_excluded": [
+    "real mobile/browser/Electron UI",
+    "paid model/provider execution",
+    "TLS",
+    "Cloudflare",
+    "real WAN/VPS",
+    "maximum relay capacity"
+  ],
+  "quality_checks": [
+    "node --check",
+    "oxfmt --check",
+    "ruff check"
+  ],
+  "result_index": "benchmarks/real-clients-summary.json"
+}

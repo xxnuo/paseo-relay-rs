@@ -1246,3 +1246,27 @@
   but any rejection or physical client socket left open now fails the suite,
   instead of being hidden by allSettled/process exit. A repeat large run and
   original-image smoke verify this stricter final test harness.
+
+- Final accepted fixtures d6b78c9 and 3bf24c2: two 64-client/60-second Rust runs
+  pass all 16 scenarios under 1 CPU/512 MiB. Mixed phases complete 360737 and
+  363830 positive API operations; ping p99 is 17.286/16.548 ms including SDK,
+  crypto and daemon processing. Relay cgroup peaks are 70.25/70.64 MiB. Driver
+  peak RSS is about 1.14 GiB outside the relay quota; generator CPU/event loop
+  prevents treating these data as a relay-capacity ceiling.
+- Netem records 6/8 dropped packets with 100-ms egress delay, 10-ms jitter and
+  configured 0.5% loss; requests and hashes pass. Early-client waiting holds a
+  positive byte lease, then recovers through a real daemon. Slow-reader pressure
+  is zero in the large-run snapshots, so only isolation/resume/hash correctness
+  is claimed there. Both client and daemon restart paths recover fully.
+- The original Elixir Docker image passes two four-client/two-second runs of
+  the same 16 cases, the second with strict cleanup. This is compatibility
+  evidence, not a matched-load performance comparison. Source imports/harness
+  hashes validate against the recorded Git commits; the reference checkout
+  remains unchanged. No legacy Cloudflare adapter or fake agent client loaded.
+- Final cleanup has zero rejected close operations, zero client sockets, zero
+  relay sockets/ingress and zero Docker OOM events across restart. Node syntax,
+  Oxfmt and Ruff checks pass. Summary/acceptance are in
+  benchmarks/real-clients-summary.json and real-clients-acceptance.json; the
+  benchmarks README indexes raw metrics, file SHA256 checks and provenance.
+  No Rust application/source contract change, UI/provider/TLS/Cloudflare/WAN
+  acceptance, Git push, remote deployment or registry publication occurred.
