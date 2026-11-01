@@ -1,0 +1,4 @@
+{"phase":"daemon-start","status":"running"}
+{"phase":"daemon-start","seconds":1.9906490959999998,"daemons":2,"status":"passed"}
+{"phase":"connect","status":"running"}
+{"phase":"connect","seconds":0.063660257,"connected":2,"protected":2,"status":"passed"}

@@ -1,0 +1,23 @@
+{
+  "relay_commit": "9803d81f3900f5894ecf1a9c939e565defc1d086",
+  "relay_source_dirty": false,
+  "paseo_commit": "a8e0effb325d07dbe02a998b6ff6fce623b3fec1",
+  "paseo_initial_status": "",
+  "node_version": "v24.2.0",
+  "clients": 4,
+  "load_seconds": 2,
+  "limits": {
+    "cpus": 1,
+    "memory_bytes": 536870912,
+    "runtime_workers": 1
+  },
+  "scope": "real local client/daemon sources and relay Docker sockets; no provider chat, UI, TLS, Cloudflare or WAN test",
+  "harness_sha256": {
+    "scripts/test-real-clients.py": "3d6a429369175a711024558dd448f5b4aa3e9fe9d9b6883ea5f44ba4e07522cd",
+    "tests/real-clients/scenarios.mjs": "c0316461a6ef64c5868ec74cef86c3ee1093cda914114a4f127c09627006e4c4"
+  },
+  "image_id": "sha256:97bbf5ae5b348de1745d41ca126cfd7301b6c20e3135ca12257db639f553ef3e",
+  "passed": false,
+  "elapsed_seconds": 4.319790456094779,
+  "paseo_final_status": ""
+}

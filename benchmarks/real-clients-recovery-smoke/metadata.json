@@ -1,0 +1,27 @@
+{
+  "relay_commit": "9803d81f3900f5894ecf1a9c939e565defc1d086",
+  "relay_source_dirty": false,
+  "paseo_commit": "a8e0effb325d07dbe02a998b6ff6fce623b3fec1",
+  "paseo_initial_status": "",
+  "node_version": "v24.2.0",
+  "paseo_package_lock_sha256": "92df3a9a7a923c2444483310a2cf11eb56d756b951678d9f6c473e7ff61c9fb1",
+  "clients": 4,
+  "load_seconds": 2,
+  "netem": true,
+  "limits": {
+    "cpus": 1,
+    "memory_bytes": 536870912,
+    "runtime_workers": 1
+  },
+  "scope": "real local client/daemon sources and relay Docker sockets; no provider chat, UI, TLS, Cloudflare or WAN test",
+  "harness_sha256": {
+    "scripts/test-real-clients.py": "87f3b923968f92cf2b8f6212c30a084ad71d31bc3e4bb8c784aea59456200749",
+    "tests/real-clients/scenarios.mjs": "ed929351d6fbb1b1b6a860efb22f63be483ec9223048c4e20fdd2224554b2ef0",
+    "tests/real-clients/netem.Dockerfile": "19da7e4c3b44659d460f12e2bdaa7864f417c3d45e1819f8d61dff65bb627efb"
+  },
+  "image_id": "sha256:97bbf5ae5b348de1745d41ca126cfd7301b6c20e3135ca12257db639f553ef3e",
+  "stable_host_port": 50379,
+  "passed": true,
+  "elapsed_seconds": 25.96832965395879,
+  "paseo_final_status": ""
+}

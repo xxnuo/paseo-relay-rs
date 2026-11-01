@@ -1,0 +1,51 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 843B done
+#1 DONE 0.0s
+
+#2 [auth] library/rust:pull token for registry-1.docker.io
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/rust:1.97.1-alpine
+#3 DONE 1.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 104B done
+#4 DONE 0.0s
+
+#5 [toolchain 1/5] FROM docker.io/library/rust:1.97.1-alpine@sha256:3c38f3f82c2f3d73da3b38e18d279393a04cb43ddded0e35088a8c3324d40900
+#5 resolve docker.io/library/rust:1.97.1-alpine@sha256:3c38f3f82c2f3d73da3b38e18d279393a04cb43ddded0e35088a8c3324d40900 done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 510B done
+#6 DONE 0.0s
+
+#7 [toolchain 4/5] COPY rust/Cargo.toml rust/Cargo.lock ./
+#7 CACHED
+
+#8 [build 1/1] RUN cargo build --locked --release
+#8 CACHED
+
+#9 [toolchain 3/5] WORKDIR /app
+#9 CACHED
+
+#10 [toolchain 2/5] RUN apk add --no-cache bash docker-cli && rustup component add rustfmt clippy
+#10 CACHED
+
+#11 [toolchain 5/5] COPY rust/src ./src
+#11 CACHED
+
+#12 [binary 1/1] COPY --from=build /app/target/release/paseo-relay /paseo-relay
+#12 CACHED
+
+#13 exporting to image
+#13 exporting layers done
+#13 exporting manifest sha256:4ac044a472643860a4dd093c268373ad7b129e8da9fe0160b898ad851324c4f0 done
+#13 exporting config sha256:abe99c7dd335f37b28e62ccaa1adc06861698825afe6fc17b8dbbf870fa4196c done
+#13 exporting attestation manifest sha256:5e178981c6f3e89d08418ab7874fd98d5c9729a8e218f9e4f519071ac5e834f8 done
+#13 exporting manifest list sha256:97bbf5ae5b348de1745d41ca126cfd7301b6c20e3135ca12257db639f553ef3e done
+#13 naming to docker.io/library/paseo-relay-rust:real-clients done
+#13 unpacking to docker.io/library/paseo-relay-rust:real-clients done
+#13 DONE 0.0s

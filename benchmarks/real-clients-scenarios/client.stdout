@@ -1,0 +1,10 @@
+{"phase":"daemon-start","status":"running"}
+{"phase":"daemon-start","seconds":1.94530979,"daemons":2,"status":"passed"}
+{"phase":"connect","status":"running"}
+{"phase":"connect","seconds":0.08423780400000032,"connected":4,"protected":4,"status":"passed"}
+{"phase":"credential-and-key-rejection","status":"running"}
+{"phase":"credential-and-key-rejection","seconds":0.026224065999999765,"rejectedCredentials":1,"rejectedDaemonKey":1,"healthyClients":4,"status":"passed"}
+{"phase":"encrypted-files-and-session-isolation","status":"running"}
+{"phase":"encrypted-files-and-session-isolation","seconds":0.14306630900000028,"verifiedDownloads":4,"verifiedUploads":4,"distinctDaemonFiles":2,"status":"passed"}
+{"phase":"real-terminal-binary-output","status":"running"}
+{"status":"failed","error":"AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'workspaceId is required'\n- null\n\n    at file:///home/xxnuo/projects/getpaseo/paseo-relay/tests/real-clients/scenarios.mjs:171:14\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async phase (file:///home/xxnuo/projects/getpaseo/paseo-relay/tests/real-clients/scenarios.mjs:61:19)\n    at async file:///home/xxnuo/projects/getpaseo/paseo-relay/tests/real-clients/scenarios.mjs:166:3"}

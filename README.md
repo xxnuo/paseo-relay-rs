@@ -254,6 +254,48 @@ Pass `--bench rust/target/docker/relay_bench` to use that Docker-built client in
 every comparative run. Both implementations share the same total CPU/memory
 quota. Earlier proxy comparison reports remain archived separately.
 
+## Real-client scenario and stress tests
+
+```sh
+uv run python scripts/test-real-clients.py benchmarks/real-clients-run --clients 64 --seconds 60 --netem
+```
+
+This separate automated suite starts the relay in Docker (1 CPU, 512 MiB),
+starts real Paseo daemons in temporary homes, and uses production client,
+protocol and crypto TypeScript source from `../paseo`. Override with
+`--paseo-source /path/to/paseo`. It requires Node 24, uv, local Linux Docker with
+cgroup v2, and that checkout's existing workspace dependencies. The runner does
+not install/build in or modify the reference checkout. Imports are redirected
+to current source; required core modules, source hashes, reference HEAD and
+unchanged Git status are verified, rejecting stale client/protocol/crypto dist.
+
+Scenarios cover v2 control/data attachment, a client arriving before its daemon,
+protected/legacy policy, bad credentials/key, replay/ciphertext corruption,
+concurrent RPCs and byte-verified file upload/download, a real PTY, production
+heartbeats, a paused mobile reader, reconnect churn, relay restart and daemon
+restart with retained identity. Browser-style sockets use Node's standard
+WebSocket API; native/CLI-style sockets use the existing ws implementation with
+the same production SDK. No relay, secure-channel or daemon application mock
+is used. Providers/plugins are disabled; tests do not invoke a paid model.
+
+`--seconds` controls the mixed-RPC load phase, not the total suite duration.
+`--netem` builds a test-only tc helper and requires NET_ADMIN in its container;
+100-ms egress delay, 10-ms jitter and 0.5% loss are applied only to the relay's
+network namespace, then removed. Omit it when that capability is unavailable;
+the report will not claim network impairment coverage. `--no-build --image TAG`
+tests an already built compatible image, including Dockerfile.elixir's image.
+The ordinary Rust CI gate remains self-contained and does not silently count
+this external-source integration suite as passed.
+
+Each unique output directory retains per-phase results, file SHA256 checks,
+client/daemon source import hashes, encrypted-wire counters, relay metrics,
+cgroup samples and Docker OOM events across restart, plus driver CPU/RSS/event
+loop lag. Failure/timeout is nonzero and owned containers/temp homes are cleaned.
+These are real local stacks plus optional simulated network impairment, not
+Expo/Electron UI, model-provider chat, TLS, Cloudflare or global VPS acceptance.
+The Node driver also hosts the daemons, so its CPU/event loop can limit offered
+load; this is not a maximum relay-capacity benchmark.
+
 ## Performance decision and history
 
 Nginx support was removed after the 46-run relay-cost comparison: direct Rust

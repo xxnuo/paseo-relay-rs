@@ -1,0 +1,43 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from netem.Dockerfile
+#1 transferring dockerfile: 117B done
+#1 DONE 0.0s
+
+#2 [auth] library/rust:pull token for registry-1.docker.io
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/rust:1.97.1-alpine
+#3 DONE 1.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 104B done
+#4 DONE 0.0s
+
+#5 [1/2] FROM docker.io/library/rust:1.97.1-alpine@sha256:3c38f3f82c2f3d73da3b38e18d279393a04cb43ddded0e35088a8c3324d40900
+#5 resolve docker.io/library/rust:1.97.1-alpine@sha256:3c38f3f82c2f3d73da3b38e18d279393a04cb43ddded0e35088a8c3324d40900 done
+#5 CACHED
+
+#6 [2/2] RUN apk add --no-cache iproute2
+#6 4.102 (1/8) Installing libcap2 (2.78-r0)
+#6 4.340 (2/8) Installing libelf (0.195-r0)
+#6 4.576 (3/8) Installing libmnl (1.0.5-r2)
+#6 4.812 (4/8) Installing iproute2-minimal (7.0.0-r0)
+#6 5.071 (5/8) Installing libxtables (1.8.13-r0)
+#6 5.314 (6/8) Installing iproute2-tc (7.0.0-r0)
+#6 5.575 (7/8) Installing iproute2-ss (7.0.0-r0)
+#6 5.813 (8/8) Installing iproute2 (7.0.0-r0)
+#6 6.062   Executing iproute2-7.0.0-r0.post-install
+#6 6.064 Executing busybox-1.37.0-r31.trigger
+#6 6.069 OK: 200.0 MiB in 39 packages
+#6 DONE 6.1s
+
+#7 exporting to image
+#7 exporting layers 0.1s done
+#7 exporting manifest sha256:d42ab7a3e10e608b224d402a36023ad3c19f42a6014ad8cf467d780c629e0ae4 done
+#7 exporting config sha256:73faa8342aaeb9c6158cc4ab2e91dbd674c7ca78e2e2f73eb36fd1f15ed2d887 done
+#7 exporting attestation manifest sha256:407e255761b2569c4cabd0548e6035c3c37a5b265e70bb0e134f9fd4c8f809c4 done
+#7 exporting manifest list sha256:e9002d66c6f44c60b38c496c0bc2937ad97ac2c1897e73562a28d66dac195542 done
+#7 naming to docker.io/library/paseo-relay-netem:test done
+#7 unpacking to docker.io/library/paseo-relay-netem:test 0.0s done
+#7 DONE 0.1s

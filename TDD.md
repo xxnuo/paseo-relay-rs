@@ -1198,3 +1198,42 @@
   deployment/Rust/CI paths contain no Nginx references. Documentation links pass.
   Acceptance details: benchmarks/nginx-removal-validation/acceptance.json.
   No remote deploy, image publish or Git push was performed.
+
+## Real production client/daemon scenario and stress suite
+
+- Source inspected at Paseo a8e0effb325d07dbe02a998b6ff6fce623b3fec1
+  (0.14.0). The runner imports daemon-client.ts and its relay E2EE factory,
+  server relay-transport.ts and secure-relay-ingress.ts, shared secure-channel/
+  e2ee and protocol source. Dynamic source aliases and required-module hashes
+  prevent stale dist passing as source verification. The checkout is read-only;
+  both Git HEAD/status and package-lock fingerprint are recorded.
+- Reference: upstream daemon-e2e/relay-transport.e2e.test.ts, relay/src/
+  live-relay.e2e.test.ts and server relay-transport.latency.e2e.test.ts; retained
+  original Elixir relay_protocol_test.exs/relay_backpressure_test.exs for control,
+  attachment and reverse-traffic expectations. The new suite uses actual SDKs,
+  real production daemons, real crypto/PTY/files and a real Docker listener,
+  not the old in-process reference relay adapter or a mocked provider.
+- The initial two-client protected handshake/app ping passed. Fixture red/green
+  records are retained: current terminal APIs require workspaceId; current
+  diagnostic ping uses a session envelope unlike top-level heartbeat; Docker
+  reallocates an automatic host port on restart (reproduced 33042 to 33043).
+  The runner now uses a fixed explicit test host port, and assertions verify
+  protected mode, recovery and stable mapping. No Rust defect is inferred from
+  those fixture failures.
+- A paused reader can be absorbed by kernel buffers, so that scenario records
+  observed pressure without assuming it. An additional real SDK client begins
+  its encrypted hello before its real daemon starts; the suite requires a
+  charged ingress lease/backpressured source, starts the daemon, then proves
+  successful protected admission and ping. A pending slow transfer is awaited
+  in cleanup so assertion failures do not become unhandled rejections.
+- Smoke covers legacy acceptance/protected-only rejection, wrong password and
+  pinned daemon key, protected record replay/tag corruption, distinct-daemon
+  file integrity and binary uploads, PTY output, mixed RPC/file load, SDK/control
+  heartbeats, tc netem, client socket recovery, churn and both relay/daemon
+  restart. Provider clients/plugins are disabled rather than mocked; no paid
+  provider or UI behavior is claimed. Network impairment is simulated in the
+  owned relay namespace; no host network setting is changed.
+- Accepted smoke: benchmarks/real-clients-recovery-smoke. Development failures
+  remain separately labeled in real-clients-scenarios*, real-clients-complete-
+  smoke and real-clients-pressure-smoke; they are not acceptance/performance
+  results. Large-run and original-image acceptance evidence follows.

@@ -1,0 +1,8 @@
+{"phase":"daemon-start","status":"running"}
+{"phase":"daemon-start","seconds":1.9338162960000003,"daemons":2,"status":"passed"}
+{"phase":"connect","status":"running"}
+{"phase":"connect","seconds":0.08426872099999991,"connected":4,"protected":4,"status":"passed"}
+{"phase":"credential-and-key-rejection","status":"running"}
+{"phase":"credential-and-key-rejection","seconds":0.02374485300000015,"rejectedCredentials":1,"rejectedDaemonKey":1,"healthyClients":4,"status":"passed"}
+{"phase":"legacy-compatibility-and-protected-policy","status":"running"}
+{"status":"failed","error":"AssertionError [ERR_ASSERTION]: deadline: legacy encrypted RPC\n    at until (file:///home/xxnuo/projects/getpaseo/paseo-relay/tests/real-clients/scenarios.mjs:54:5)\n    at async legacyConnection (file:///home/xxnuo/projects/getpaseo/paseo-relay/tests/real-clients/scenarios.mjs:138:5)\n    at async file:///home/xxnuo/projects/getpaseo/paseo-relay/tests/real-clients/scenarios.mjs:179:5\n    at async phase (file:///home/xxnuo/projects/getpaseo/paseo-relay/tests/real-clients/scenarios.mjs:61:19)\n    at async file:///home/xxnuo/projects/getpaseo/paseo-relay/tests/real-clients/scenarios.mjs:178:3"}

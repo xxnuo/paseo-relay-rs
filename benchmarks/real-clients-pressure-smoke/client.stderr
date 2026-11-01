@@ -1,0 +1,13 @@
+/home/xxnuo/projects/getpaseo/paseo/packages/client/src/daemon-client.ts:1722
+    this.clearWaiters(new Error("Daemon client closed"));
+                      ^
+
+
+Error: Daemon client closed
+    at DaemonClient.close (/home/xxnuo/projects/getpaseo/paseo/packages/client/src/daemon-client.ts:1722:23)
+    at file:///home/xxnuo/projects/getpaseo/paseo-relay/tests/real-clients/scenarios.mjs:683:56
+    at Array.map (<anonymous>)
+    at file:///home/xxnuo/projects/getpaseo/paseo-relay/tests/real-clients/scenarios.mjs:683:36
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+Node.js v24.2.0

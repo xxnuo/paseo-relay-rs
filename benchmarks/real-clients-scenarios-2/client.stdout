@@ -1,0 +1,20 @@
+{"phase":"daemon-start","status":"running"}
+{"phase":"daemon-start","seconds":1.9033458289999998,"daemons":2,"status":"passed"}
+{"phase":"connect","status":"running"}
+{"phase":"connect","seconds":0.11877613000000019,"connected":4,"protected":4,"status":"passed"}
+{"phase":"credential-and-key-rejection","status":"running"}
+{"phase":"credential-and-key-rejection","seconds":0.024147765000000165,"rejectedCredentials":1,"rejectedDaemonKey":1,"healthyClients":4,"status":"passed"}
+{"phase":"encrypted-files-and-session-isolation","status":"running"}
+{"phase":"encrypted-files-and-session-isolation","seconds":0.13512106200000015,"verifiedDownloads":4,"verifiedUploads":4,"distinctDaemonFiles":2,"status":"passed"}
+{"phase":"real-terminal-binary-output","status":"running"}
+{"phase":"real-terminal-binary-output","seconds":0.2813355759999999,"terminals":2,"status":"passed"}
+{"phase":"concurrent-mixed-rpc-load","status":"running"}
+{"phase":"concurrent-mixed-rpc-load","seconds":2.0020758300000003,"clients":4,"pings":4231,"agentLists":4231,"verifiedFiles":849,"pingMs":{"p50":0.6206429999992906,"p95":1.1530870000005962,"p99":1.6392139999998108,"max":3.271823999999924},"status":"passed"}
+{"phase":"slow-mobile-reader-isolation","status":"running"}
+{"phase":"slow-mobile-reader-isolation","seconds":0.5645154030000004,"pausedMs":500,"healthyPeers":3,"verifiedBytes":8388685,"status":"passed"}
+{"phase":"client-data-socket-reconnect","status":"running"}
+{"phase":"client-data-socket-reconnect","seconds":0.12193083300000035,"opensBefore":1,"opensAfter":2,"status":"passed"}
+{"phase":"connection-churn","status":"running"}
+{"phase":"connection-churn","seconds":0.11027738600000066,"rounds":3,"clientsPerRound":4,"status":"passed"}
+{"phase":"relay-restart-auto-recovery","status":"running"}
+{"status":"failed","error":"AssertionError [ERR_ASSERTION]: deadline: daemon control and SDK reconnect after relay restart\n    at until (file:///home/xxnuo/projects/getpaseo/paseo-relay/tests/real-clients/scenarios.mjs:54:5)\n    at async file:///home/xxnuo/projects/getpaseo/paseo-relay/tests/real-clients/scenarios.mjs:252:5\n    at async phase (file:///home/xxnuo/projects/getpaseo/paseo-relay/tests/real-clients/scenarios.mjs:61:19)\n    at async file:///home/xxnuo/projects/getpaseo/paseo-relay/tests/real-clients/scenarios.mjs:249:3"}
