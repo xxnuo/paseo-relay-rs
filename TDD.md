@@ -695,3 +695,21 @@
 - The first local minimal-container run exhausted its default descriptor limit
   in the existing unread-control pressure fixture. Repeating with the documented
   real-socket test budget passed; application and pressure-test code were unchanged.
+
+## Rust rewrite: protocol boundaries
+
+- Branch: `refactor-rust`. The Elixir application stays executable as the
+  upstream behavior reference until the Rust replacement passes equivalent
+  real-network, pressure, lifecycle, and distributed-ownership gates.
+- Red: `cargo test --manifest-path rust/Cargo.toml` failed with unresolved
+  protocol exports before implementation; the connection regression separately
+  failed with an unresolved `connection` module.
+- Green: six Rust integration tests cover the exact data/control payload limits,
+  opaque payload handling, both handshake types, canonical padded Base64,
+  canonical X25519 field coordinates and all seven original unsupported keys,
+  role/version validation, UTF-8 route byte limits, v1 ignored connection IDs,
+  v2 trimmed IDs and generated client IDs. Source comments point to the matching
+  Elixir modules to make upstream contract changes traceable.
+- Gate: Cargo tests and warnings-as-errors Clippy passed. These are pure
+  boundary tests; they do not establish WebSocket, cluster, Linux deployment,
+  or performance equivalence. The Rust crate is not yet a runnable relay.
