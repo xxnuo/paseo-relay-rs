@@ -14,12 +14,12 @@ trap cleanup EXIT
 
 docker build --target test --tag "$test_image" .
 docker build --tag "$runtime_image" .
-docker build --target binary --tag "${runtime_image}-direct" .
+docker build --target nginx --tag "${runtime_image}-nginx" .
 # The test container reaches the sibling relay containers via host-mapped ports.
 docker run --rm --network host \
   --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
-  --env "PASEO_RELAY_TEST_IMAGE=$runtime_image" \
-  --env "PASEO_RELAY_DIRECT_TEST_IMAGE=${runtime_image}-direct" "$test_image"
+  --env "PASEO_RELAY_TEST_IMAGE=${runtime_image}-nginx" \
+  --env "PASEO_RELAY_DIRECT_TEST_IMAGE=$runtime_image" "$test_image"
 
 mkdir -p rust/target/docker
 runtime_container=$(docker create "$runtime_image")

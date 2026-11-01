@@ -1,0 +1,61 @@
+{
+  "implementation": "nginx",
+  "image": "paseo-relay-rust:proxy-eval",
+  "image_id": "sha256:c727d0c188920207671344022d83bd42e3e86b66428f64e1d74d79aa685c224e",
+  "processes": "PID                 PPID                COMMAND             COMMAND\n460514              460489              entrypoint.sh       /bin/sh /entrypoint.sh\n460578              460514              paseo-relay         /paseo-relay\n460588              460514              nginx               nginx: master process nginx -c /tmp/nginx.conf -g daemon off;\n460595              460588              nginx               nginx: worker process\n461124              460514              sleep               sleep 0.1",
+  "limits": {
+    "cpus": 2,
+    "memory_bytes": 1073741824,
+    "worker_threads": 2
+  },
+  "load": {
+    "corruption": 0,
+    "forwarded_frames": 1024,
+    "frames_per_second": 67.97171001976035,
+    "idle": true,
+    "latency_us": {
+      "max": 33783,
+      "p50": 18660,
+      "p95": 26029,
+      "p99": 31942
+    },
+    "loss": 0,
+    "measured_seconds": 15.065091046,
+    "ordering_errors": 0,
+    "pairs": 512,
+    "payload_bytes": 1024,
+    "payload_bytes_per_second": 69603.0310602346,
+    "protocol": 2,
+    "requested_seconds": 15,
+    "setup_seconds": 1.879261957
+  },
+  "cgroup_before": {
+    "cpu.stat": "usage_usec 42389\nuser_usec 23177\nsystem_usec 19212\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 1\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "33644544\n",
+    "memory.peak": "33648640\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  },
+  "cgroup_after": {
+    "cpu.stat": "usage_usec 2517507\nuser_usec 1527175\nsystem_usec 990331\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 133\nnr_throttled 10\nthrottled_usec 369196\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "37724160\n",
+    "memory.peak": "227852288\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  },
+  "idle_observation": {
+    "seconds": 10.001394946011715,
+    "cgroup_before": {
+      "cpu.stat": "usage_usec 2241534\nuser_usec 1415649\nsystem_usec 825885\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 18\nnr_throttled 10\nthrottled_usec 369196\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "222822400\n",
+      "memory.peak": "227508224\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    },
+    "cgroup_after": {
+      "cpu.stat": "usage_usec 2300959\nuser_usec 1430430\nsystem_usec 870528\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 94\nnr_throttled 10\nthrottled_usec 369196\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "222347264\n",
+      "memory.peak": "227508224\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    },
+    "active_websockets": 1024
+  },
+  "observation_seconds": 16.964927777997218
+}

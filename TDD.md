@@ -1127,3 +1127,39 @@
   The relay executable/images are unchanged; the paced experiment uses the
   separately fingerprinted Docker-built driver, with original driver artifacts
   retained for the first experiment.
+
+## Direct Rust default selected from relay-cost evidence
+
+- Both measured images contain the same extracted relay SHA256. All 46 real
+  comparisons pass exact payload/order, counters including warmup, socket/byte
+  cleanup and zero OOM events; source fingerprints validate against the recorded
+  commits aa26cc2 and 4003e45, with source_dirty=false. Old/new Docker-built
+  driver hashes are retained separately. Nine datasets cover 2/1024 idle sockets,
+  1-KiB/64-KiB saturation, a one-CPU case, matched-rate CPU, v1 and a longer
+  30-second local transfer. Summary: benchmarks/proxy-decision-summary.json.
+- At 1024 idle sockets, direct current memory is 148.3 MiB versus 211.6 MiB.
+  Matched-rate CPU is 0.387 versus 0.532 cores for 1 KiB, and 0.224 versus
+  0.452 cores for 64 KiB. Small-frame matched-rate p99 increases 0.073 ms; the
+  report includes this tradeoff. Saturated direct throughput improves in both
+  two-CPU cases and the one-CPU case. Neither idle CPU nor cgroup memory alone
+  establishes a production VPS price/RAM tier.
+- Red: the direct-image process-count assertion fails against the prior default
+  image (one proxy worker versus zero). Default runtime now derives from the
+  existing scratch binary stage; the Nginx runtime is the explicit nginx target.
+  scripts/ci-rust.sh builds/tests the actual default and optional targets and
+  extracts artifacts from the direct image. GHCR's existing default-Dockerfile
+  publication therefore selects direct Rust after the same gates. README and
+  AGENTS document the new target mapping and unchanged resource contracts.
+- Ordinary orange-cloud DNS proxying was selected by the operator, not Tunnel.
+  Both existing images are plaintext. Cloudflare Full (strict) requires origin
+  HTTPS/certificates; native TLS and a live Cloudflare/WAN deployment were not
+  implemented or tested here. Existing timeouts/limits and the reference Elixir
+  implementation are unchanged. Final actual-default Docker gate follows.
+
+- Final gate passed on the actual new default and optional nginx target:
+  scripts/ci-rust.sh completed formatting/Clippy, 49 native/example tests and
+  all four real image tests. The default image also received SIGTERM during
+  a live five-second load: readiness became 503, both directions completed
+  without payload/order errors, and the image exited zero after cleanup.
+  Evidence: final-docker-ci.log and direct-default-drain.json. No host service,
+  remote registry, Cloudflare account or VPS configuration was changed.

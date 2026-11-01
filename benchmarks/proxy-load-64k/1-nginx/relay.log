@@ -1,0 +1,4 @@
+nginx: the configuration file /tmp/nginx.conf syntax is ok
+nginx: configuration file /tmp/nginx.conf test is successful
+paseo-relay listening on 127.0.0.1:4001
+2026/11/01 08:47:35 [error] 16#16: *168 recv() failed (104: Connection reset by peer) while proxying upgraded connection, client: 172.17.0.1, server: , request: "GET /ws?serverId=bench_8d631eb344a4b632_2&v=2&connectionId=pair&role=client HTTP/1.1", upstream: "http://127.0.0.1:4001/ws?serverId=bench_8d631eb344a4b632_2&v=2&connectionId=pair&role=client", host: "127.0.0.1:32991"

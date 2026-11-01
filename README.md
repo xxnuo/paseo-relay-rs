@@ -2,9 +2,9 @@
 
 A distributed, protocol-compatible relay for [Paseo](https://github.com/getpaseo/paseo),
 implemented in Rust as one Linux executable. The default Dockerfile and image
-publishing pipeline build Rust with Nginx in one container. The Elixir
-implementation remains at its upstream source paths as a tested compatibility and performance reference, not a runtime
-dependency. Frames remain end-to-end encrypted; the relay routes opaque payloads.
+publishing pipeline build a direct Rust scratch image. Nginx is optional.
+The Elixir implementation remains at its upstream source paths as a tested
+compatibility and performance reference, not a runtime dependency. Frames remain end-to-end encrypted; the relay routes opaque payloads.
 
 ## Build and Linux deployment
 
@@ -14,7 +14,8 @@ scripts/ci-rust.sh
 
 This Docker-only Rust pipeline checks formatting and Clippy, runs all native
 and real-process tests inside the pinned Rust toolchain image, builds the
-Rust + Nginx runtime image, and runs real container lifecycle/cluster tests.
+direct Rust and optional Nginx images, and runs real container lifecycle/cluster
+tests. Both paths include a 61-second idle/resume and restart test.
 It needs Docker on Linux and access to its socket; no host Rust installation is
 required. It extracts the static amd64 executable, common load client and
 SHA256SUMS to `rust/target/docker/`. CI uses this same script and retains those
@@ -34,27 +35,33 @@ docker build -t paseo-relay-rust .
 docker run --rm --stop-timeout 40 --ulimit nofile=65536:65536 -p 127.0.0.1:4000:4000 paseo-relay-rust
 ```
 
-The default image runs Rust and pinned Nginx 1.30.6 as UID/GID 65532. Nginx owns
-the public `PASEO_RELAY_HOST:PORT` listener (default 0.0.0.0:4000); Rust listens
-only on 127.0.0.1:4001 inside the container, or :4002 when the public port is
-4001. The independent cluster port remains unchanged. The entrypoint raises
-the soft file limit to 65536, requiring a hard limit of at least that value.
-Each Nginx worker has 65536 connection slots; proxy sockets also consume
-slots and file descriptors. WebSocket upgrades and ownership headers pass
-through with HTTP/1.1, without response/request buffering or URI rewriting.
-The Nginx upstream read/write inactivity timeout is 24 hours, including idle
-WebSockets. HTTP header/body/keepalive timeouts follow `HTTP_IDLE_TIMEOUT_MS`.
-The Rust pre-upgrade slot limit applies to backend connections; Nginx can hold
-additional front-end connections. The RSS watermark measures Rust only, so
-leave headroom for the proxy and kernel buffers in the container memory limit.
+The default scratch image contains the static Rust executable only, runs as
+UID/GID 65532 and listens directly on `PASEO_RELAY_HOST:PORT` (default
+0.0.0.0:4000). Set Docker's file limit as above; the image contains no shell or
+proxy supervisor to adjust it. SIGTERM drains the relay directly. Give Docker
+at least 40 seconds to stop it. The explicit `binary` build target is equivalent
+to the default `runtime` target. The existing GHCR workflow builds this default
+direct image after both reference and Rust gates. Pin consumers to its reported
+digest; checking out this branch does not change previously published images.
+See [LICENSE](LICENSE).
 
-SIGTERM first drains Rust while Nginx continues forwarding, then gracefully
-stops Nginx. An unexpected exit of either service stops its sibling and exits
-the container unsuccessfully. Give Docker at least 40 seconds to stop it. The
-`binary` Docker build target retains the standalone scratch image when needed.
-Successful main/tag/same-repository PR workflows publish the default Rust + Nginx
-image to `ghcr.io/getpaseo/paseo-relay`; pin consumers to the reported digest.
-Checking out this branch does not update registry images. See [LICENSE](LICENSE).
+### Optional Nginx image
+
+```sh
+docker build --target nginx -t paseo-relay-nginx .
+```
+
+This optional target retains pinned Nginx 1.30.6, UID/GID 65532 and the tested
+supervisor. Nginx owns the configured public host/port; Rust uses loopback
+:4001, or :4002 when the public port is 4001. The independent cluster port is
+unchanged. The entrypoint raises the file limit to 65536, so its hard limit
+must allow that. Each proxy worker has 65536 connection slots; both sides of a
+proxied connection consume slots/descriptors. Proxy buffering is disabled.
+WebSocket inactivity is limited to 24 hours; HTTP timeouts follow
+`HTTP_IDLE_TIMEOUT_MS`. Backend HTTP slots do not bound all Nginx front-end
+connections, and Rust's RSS watermark excludes proxy/kernel memory. SIGTERM
+first drains Rust, then stops Nginx; either service failing stops the sibling.
+This target serves plain HTTP/WebSocket unless deployment-specific TLS is added.
 
 ## Self-managed VPS deployment target
 
@@ -67,8 +74,7 @@ outside this repository.
 Use systemd's existing restart policy for the native binary, or Docker's
 `--restart unless-stopped` for the image, with the documented 40-second stop
 allowance. Terminate public TLS at the VPS ingress and expose a stable `wss://`
-endpoint; the embedded Nginx currently serves plain HTTP/WebSocket, not automatic
-certificate provisioning. Keep `/metrics` and the cluster listener on management
+endpoint; neither image currently supplies TLS or automatic certificates. Keep `/metrics` and the cluster listener on management
 or private-network paths. Authenticated cluster traffic is not encrypted: use
 an encrypted private overlay between public VPS hosts rather than exposing its
 control port globally.
@@ -76,20 +82,33 @@ control port globally.
 For independent regional nodes, connect both roles of a session to the same
 regional endpoint. Geography-based DNS alone can send the two roles to different
 owners. A shared multi-region cluster requires an owner-aware ingress or client
-that consumes `409 + x-reroute-target`: the embedded Nginx passes that response
-through and does not implement Fly-style replay or automatic global forwarding.
+that consumes `409 + x-reroute-target`: direct Rust and the optional proxy pass
+that response through, without Fly-style replay or automatic global forwarding.
 A target is an opaque routing identity, not permission to proxy an arbitrary URL.
 No automatic nearest-region selection or live cross-region socket migration is
 claimed. These integration decisions belong to the consuming deployment.
 
-The image defaults to one Nginx worker to reduce the fixed memory footprint on
-small VPS hosts. Set `PASEO_RELAY_NGINX_WORKERS` (1–64) and optionally
-`TOKIO_WORKER_THREADS` for the actual VPS resources; neither CPU quota nor worker
-count should be copied blindly from the two-CPU comparison. Configure ingress
-and RSS limits with headroom for Nginx/kernel memory. Current 2-second cluster
-exchanges and 3-second membership expiry remain unchanged; assess real regional
-RTT, loss and partitions before changing them. The local Docker tests do not
-establish global availability, TLS integration or WAN performance.
+Direct Rust is the measured starting point for low-cost VPS hosts. Set
+`TOKIO_WORKER_THREADS` for actual resources; the optional Nginx target defaults
+to one worker and accepts `PASEO_RELAY_NGINX_WORKERS` (1–64). CPU quotas/worker
+counts from the local comparison are not universal deployment recommendations.
+Choose ingress/RSS limits with kernel and OS headroom. Current 2-second cluster
+exchanges and 3-second membership expiry remain unchanged; assess regional
+RTT/loss/partitions before changing them.
+
+The planned Cloudflare integration is ordinary orange-cloud DNS proxying, not
+Tunnel. [Cloudflare supports WebSockets](https://developers.cloudflare.com/network/websockets/)
+but can terminate idle connections or restart edge servers; clients need
+heartbeats and reconnect handling. Affinity for one client does not by itself
+place both relay roles on the same owner. For
+[Full (strict)](https://developers.cloudflare.com/ssl/origin-configuration/ssl-modes/full-strict/),
+the origin must supply HTTPS with a matching valid certificate. Removing Nginx
+does not implement Rust TLS; both current targets remain plaintext and this
+integration is not yet accepted. Public URLs must use a
+[Cloudflare-supported port](https://developers.cloudflare.com/fundamentals/reference/network-ports/);
+define the origin port mapping/routing separately for the local :4000 listener.
+These local measurements exclude TLS, Cloudflare and WAN costs; do not infer
+complete VPS sizing or a production RAM tier solely from them.
 
 ## Runtime contract
 
@@ -99,7 +118,7 @@ All rows below have the `PASEO_RELAY_` prefix unless named otherwise.
 | --- | --- | --- |
 | `HOST` | `127.0.0.1` | Public listener IP address. |
 | `PORT` | `4000` | HTTP/WebSocket port, 1–65535. |
-| `NGINX_WORKERS` | `1` | Container proxy worker count, 1–64; native executable does not use this setting. |
+| `NGINX_WORKERS` | `1` | Optional nginx target only, 1–64; ignored by direct Rust. |
 | `DRAIN` | `false` | Start unready and reject new upgrades; true/false. |
 | `ACCEPTORS` | `100` | Maximum pre-upgrade HTTP connections, 1–1000; also a factor in the WebSocket ceiling. Tokio schedules I/O. |
 | `CONNECTIONS_PER_ACCEPTOR` | `200` | Second ceiling factor, 1–1000000. The default active WebSocket ceiling is 20000. |
@@ -255,9 +274,80 @@ Pass `--bench rust/target/docker/relay_bench` to use that Docker-built client in
 every comparative run. Both implementations share the same total CPU/memory
 quota; the Rust container includes all Nginx workers in that quota.
 
-## VPS proxy sizing check
+## Direct Rust versus Nginx: relay cost decision
 
-The one-worker default at `a8cac64` was checked against the prior two-worker
+The default image now omits Nginx. The relay workload did not need the extra
+proxy to preserve connection lifetime, route opaque traffic or enforce the
+application limits. Its removal reduced measured memory/CPU cost and increased
+saturated throughput. The optional `nginx` target remains available for a
+deployment that needs separate proxy features. Origin TLS for ordinary
+Cloudflare DNS proxying still needs implementation/configuration; this decision
+does not claim a complete Cloudflare-ready HTTPS deployment.
+
+Both images contain byte-identical Rust executables. The Nginx image uses the
+previously optimized single worker. Measurements used isolated 1-GiB containers,
+2 CPUs/two Tokio workers except the explicit 1-CPU/one-worker row, the same
+Docker-built external client with four workers, loopback port mappings and
+alternating order. Rows below are medians of three runs per image. Memory is
+cgroup container accounting, including proxy processes/kernel allocations; it
+is not complete VPS RAM usage. Idle rows sample ten seconds after warmup with
+no application traffic, then prove both directions still work. They do not
+include production heartbeat traffic.
+
+| Idle connections | Memory MiB, Nginx / direct | CPU % of one core, Nginx / direct |
+| --- | ---: | ---: |
+| 2 | 31.5 / 1.2 | 0.598 / 0.045 |
+| 1024 | 211.6 / 148.3 | 0.594 / 0.071 |
+
+The 1024-connection idle sample saves about 63 MiB (30%). Absolute idle CPU is
+low in both modes. To compare CPU under the same business volume, a separate
+paced test sends 200 frames/s per pair and asserts the achieved rate within 2%.
+CPU below is container CPU time divided by the full observed wall window,
+including setup/warmup and cleanup; 100% means one CPU core. The traffic rate is
+the measured data phase. Each load phase lasts ten seconds.
+
+| Matched traffic | Frames/s, Nginx / direct | CPU % of one core, Nginx / direct | p99 ms, Nginx / direct |
+| --- | ---: | ---: | ---: |
+| 64 pairs, 1 KiB | 12,803 / 12,802 | 53.2 / 38.7 | 2.490 / 2.563 |
+| 16 pairs, 64 KiB | 3,202 / 3,202 | 45.2 / 22.4 | 3.271 / 1.244 |
+
+At matched traffic, CPU falls 27% and 51%. The small-frame paced p99 increases
+slightly by 0.073 ms; no claim is made that every latency metric improves.
+Maximum-throughput tests use ten seconds after 20 warmup exchanges per pair:
+
+| Saturated workload | Frames/s, Nginx / direct | p99 ms, Nginx / direct | Peak MiB, Nginx / direct |
+| --- | ---: | ---: | ---: |
+| 2 CPUs, 64 pairs, 1 KiB | 55,847 / 76,779 | 7.856 / 2.324 | 57.3 / 22.3 |
+| 2 CPUs, 64 pairs, 64 KiB | 8,376 / 15,270 | 10.860 / 7.371 | 72.5 / 35.3 |
+| 1 CPU, 64 pairs, 1 KiB | 35,566 / 51,460 | 25.914 / 3.367 | 56.9 / 21.8 |
+
+A further single 30-second v2 4-KiB run and single five-second v1 run per image
+also delivered every frame and recovered socket/byte reservations. These are
+smoke/sustained-local observations, not production soak tests. All 46 runs
+passed payload/order, exact counters including warmup, resource cleanup and
+zero OOM events. Both images passed 61-second idle/resume/restart tests; direct
+Rust separately passed real-container ownership/reroute/replay tests.
+[Summary](benchmarks/proxy-decision-summary.json) indexes the raw evidence,
+CPU windows, image IDs and source/client fingerprints. Driver snapshots are
+`aa26cc2` (idle/saturation) and `4003e45` (matched rate).
+
+For repeatability, build both images and the client with `scripts/ci-rust.sh`.
+Use `scripts/compare-rust.py` with `--elixir-image` set to the Nginx image and
+`--rust-image` to the direct image, `--baseline-label nginx --candidate-label
+direct`, and `--bench rust/target/docker/relay_bench`. `--idle` measures established
+idle sockets; `--paced` measures matched traffic; otherwise it measures saturated
+throughput. `--cpus 1 --workers 1` selects the cheap-VPS case. Historical image
+option names remain compatible with earlier original-versus-Rust comparisons.
+
+Cloudflare, origin TLS encryption/handshakes, WAN loss and real VPS pricing are
+outside these tests. Removing proxy overhead creates headroom; it does not by
+itself prove that a lower RAM-priced VPS tier can handle maximum messages and
+the deployment's real connection/traffic profile. Current plaintext images
+must not be mistaken for a Full (strict) origin.
+
+## Historical VPS proxy sizing check
+
+The then-default one-worker image at `a8cac64` was checked against the prior two-worker
 image using byte-identical Rust executables and the same Docker-built load
 client. Each container had 2 CPUs/1 GiB, Tokio used two workers, and v2 had
 64 pairs, 20 warmup exchanges and 10 measured seconds. Medians below are from
@@ -324,9 +414,8 @@ Nginx, so they must not be substituted for this table.
 Docker publication was also exercised with a temporary local registry: push,
 pull by immutable digest, Nginx-backed readiness and graceful stop all passed.
 [Publication evidence](benchmarks/nginx-validation/publication.json) records the
-digest and image ID. No remote registry or Git push was performed; the existing
-GHCR workflow is configured to publish the same default Dockerfile after both
-reference and Rust gates pass.
+digest and image ID. No remote registry or Git push was performed; the workflow at that snapshot built the default Nginx image. The current
+default is direct Rust as described above.
 
 ## Historical direct-Rust performance comparison
 

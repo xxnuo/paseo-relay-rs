@@ -1,0 +1,61 @@
+{
+  "implementation": "direct",
+  "image": "paseo-relay-rust:proxy-eval-direct",
+  "image_id": "sha256:286f169a6f359b75907aae577b85126884014264e0a3788e702722073d953a97",
+  "processes": "PID                 PPID                COMMAND             COMMAND\n461669              461643              paseo-relay         /paseo-relay",
+  "limits": {
+    "cpus": 2,
+    "memory_bytes": 1073741824,
+    "worker_threads": 2
+  },
+  "load": {
+    "corruption": 0,
+    "forwarded_frames": 1024,
+    "frames_per_second": 68.00004219588556,
+    "idle": true,
+    "latency_us": {
+      "max": 31976,
+      "p50": 16986,
+      "p95": 27666,
+      "p99": 31110
+    },
+    "loss": 0,
+    "measured_seconds": 15.058814185,
+    "ordering_errors": 0,
+    "pairs": 512,
+    "payload_bytes": 1024,
+    "payload_bytes_per_second": 69632.04320858681,
+    "protocol": 2,
+    "requested_seconds": 15,
+    "setup_seconds": 2.098749116
+  },
+  "cgroup_before": {
+    "cpu.stat": "usage_usec 22284\nuser_usec 13552\nsystem_usec 8731\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 1\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "2519040\n",
+    "memory.peak": "5734400\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  },
+  "cgroup_after": {
+    "cpu.stat": "usage_usec 1752985\nuser_usec 1316821\nsystem_usec 436164\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 39\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "5763072\n",
+    "memory.peak": "158429184\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  },
+  "idle_observation": {
+    "seconds": 10.001064469106495,
+    "cgroup_before": {
+      "cpu.stat": "usage_usec 1613689\nuser_usec 1232155\nsystem_usec 381533\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 20\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "157773824\n",
+      "memory.peak": "157843456\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    },
+    "cgroup_after": {
+      "cpu.stat": "usage_usec 1619124\nuser_usec 1236738\nsystem_usec 382385\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 30\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "155807744\n",
+      "memory.peak": "157843456\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    },
+    "active_websockets": 1024
+  },
+  "observation_seconds": 17.175993756973185
+}

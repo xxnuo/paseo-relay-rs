@@ -1,0 +1,45 @@
+{
+  "implementation": "nginx",
+  "image": "paseo-relay-rust:proxy-eval",
+  "image_id": "sha256:c727d0c188920207671344022d83bd42e3e86b66428f64e1d74d79aa685c224e",
+  "processes": "PID                 PPID                COMMAND             COMMAND\n469926              469902              entrypoint.sh       /bin/sh /entrypoint.sh\n469997              469926              paseo-relay         /paseo-relay\n470001              469926              nginx               nginx: master process nginx -c /tmp/nginx.conf -g daemon off;\n470008              470001              nginx               nginx: worker process\n470371              469926              sleep               sleep 0.1",
+  "limits": {
+    "cpus": 1,
+    "memory_bytes": 1073741824,
+    "worker_threads": 1
+  },
+  "load": {
+    "corruption": 0,
+    "forwarded_frames": 355884,
+    "frames_per_second": 35566.13492733554,
+    "idle": false,
+    "latency_us": {
+      "max": 35363,
+      "p50": 1165,
+      "p95": 2858,
+      "p99": 25274
+    },
+    "loss": 0,
+    "measured_seconds": 10.006260189,
+    "ordering_errors": 0,
+    "pairs": 64,
+    "payload_bytes": 1024,
+    "payload_bytes_per_second": 36419722.16559159,
+    "protocol": 2,
+    "requested_seconds": 10,
+    "setup_seconds": 0.165223964
+  },
+  "cgroup_before": {
+    "cpu.stat": "usage_usec 42523\nuser_usec 25725\nsystem_usec 16798\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 1\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "33411072\n",
+    "memory.peak": "33976320\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  },
+  "cgroup_after": {
+    "cpu.stat": "usage_usec 10170911\nuser_usec 5867987\nsystem_usec 4302923\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 103\nnr_throttled 101\nthrottled_usec 2860013\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "34308096\n",
+    "memory.peak": "59703296\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  },
+  "observation_seconds": 10.181023915996775
+}

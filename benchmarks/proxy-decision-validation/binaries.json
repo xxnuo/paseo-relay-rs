@@ -1,0 +1,10 @@
+{
+  "paseo-relay-rust:proxy-eval": {
+    "image_id": "sha256:c727d0c188920207671344022d83bd42e3e86b66428f64e1d74d79aa685c224e",
+    "binary_sha256": "928ec53dc4c7c753b2d103d2a8299fd734f93f21b983ea649870f422607f68f5"
+  },
+  "paseo-relay-rust:proxy-eval-direct": {
+    "image_id": "sha256:286f169a6f359b75907aae577b85126884014264e0a3788e702722073d953a97",
+    "binary_sha256": "928ec53dc4c7c753b2d103d2a8299fd734f93f21b983ea649870f422607f68f5"
+  }
+}

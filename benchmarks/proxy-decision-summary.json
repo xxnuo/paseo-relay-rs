@@ -1,0 +1,287 @@
+[
+  {
+    "dataset": "benchmarks/proxy-idle-1024",
+    "source_commit": "aa26cc235582ae6ef20d7f52bab3f38837196017",
+    "workload": {
+      "pairs": 512,
+      "seconds": 10,
+      "payload_bytes": 1024,
+      "protocol": "v2",
+      "idle": true,
+      "cpus": 2,
+      "workers": 2
+    },
+    "implementations": {
+      "nginx": {
+        "image_id": "sha256:c727d0c188920207671344022d83bd42e3e86b66428f64e1d74d79aa685c224e",
+        "repetitions": 3,
+        "median_peak_bytes": 227737600,
+        "median_cpu_cores": 0.14589617075824643,
+        "median_idle_cpu_cores": 0.0059423165922894705,
+        "median_idle_current_bytes": 221888512,
+        "active_websockets": 1024
+      },
+      "direct": {
+        "image_id": "sha256:286f169a6f359b75907aae577b85126884014264e0a3788e702722073d953a97",
+        "repetitions": 3,
+        "median_peak_bytes": 158445568,
+        "median_cpu_cores": 0.09770643680674099,
+        "median_idle_cpu_cores": 0.0007099131615046678,
+        "median_idle_current_bytes": 155533312,
+        "active_websockets": 1024
+      }
+    }
+  },
+  {
+    "dataset": "benchmarks/proxy-idle-2",
+    "source_commit": "aa26cc235582ae6ef20d7f52bab3f38837196017",
+    "workload": {
+      "pairs": 1,
+      "seconds": 10,
+      "payload_bytes": 1024,
+      "protocol": "v2",
+      "idle": true,
+      "cpus": 2,
+      "workers": 2
+    },
+    "implementations": {
+      "nginx": {
+        "image_id": "sha256:c727d0c188920207671344022d83bd42e3e86b66428f64e1d74d79aa685c224e",
+        "repetitions": 3,
+        "median_peak_bytes": 34332672,
+        "median_cpu_cores": 0.006142856732131995,
+        "median_idle_cpu_cores": 0.005978527171026388,
+        "median_idle_current_bytes": 32985088,
+        "active_websockets": 2
+      },
+      "direct": {
+        "image_id": "sha256:286f169a6f359b75907aae577b85126884014264e0a3788e702722073d953a97",
+        "repetitions": 3,
+        "median_peak_bytes": 5394432,
+        "median_cpu_cores": 0.0005607262641898794,
+        "median_idle_cpu_cores": 0.00044505599255426987,
+        "median_idle_current_bytes": 1212416,
+        "active_websockets": 2
+      }
+    }
+  },
+  {
+    "dataset": "benchmarks/proxy-load-1k",
+    "source_commit": "aa26cc235582ae6ef20d7f52bab3f38837196017",
+    "workload": {
+      "pairs": 64,
+      "seconds": 10,
+      "payload_bytes": 1024,
+      "protocol": "v2",
+      "idle": false,
+      "cpus": 2,
+      "workers": 2
+    },
+    "implementations": {
+      "nginx": {
+        "image_id": "sha256:c727d0c188920207671344022d83bd42e3e86b66428f64e1d74d79aa685c224e",
+        "repetitions": 3,
+        "median_peak_bytes": 60047360,
+        "median_cpu_cores": 1.9862415265240327,
+        "median_fps": 55846.86062864288,
+        "median_p99_us": 7856
+      },
+      "direct": {
+        "image_id": "sha256:286f169a6f359b75907aae577b85126884014264e0a3788e702722073d953a97",
+        "repetitions": 3,
+        "median_peak_bytes": 23412736,
+        "median_cpu_cores": 1.7111656842898946,
+        "median_fps": 76778.73089530332,
+        "median_p99_us": 2324
+      }
+    }
+  },
+  {
+    "dataset": "benchmarks/proxy-load-64k",
+    "source_commit": "aa26cc235582ae6ef20d7f52bab3f38837196017",
+    "workload": {
+      "pairs": 64,
+      "seconds": 10,
+      "payload_bytes": 65536,
+      "protocol": "v2",
+      "idle": false,
+      "cpus": 2,
+      "workers": 2
+    },
+    "implementations": {
+      "nginx": {
+        "image_id": "sha256:c727d0c188920207671344022d83bd42e3e86b66428f64e1d74d79aa685c224e",
+        "repetitions": 3,
+        "median_peak_bytes": 76013568,
+        "median_cpu_cores": 1.2695430740211873,
+        "median_fps": 8376.06700570373,
+        "median_p99_us": 10860
+      },
+      "direct": {
+        "image_id": "sha256:286f169a6f359b75907aae577b85126884014264e0a3788e702722073d953a97",
+        "repetitions": 3,
+        "median_peak_bytes": 36986880,
+        "median_cpu_cores": 1.787465282898315,
+        "median_fps": 15269.596674680233,
+        "median_p99_us": 7371
+      }
+    }
+  },
+  {
+    "dataset": "benchmarks/proxy-one-cpu",
+    "source_commit": "aa26cc235582ae6ef20d7f52bab3f38837196017",
+    "workload": {
+      "pairs": 64,
+      "seconds": 10,
+      "payload_bytes": 1024,
+      "protocol": "v2",
+      "idle": false,
+      "cpus": 1,
+      "workers": 1
+    },
+    "implementations": {
+      "nginx": {
+        "image_id": "sha256:c727d0c188920207671344022d83bd42e3e86b66428f64e1d74d79aa685c224e",
+        "repetitions": 3,
+        "median_peak_bytes": 59703296,
+        "median_cpu_cores": 0.9949595894323533,
+        "median_fps": 35566.13492733554,
+        "median_p99_us": 25914
+      },
+      "direct": {
+        "image_id": "sha256:286f169a6f359b75907aae577b85126884014264e0a3788e702722073d953a97",
+        "repetitions": 3,
+        "median_peak_bytes": 22900736,
+        "median_cpu_cores": 0.8671345959863593,
+        "median_fps": 51460.34555777751,
+        "median_p99_us": 3367
+      }
+    }
+  },
+  {
+    "dataset": "benchmarks/proxy-paced-1k",
+    "source_commit": "4003e4549fbf646b2b455c1ad5a959a32ae7a460",
+    "workload": {
+      "pairs": 64,
+      "seconds": 10,
+      "payload_bytes": 1024,
+      "protocol": "v2",
+      "idle": false,
+      "paced": true,
+      "cpus": 2,
+      "workers": 2
+    },
+    "implementations": {
+      "nginx": {
+        "image_id": "sha256:c727d0c188920207671344022d83bd42e3e86b66428f64e1d74d79aa685c224e",
+        "repetitions": 3,
+        "median_peak_bytes": 60022784,
+        "median_cpu_cores": 0.5322644027604785,
+        "median_fps": 12803.078042862619,
+        "median_p99_us": 2490
+      },
+      "direct": {
+        "image_id": "sha256:286f169a6f359b75907aae577b85126884014264e0a3788e702722073d953a97",
+        "repetitions": 3,
+        "median_peak_bytes": 23945216,
+        "median_cpu_cores": 0.38706507428496173,
+        "median_fps": 12801.796644554363,
+        "median_p99_us": 2563
+      }
+    }
+  },
+  {
+    "dataset": "benchmarks/proxy-paced-64k",
+    "source_commit": "4003e4549fbf646b2b455c1ad5a959a32ae7a460",
+    "workload": {
+      "pairs": 16,
+      "seconds": 10,
+      "payload_bytes": 65536,
+      "protocol": "v2",
+      "idle": false,
+      "paced": true,
+      "cpus": 2,
+      "workers": 2
+    },
+    "implementations": {
+      "nginx": {
+        "image_id": "sha256:c727d0c188920207671344022d83bd42e3e86b66428f64e1d74d79aa685c224e",
+        "repetitions": 3,
+        "median_peak_bytes": 45166592,
+        "median_cpu_cores": 0.4524106908302765,
+        "median_fps": 3201.8782713735213,
+        "median_p99_us": 3271
+      },
+      "direct": {
+        "image_id": "sha256:286f169a6f359b75907aae577b85126884014264e0a3788e702722073d953a97",
+        "repetitions": 3,
+        "median_peak_bytes": 11821056,
+        "median_cpu_cores": 0.22364780809459892,
+        "median_fps": 3202.0151967409324,
+        "median_p99_us": 1244
+      }
+    }
+  },
+  {
+    "dataset": "benchmarks/proxy-sustained",
+    "source_commit": "aa26cc235582ae6ef20d7f52bab3f38837196017",
+    "workload": {
+      "pairs": 64,
+      "seconds": 30,
+      "payload_bytes": 4096,
+      "protocol": "v2",
+      "idle": false,
+      "cpus": 2,
+      "workers": 2
+    },
+    "implementations": {
+      "nginx": {
+        "image_id": "sha256:c727d0c188920207671344022d83bd42e3e86b66428f64e1d74d79aa685c224e",
+        "repetitions": 1,
+        "median_peak_bytes": 60874752,
+        "median_cpu_cores": 1.9797167887335847,
+        "median_fps": 41358.06250175083,
+        "median_p99_us": 3520
+      },
+      "direct": {
+        "image_id": "sha256:286f169a6f359b75907aae577b85126884014264e0a3788e702722073d953a97",
+        "repetitions": 1,
+        "median_peak_bytes": 24748032,
+        "median_cpu_cores": 1.6752374406887462,
+        "median_fps": 63120.880900550066,
+        "median_p99_us": 2082
+      }
+    }
+  },
+  {
+    "dataset": "benchmarks/proxy-v1",
+    "source_commit": "aa26cc235582ae6ef20d7f52bab3f38837196017",
+    "workload": {
+      "pairs": 64,
+      "seconds": 5,
+      "payload_bytes": 1024,
+      "protocol": "v1",
+      "idle": false,
+      "cpus": 2,
+      "workers": 2
+    },
+    "implementations": {
+      "nginx": {
+        "image_id": "sha256:c727d0c188920207671344022d83bd42e3e86b66428f64e1d74d79aa685c224e",
+        "repetitions": 1,
+        "median_peak_bytes": 60071936,
+        "median_cpu_cores": 1.9848797931019593,
+        "median_fps": 54583.47122422629,
+        "median_p99_us": 8042
+      },
+      "direct": {
+        "image_id": "sha256:286f169a6f359b75907aae577b85126884014264e0a3788e702722073d953a97",
+        "repetitions": 1,
+        "median_peak_bytes": 23302144,
+        "median_cpu_cores": 1.7091518380998019,
+        "median_fps": 74009.20227416378,
+        "median_p99_us": 2563
+      }
+    }
+  }
+]

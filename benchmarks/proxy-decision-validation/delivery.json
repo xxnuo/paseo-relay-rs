@@ -1,0 +1,34 @@
+{
+  "default_image": "paseo-relay-rust:direct-default",
+  "default_image_id": "sha256:237609ae382c4191df930cc0fd94ebf0dea20aa537806d48d1135dcdeb577c4e",
+  "optional_nginx_image": "paseo-relay-rust:direct-default-nginx",
+  "binary_sha256": "928ec53dc4c7c753b2d103d2a8299fd734f93f21b983ea649870f422607f68f5",
+  "same_executable_as_both_measured_images": true,
+  "source_sha256": {
+    "Dockerfile": "a3f8eabc03851257659c85bd8b80f2ce5ae3eb6cd5caaaf1647c226965533e3d",
+    "scripts/ci-rust.sh": "1ba9c61953341a09cff77ead52b05db6274aa59b13108624ff9696214058786a",
+    ".github/workflows/ci.yml": "bd13728ee74261561567f98e5d452dec30d2d952e5742aac9fba385aa65d7b15",
+    "rust/Cargo.toml": "20cda81021426a327a1af9372fc9a7d5ecbc5520e756ef25edd9677439206d50",
+    "rust/Cargo.lock": "1c6bcbf6b96c3c8da737008303ecc4be23832061350ed1819f4e83d94b4e6a7f",
+    "rust/src/cluster.rs": "86c43f41110d27ae820a9b1ad53f076fdcf45724a9ca1834d672067b3e47bcf8",
+    "rust/src/config.rs": "cb1ddd8b6a62178a9c598467059d53418bb6362f2494ecfa1c81700756458329",
+    "rust/src/connection.rs": "0b5b0e573a7a17f77be4b6d28577b2edfb1c320e27c83d3f08557dbffcb68c6d",
+    "rust/src/lib.rs": "4b0d662374617b7e224461efcef08db8233f5943a3ff8f43f95dc15016c3bcf5",
+    "rust/src/main.rs": "70a847c272a13f6e258237a12e1e9fe917373166de8949b205f08ff00f083eb1",
+    "rust/src/metrics.rs": "e98e787111df167900133302092e94c385f8cf849a6ff79d8ca6220195d6c58a",
+    "rust/src/protocol.rs": "4fb98296ffe1104a05ddee952b30f0be5d380d9253433e7e9ecb2d295e67a794",
+    "rust/src/relay.rs": "5397a95dc1c76680f7dce50d20dd0183c62c93626288743ddf21dc9303bf60da",
+    "rust/src/server.rs": "00ff5756a334f0a11b931914dea4c152e708d8e369cf9421f96e454f3b5157c8",
+    "rust/src/session.rs": "571d7071fa19493f06440706b5a89cc3acafd3709715085a285438213501c050"
+  },
+  "tests": {
+    "native_and_example": 49,
+    "docker_image_tests": 4,
+    "comparison_runs": 46,
+    "extra_direct_cluster_replay": "passed",
+    "extra_actual_default_active_drain": "passed"
+  },
+  "measurement_scope": "plaintext loopback, no Cloudflare/TLS/WAN or VPS price claims",
+  "cloudflare_plan": "ordinary orange-cloud DNS, not Tunnel; origin TLS not implemented",
+  "remote_publication": "not performed; default Dockerfile publishing pipeline now selects direct Rust"
+}
