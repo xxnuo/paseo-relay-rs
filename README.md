@@ -8,7 +8,8 @@ compatibility and performance reference, not a runtime dependency. Frames remain
 
 ## Published Docker images
 
-Docker Hub: `xxnuo/paseo-relay:latest`  
+Docker Hub: `xxnuo/paseo-relay:latest`
+
 GHCR: `ghcr.io/xxnuo/paseo-relay:latest`
 
 Both names publish the same direct Rust runtime for `linux/amd64` and
@@ -65,7 +66,8 @@ UID/GID 65532 and listens directly on `PASEO_RELAY_HOST:PORT` (default
 proxy supervisor to adjust it. SIGTERM drains the relay directly. Give Docker
 at least 40 seconds to stop it. The explicit `binary` build target is equivalent
 to the default `runtime` target. The existing GHCR workflow builds this default
-direct image after both reference and Rust gates. Pin consumers to its reported
+direct image after both native Rust architecture gates. The Elixir reference
+check remains a separate compatibility signal. Pin consumers to its reported
 digest; checking out this branch does not change previously published images.
 See [LICENSE](LICENSE).
 

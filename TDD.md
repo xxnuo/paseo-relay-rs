@@ -1279,3 +1279,11 @@
   linux/amd64 plus linux/arm64. Native runners verify both architectures; PRs
   cannot publish. Artifact names follow the Docker daemon architecture.
 - Runtime, protocol, defaults and capacity contracts are unchanged.
+- Validation: local Docker gates passed (49 Rust tests and 3 container tests).
+  GitHub run 41302773301 passed the same gates on native amd64 and arm64.
+  A locally built arm64 image also passed readiness and bidirectional 64 KiB
+  v2 forwarding under QEMU.
+- The unchanged Elixir reference suite failed 105/106 on two GitHub attempts:
+  relay_backpressure_test.exs:223 timed out awaiting a maximum-sized frame.
+  Keep this job visible, but gate the Rust-only publication on both native Rust
+  architecture jobs instead of the independent legacy runtime.

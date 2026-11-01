@@ -42,7 +42,7 @@ jobs:
           name: paseo-relay-linux-${{ matrix.arch }}
           path: rust/target/docker/
   publish:
-    needs: [verify, rust-verify]
+    needs: [rust-verify]
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     permissions:
