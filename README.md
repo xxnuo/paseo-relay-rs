@@ -144,3 +144,41 @@ converges, Syn keeps one owner and the losing owner's WebSockets close with
 `1012`, causing clients to reconnect through normal routing. Existing
 WebSockets have no transparent migration or cross-partition forwarding. Restore
 or fence a prolonged partition before treating reconnects as one session again.
+
+## Rust rewrite (refactor-rust)
+
+The Rust replacement is being developed in `rust/`. The Elixir sources remain
+unchanged as the upstream reference and performance baseline; the published image
+still runs Elixir. Keep upstream changes as normal Git rebases and compare the
+matching modules (`connection.ex` / `connection.rs`, `handshake_validation.ex` /
+`protocol.rs`, `ownership.ex` / `session.rs`, `socket.ex` / `relay.rs`). Rust
+real-network tests exercise the same public v1/v2 wire contract rather than OTP
+implementation details.
+
+Build and start a Linux executable without an Erlang installation:
+
+```sh
+cargo build --locked --release --manifest-path rust/Cargo.toml
+PASEO_RELAY_HOST=127.0.0.1 PASEO_RELAY_PORT=4000 rust/target/release/paseo-relay
+```
+
+The executable uses the host's libc. It implements v1/v2 local routing,
+control sync/connected/disconnected/ping, duplicate-role replacement, byte-budget
+admission, bounded control notifications, synchronous destination writes and
+slow-consumer shedding. SIGTERM/SIGINT disables admission, allows 30 seconds for
+sessions to drain, then sends retryable `1012` closes before exit. Health,
+readiness and core Prometheus counters use the existing URLs. `PASEO_RELAY_HOST`,
+`PORT`, `DRAIN`, `ACCEPTORS`, `CONNECTIONS_PER_ACCEPTOR`, `INGRESS_BUDGET_BYTES`,
+`INGRESS_WEIGHT`, `DELIVERY_TIMEOUT_MS`, `TRANSPORT_SEND_TIMEOUT_MS`,
+`CONTROL_QUEUE_BYTES` and `DATA_ATTACH_TIMEOUT_MS` retain the defaults and bounds
+above (all names have the `PASEO_RELAY_` prefix). Acceptor settings determine the
+connection ceiling; Tokio schedules I/O. The transport timeout is validated as
+an upper bound; writes use the stricter absolute delivery deadline.
+
+This is not yet a replacement for distributed deployments: configured cluster
+peers, DNS discovery, a cluster floor above one and a nonzero memory watermark
+currently fail startup explicitly. HTTP idle-timeout tuning, TCP receive-buffer
+tuning, full metric parity, the Linux container/service packaging and comparative
+performance gates are still pending. BEAM heap/distribution settings do not apply
+to Rust. Do not infer performance improvements from language choice or from the
+small protocol tests.

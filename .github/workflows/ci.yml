@@ -21,8 +21,22 @@ jobs:
           elixir-version: 1.20.2
       - name: Tests, production release and generic image
         run: scripts/ci.sh
+  rust-verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Rust checks and Linux executable
+        run: |
+          cargo fmt --manifest-path rust/Cargo.toml --check
+          cargo clippy --locked --manifest-path rust/Cargo.toml --all-targets -- -D warnings
+          cargo test --locked --manifest-path rust/Cargo.toml
+          cargo build --locked --release --manifest-path rust/Cargo.toml
   publish:
-    needs: verify
+    needs: [verify, rust-verify]
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     permissions:

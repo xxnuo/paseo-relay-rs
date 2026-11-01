@@ -8,3 +8,14 @@ publish = false
 base64 = "0.22"
 serde_json = "1"
 getrandom = "0.3"
+axum = { version = "0.8", features = ["ws"] }
+futures-util = "0.3"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "signal", "sync", "time", "io-util"] }
+
+tokio-tungstenite = "0.29"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
+panic = "abort"

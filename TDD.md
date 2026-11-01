@@ -713,3 +713,32 @@
 - Gate: Cargo tests and warnings-as-errors Clippy passed. These are pure
   boundary tests; they do not establish WebSocket, cluster, Linux deployment,
   or performance equivalence. The Rust crate is not yet a runnable relay.
+
+## Rust rewrite: executable and local WebSocket routing
+
+- Red: the real-network suite initially failed to compile without `Relay` and
+  `Config`; environment tests failed without `Config::load`; binary tests failed
+  without Cargo's executable target. The oversized-control regression then
+  observed an incorrect `1000` close instead of `1009` from the running server.
+- Green: the executable serves HTTP operations and real v1/v2 WebSockets. A
+  per-session metadata mutex resolves destinations; payloads travel directly to
+  independent destination Writers, never through the session map. Writers flush
+  each message before acknowledging its source. Source reads pause during
+  delivery while the destination Writer remains available for reverse traffic.
+  Expiring a queued or emitted write closes that whole destination. RAII owns
+  connection and weighted-byte leases; control queues reserve bounded bytes.
+- Real-socket coverage: both opcodes/directions; v1 replacement; v2 initial sync,
+  duplicate client fanout, replacement-data survival, last-client/data detach,
+  pre-attachment sends, ordered final messages before Close, legacy control ping,
+  invalid client handshake rejection, capacity rejection/recovery, weighted
+  ingress exhaustion/recovery, and explicit oversized-control close `1009`.
+  Sixteen 1 MiB fanout messages force an unread peer to `1013` while a healthy
+  peer receives in order and sends reverse traffic through the same daemon.
+- Binary coverage: invalid environment exits before listening; a real child
+  process returns `/health`, `/ready`, `/metrics` and exits successfully on
+  SIGTERM. Rust configuration rejects unimplemented distributed and watermark
+  modes instead of silently starting an incompatible single-node service.
+- Validation: 19 tests passed, warnings-as-errors Clippy passed, and an optimized
+  Linux executable built. CI now includes the Rust gates alongside the retained
+  Elixir gates. Distributed ownership, memory pressure, full metric parity,
+  idle HTTP limits, Linux packaging and performance comparisons remain pending.
