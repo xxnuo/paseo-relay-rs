@@ -1,0 +1,43 @@
+{
+  "implementation": "rust",
+  "image": "paseo-relay-rust:nginx",
+  "image_id": "sha256:922f573dcb1163641ba41e9fba606e503113b31ca4d78a351f34918e8b37ffcd",
+  "processes": "PID                 PPID                COMMAND             COMMAND\n409803              409777              entrypoint.sh       /bin/sh /entrypoint.sh\n409869              409803              paseo-relay         /paseo-relay\n409879              409803              nginx               nginx: master process nginx -c /tmp/nginx.conf -g daemon off;\n409881              409879              nginx               nginx: worker process\n409882              409879              nginx               nginx: worker process\n410249              409803              sleep               sleep 0.1",
+  "limits": {
+    "cpus": 2,
+    "memory_bytes": 1073741824,
+    "worker_threads": 2
+  },
+  "load": {
+    "corruption": 0,
+    "forwarded_frames": 84232,
+    "frames_per_second": 8412.967935548697,
+    "latency_us": {
+      "max": 47993,
+      "p50": 5457,
+      "p95": 32456,
+      "p99": 37953
+    },
+    "loss": 0,
+    "measured_seconds": 10.012162253,
+    "ordering_errors": 0,
+    "pairs": 64,
+    "payload_bytes": 65536,
+    "payload_bytes_per_second": 551352266.6241194,
+    "protocol": 2,
+    "requested_seconds": 10,
+    "setup_seconds": 0.30919777
+  },
+  "cgroup_before": {
+    "cpu.stat": "usage_usec 55187\nuser_usec 24280\nsystem_usec 30906\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 1\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "62885888\n",
+    "memory.peak": "62902272\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  },
+  "cgroup_after": {
+    "cpu.stat": "usage_usec 20673602\nuser_usec 7358246\nsystem_usec 13315356\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 104\nnr_throttled 102\nthrottled_usec 7155762\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "64016384\n",
+    "memory.peak": "107315200\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  }
+}

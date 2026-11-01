@@ -1,0 +1,260 @@
+[
+  {
+    "implementation": "elixir",
+    "image": "paseo-relay-elixir-baseline:5f4b763",
+    "image_id": "sha256:d9b58c7f4c0b8a804cf8c291da0b2a6265df4af730d0c66547341941ce410a78",
+    "processes": "PID                 PPID                COMMAND             COMMAND\n403201              403175              beam.smp            /app/erts-17.0.2/bin/beam.smp -S 2:2 -A 2 -- -root /app -bindir /app/erts-17.0.2/bin -progname erl -- -home /app -- -noshell -s elixir start_cli -mode embedded -setcookie 5SADMYNFCZTZSP5SWQRYBQI3NYIQRO32Y5AWKGVYWR4OKZKSXE3A==== -sname paseo_relay -config /app/releases/0.1.0/sys -boot /app/releases/0.1.0/start -boot_var RELEASE_LIB /app/lib -- -- -- -extra --no-halt\n403309              403201              epmd                /app/erts-17.0.2/bin/epmd -daemon\n403315              403201              erl_child_setup     erl_child_setup 65536",
+    "limits": {
+      "cpus": 2,
+      "memory_bytes": 1073741824,
+      "worker_threads": 2
+    },
+    "load": {
+      "corruption": 0,
+      "forwarded_frames": 371360,
+      "frames_per_second": 37113.39160925402,
+      "latency_us": {
+        "max": 6273,
+        "p50": 1688,
+        "p95": 2326,
+        "p99": 2833
+      },
+      "loss": 0,
+      "measured_seconds": 10.006091707,
+      "ordering_errors": 0,
+      "pairs": 64,
+      "payload_bytes": 1024,
+      "payload_bytes_per_second": 38004113.00787611,
+      "protocol": 2,
+      "requested_seconds": 10,
+      "setup_seconds": 0.11780338
+    },
+    "cgroup_before": {
+      "cpu.stat": "usage_usec 928556\nuser_usec 848953\nsystem_usec 79602\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 6\nnr_throttled 1\nthrottled_usec 895\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "119427072\n",
+      "memory.peak": "120102912\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    },
+    "cgroup_after": {
+      "cpu.stat": "usage_usec 20869922\nuser_usec 17957162\nsystem_usec 2912759\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 108\nnr_throttled 5\nthrottled_usec 3397\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "151752704\n",
+      "memory.peak": "154353664\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    }
+  },
+  {
+    "implementation": "rust",
+    "image": "paseo-relay-rust:nginx",
+    "image_id": "sha256:922f573dcb1163641ba41e9fba606e503113b31ca4d78a351f34918e8b37ffcd",
+    "processes": "PID                 PPID                COMMAND             COMMAND\n403711              403685              entrypoint.sh       /bin/sh /entrypoint.sh\n403783              403711              paseo-relay         /paseo-relay\n403788              403711              nginx               nginx: master process nginx -c /tmp/nginx.conf -g daemon off;\n403796              403788              nginx               nginx: worker process\n403797              403788              nginx               nginx: worker process\n404149              403711              sleep               sleep 0.1",
+    "limits": {
+      "cpus": 2,
+      "memory_bytes": 1073741824,
+      "worker_threads": 2
+    },
+    "load": {
+      "corruption": 0,
+      "forwarded_frames": 515590,
+      "frames_per_second": 51545.9905909377,
+      "latency_us": {
+        "max": 33177,
+        "p50": 842,
+        "p95": 2054,
+        "p99": 23264
+      },
+      "loss": 0,
+      "measured_seconds": 10.002523845,
+      "ordering_errors": 0,
+      "pairs": 64,
+      "payload_bytes": 1024,
+      "payload_bytes_per_second": 52783094.3651202,
+      "protocol": 2,
+      "requested_seconds": 10,
+      "setup_seconds": 0.126504539
+    },
+    "cgroup_before": {
+      "cpu.stat": "usage_usec 51422\nuser_usec 23023\nsystem_usec 28399\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 1\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "62820352\n",
+      "memory.peak": "62836736\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    },
+    "cgroup_after": {
+      "cpu.stat": "usage_usec 20271577\nuser_usec 11149262\nsystem_usec 9122315\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 102\nnr_throttled 100\nthrottled_usec 5591813\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "64049152\n",
+      "memory.peak": "89051136\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    }
+  },
+  {
+    "implementation": "rust",
+    "image": "paseo-relay-rust:nginx",
+    "image_id": "sha256:922f573dcb1163641ba41e9fba606e503113b31ca4d78a351f34918e8b37ffcd",
+    "processes": "PID                 PPID                COMMAND             COMMAND\n404299              404275              entrypoint.sh       /bin/sh /entrypoint.sh\n404370              404299              paseo-relay         /paseo-relay\n404375              404299              nginx               nginx: master process nginx -c /tmp/nginx.conf -g daemon off;\n404383              404375              nginx               nginx: worker process\n404384              404375              nginx               nginx: worker process\n404730              404299              sleep               sleep 0.1",
+    "limits": {
+      "cpus": 2,
+      "memory_bytes": 1073741824,
+      "worker_threads": 2
+    },
+    "load": {
+      "corruption": 0,
+      "forwarded_frames": 527730,
+      "frames_per_second": 52753.712519976834,
+      "latency_us": {
+        "max": 31891,
+        "p50": 846,
+        "p95": 1853,
+        "p99": 24279
+      },
+      "loss": 0,
+      "measured_seconds": 10.003656137,
+      "ordering_errors": 0,
+      "pairs": 64,
+      "payload_bytes": 1024,
+      "payload_bytes_per_second": 54019801.62045628,
+      "protocol": 2,
+      "requested_seconds": 10,
+      "setup_seconds": 0.12336348
+    },
+    "cgroup_before": {
+      "cpu.stat": "usage_usec 52227\nuser_usec 21695\nsystem_usec 30532\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "62930944\n",
+      "memory.peak": "62951424\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    },
+    "cgroup_after": {
+      "cpu.stat": "usage_usec 20252792\nuser_usec 10925660\nsystem_usec 9327132\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 102\nnr_throttled 101\nthrottled_usec 6128700\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "64069632\n",
+      "memory.peak": "89436160\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    }
+  },
+  {
+    "implementation": "elixir",
+    "image": "paseo-relay-elixir-baseline:5f4b763",
+    "image_id": "sha256:d9b58c7f4c0b8a804cf8c291da0b2a6265df4af730d0c66547341941ce410a78",
+    "processes": "PID                 PPID                COMMAND             COMMAND\n404869              404845              beam.smp            /app/erts-17.0.2/bin/beam.smp -S 2:2 -A 2 -- -root /app -bindir /app/erts-17.0.2/bin -progname erl -- -home /app -- -noshell -s elixir start_cli -mode embedded -setcookie 5SADMYNFCZTZSP5SWQRYBQI3NYIQRO32Y5AWKGVYWR4OKZKSXE3A==== -sname paseo_relay -config /app/releases/0.1.0/sys -boot /app/releases/0.1.0/start -boot_var RELEASE_LIB /app/lib -- -- -- -extra --no-halt\n404993              404869              epmd                /app/erts-17.0.2/bin/epmd -daemon\n404998              404869              erl_child_setup     erl_child_setup 65536",
+    "limits": {
+      "cpus": 2,
+      "memory_bytes": 1073741824,
+      "worker_threads": 2
+    },
+    "load": {
+      "corruption": 0,
+      "forwarded_frames": 368502,
+      "frames_per_second": 36830.46369256848,
+      "latency_us": {
+        "max": 6105,
+        "p50": 1690,
+        "p95": 2394,
+        "p99": 3006
+      },
+      "loss": 0,
+      "measured_seconds": 10.005358691,
+      "ordering_errors": 0,
+      "pairs": 64,
+      "payload_bytes": 1024,
+      "payload_bytes_per_second": 37714394.821190126,
+      "protocol": 2,
+      "requested_seconds": 10,
+      "setup_seconds": 0.129594864
+    },
+    "cgroup_before": {
+      "cpu.stat": "usage_usec 931579\nuser_usec 829742\nsystem_usec 101836\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 6\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "122486784\n",
+      "memory.peak": "122486784\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    },
+    "cgroup_after": {
+      "cpu.stat": "usage_usec 20864144\nuser_usec 18046940\nsystem_usec 2817204\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 107\nnr_throttled 7\nthrottled_usec 3808\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "155590656\n",
+      "memory.peak": "158412800\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    }
+  },
+  {
+    "implementation": "elixir",
+    "image": "paseo-relay-elixir-baseline:5f4b763",
+    "image_id": "sha256:d9b58c7f4c0b8a804cf8c291da0b2a6265df4af730d0c66547341941ce410a78",
+    "processes": "PID                 PPID                COMMAND             COMMAND\n405476              405444              beam.smp            /app/erts-17.0.2/bin/beam.smp -S 2:2 -A 2 -- -root /app -bindir /app/erts-17.0.2/bin -progname erl -- -home /app -- -noshell -s elixir start_cli -mode embedded -setcookie 5SADMYNFCZTZSP5SWQRYBQI3NYIQRO32Y5AWKGVYWR4OKZKSXE3A==== -sname paseo_relay -config /app/releases/0.1.0/sys -boot /app/releases/0.1.0/start -boot_var RELEASE_LIB /app/lib -- -- -- -extra --no-halt\n405582              405476              epmd                /app/erts-17.0.2/bin/epmd -daemon\n405590              405476              erl_child_setup     erl_child_setup 65536",
+    "limits": {
+      "cpus": 2,
+      "memory_bytes": 1073741824,
+      "worker_threads": 2
+    },
+    "load": {
+      "corruption": 0,
+      "forwarded_frames": 366070,
+      "frames_per_second": 36587.670477573,
+      "latency_us": {
+        "max": 6038,
+        "p50": 1685,
+        "p95": 2490,
+        "p99": 3168
+      },
+      "loss": 0,
+      "measured_seconds": 10.00528307,
+      "ordering_errors": 0,
+      "pairs": 64,
+      "payload_bytes": 1024,
+      "payload_bytes_per_second": 37465774.569034755,
+      "protocol": 2,
+      "requested_seconds": 10,
+      "setup_seconds": 0.099399719
+    },
+    "cgroup_before": {
+      "cpu.stat": "usage_usec 909051\nuser_usec 812782\nsystem_usec 96268\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 6\nnr_throttled 2\nthrottled_usec 3176\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "121667584\n",
+      "memory.peak": "121774080\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    },
+    "cgroup_after": {
+      "cpu.stat": "usage_usec 20804079\nuser_usec 17915781\nsystem_usec 2888297\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 107\nnr_throttled 9\nthrottled_usec 11181\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "152948736\n",
+      "memory.peak": "163332096\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    }
+  },
+  {
+    "implementation": "rust",
+    "image": "paseo-relay-rust:nginx",
+    "image_id": "sha256:922f573dcb1163641ba41e9fba606e503113b31ca4d78a351f34918e8b37ffcd",
+    "processes": "PID                 PPID                COMMAND             COMMAND\n406421              406397              entrypoint.sh       /bin/sh /entrypoint.sh\n406491              406421              paseo-relay         /paseo-relay\n406496              406421              nginx               nginx: master process nginx -c /tmp/nginx.conf -g daemon off;\n406503              406496              nginx               nginx: worker process\n406504              406496              nginx               nginx: worker process\n406907              406421              sleep               sleep 0.1",
+    "limits": {
+      "cpus": 2,
+      "memory_bytes": 1073741824,
+      "worker_threads": 2
+    },
+    "load": {
+      "corruption": 0,
+      "forwarded_frames": 516472,
+      "frames_per_second": 51627.98011109938,
+      "latency_us": {
+        "max": 32392,
+        "p50": 857,
+        "p95": 1912,
+        "p99": 23942
+      },
+      "loss": 0,
+      "measured_seconds": 10.003722766,
+      "ordering_errors": 0,
+      "pairs": 64,
+      "payload_bytes": 1024,
+      "payload_bytes_per_second": 52867051.633765765,
+      "protocol": 2,
+      "requested_seconds": 10,
+      "setup_seconds": 0.139194191
+    },
+    "cgroup_before": {
+      "cpu.stat": "usage_usec 57667\nuser_usec 21786\nsystem_usec 35880\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 1\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "62525440\n",
+      "memory.peak": "62726144\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    },
+    "cgroup_after": {
+      "cpu.stat": "usage_usec 20244849\nuser_usec 10865908\nsystem_usec 9378941\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 103\nnr_throttled 101\nthrottled_usec 6089257\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "63893504\n",
+      "memory.peak": "89190400\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    }
+  }
+]

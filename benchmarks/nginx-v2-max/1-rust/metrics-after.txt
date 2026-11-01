@@ -1,0 +1,83 @@
+# HELP paseo_relay_ready ready.
+# TYPE paseo_relay_ready gauge
+paseo_relay_ready 1
+# HELP paseo_relay_draining draining.
+# TYPE paseo_relay_draining gauge
+paseo_relay_draining 0
+# HELP paseo_relay_active_websockets active websockets.
+# TYPE paseo_relay_active_websockets gauge
+paseo_relay_active_websockets 0
+# HELP paseo_relay_active_sessions active sessions.
+# TYPE paseo_relay_active_sessions gauge
+paseo_relay_active_sessions 1
+# HELP paseo_relay_cluster_nodes cluster nodes.
+# TYPE paseo_relay_cluster_nodes gauge
+paseo_relay_cluster_nodes 1
+# HELP paseo_relay_ingress_reserved_bytes ingress reserved bytes.
+# TYPE paseo_relay_ingress_reserved_bytes gauge
+paseo_relay_ingress_reserved_bytes 0
+# HELP paseo_relay_frames_forwarded_total frames forwarded total.
+# TYPE paseo_relay_frames_forwarded_total counter
+paseo_relay_frames_forwarded_total 70
+# HELP paseo_relay_bytes_forwarded_total bytes forwarded total.
+# TYPE paseo_relay_bytes_forwarded_total counter
+paseo_relay_bytes_forwarded_total 2348809260
+# HELP paseo_relay_connection_rejections_total connection rejections total.
+# TYPE paseo_relay_connection_rejections_total counter
+paseo_relay_connection_rejections_total 0
+# HELP paseo_relay_reroute_responses_total reroute responses total.
+# TYPE paseo_relay_reroute_responses_total counter
+paseo_relay_reroute_responses_total 0
+# HELP paseo_relay_slow_consumer_disconnects_total slow consumer disconnects total.
+# TYPE paseo_relay_slow_consumer_disconnects_total counter
+paseo_relay_slow_consumer_disconnects_total 0
+# HELP paseo_relay_delivery_timeouts_total delivery timeouts total.
+# TYPE paseo_relay_delivery_timeouts_total counter
+paseo_relay_delivery_timeouts_total 0
+# HELP paseo_relay_memory_pressure_disconnects_total memory pressure disconnects total.
+# TYPE paseo_relay_memory_pressure_disconnects_total counter
+paseo_relay_memory_pressure_disconnects_total 0
+# HELP paseo_relay_inflight_delivery_bytes inflight delivery bytes.
+# TYPE paseo_relay_inflight_delivery_bytes gauge
+paseo_relay_inflight_delivery_bytes 0
+# HELP paseo_relay_backpressured_sources backpressured sources.
+# TYPE paseo_relay_backpressured_sources gauge
+paseo_relay_backpressured_sources 0
+# HELP paseo_relay_max_frame_bytes max frame bytes.
+# TYPE paseo_relay_max_frame_bytes gauge
+paseo_relay_max_frame_bytes 33554418
+# HELP paseo_relay_handshake_accepted_total Client handshake frames accepted.
+# TYPE paseo_relay_handshake_accepted_total counter
+paseo_relay_handshake_accepted_total{routing_version="v1",type="hello"} 0
+paseo_relay_handshake_accepted_total{routing_version="v1",type="e2ee_hello"} 0
+paseo_relay_handshake_accepted_total{routing_version="v2",type="hello"} 0
+paseo_relay_handshake_accepted_total{routing_version="v2",type="e2ee_hello"} 0
+# HELP paseo_relay_handshake_rejected_total Client handshake frames rejected.
+# TYPE paseo_relay_handshake_rejected_total counter
+paseo_relay_handshake_rejected_total{routing_version="v1",type="hello"} 0
+paseo_relay_handshake_rejected_total{routing_version="v1",type="e2ee_hello"} 0
+paseo_relay_handshake_rejected_total{routing_version="v2",type="hello"} 0
+paseo_relay_handshake_rejected_total{routing_version="v2",type="e2ee_hello"} 0
+# HELP paseo_relay_frame_size_bytes WebSocket payload-size distribution.
+# TYPE paseo_relay_frame_size_bytes histogram
+paseo_relay_frame_size_bytes_bucket{le="1024"} 0
+paseo_relay_frame_size_bytes_bucket{le="65536"} 0
+paseo_relay_frame_size_bytes_bucket{le="1048576"} 0
+paseo_relay_frame_size_bytes_bucket{le="8388608"} 0
+paseo_relay_frame_size_bytes_bucket{le="33554418"} 70
+paseo_relay_frame_size_bytes_bucket{le="+Inf"} 70
+paseo_relay_frame_size_bytes_sum 2348809260
+paseo_relay_frame_size_bytes_count 70
+# HELP paseo_relay_delivery_wait_seconds Time a source waits for synchronous downstream delivery.
+# TYPE paseo_relay_delivery_wait_seconds histogram
+paseo_relay_delivery_wait_seconds_bucket{le="0.001"} 0
+paseo_relay_delivery_wait_seconds_bucket{le="0.01"} 0
+paseo_relay_delivery_wait_seconds_bucket{le="0.1"} 70
+paseo_relay_delivery_wait_seconds_bucket{le="1"} 70
+paseo_relay_delivery_wait_seconds_bucket{le="10"} 70
+paseo_relay_delivery_wait_seconds_bucket{le="+Inf"} 70
+paseo_relay_delivery_wait_seconds_sum 2.238005
+paseo_relay_delivery_wait_seconds_count 70
+# HELP paseo_relay_process_resident_memory_bytes process resident memory bytes.
+# TYPE paseo_relay_process_resident_memory_bytes gauge
+paseo_relay_process_resident_memory_bytes 1732608

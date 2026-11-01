@@ -1,0 +1,90 @@
+# HELP paseo_relay_ready Whether this node admits new relay work.
+# TYPE paseo_relay_ready gauge
+paseo_relay_ready 1
+# HELP paseo_relay_draining Whether this node is draining.
+# TYPE paseo_relay_draining gauge
+paseo_relay_draining 0
+# HELP paseo_relay_active_websockets Open WebSocket connections on this node.
+# TYPE paseo_relay_active_websockets gauge
+paseo_relay_active_websockets 0
+# HELP paseo_relay_active_sessions Relay sessions owned by this node.
+# TYPE paseo_relay_active_sessions gauge
+paseo_relay_active_sessions 0
+# HELP paseo_relay_reroute_responses_total WebSocket upgrades rerouted to another owner.
+# TYPE paseo_relay_reroute_responses_total counter
+paseo_relay_reroute_responses_total 0
+# HELP paseo_relay_connection_rejections_total WebSocket upgrades rejected at configured capacity or during memory pressure.
+# TYPE paseo_relay_connection_rejections_total counter
+paseo_relay_connection_rejections_total 0
+# HELP paseo_relay_frames_forwarded_total WebSocket frames forwarded by this node.
+# TYPE paseo_relay_frames_forwarded_total counter
+paseo_relay_frames_forwarded_total 0
+# HELP paseo_relay_bytes_forwarded_total WebSocket payload bytes forwarded by this node.
+# TYPE paseo_relay_bytes_forwarded_total counter
+paseo_relay_bytes_forwarded_total 0
+# HELP paseo_relay_ingress_reserved_bytes Weighted ingress bytes admitted on this node.
+# TYPE paseo_relay_ingress_reserved_bytes gauge
+paseo_relay_ingress_reserved_bytes 0
+# HELP paseo_relay_inflight_delivery_bytes Payload bytes currently held by synchronous downstream delivery.
+# TYPE paseo_relay_inflight_delivery_bytes gauge
+paseo_relay_inflight_delivery_bytes 0
+# HELP paseo_relay_backpressured_sources Source WebSockets currently waiting for downstream delivery.
+# TYPE paseo_relay_backpressured_sources gauge
+paseo_relay_backpressured_sources 0
+# HELP paseo_relay_slow_consumer_disconnects_total Destinations disconnected after exceeding a delivery deadline.
+# TYPE paseo_relay_slow_consumer_disconnects_total counter
+paseo_relay_slow_consumer_disconnects_total 0
+# HELP paseo_relay_delivery_timeouts_total Synchronous downstream deliveries that exceeded their deadline.
+# TYPE paseo_relay_delivery_timeouts_total counter
+paseo_relay_delivery_timeouts_total 0
+# HELP paseo_relay_memory_pressure_disconnects_total WebSockets closed by node memory-pressure recovery.
+# TYPE paseo_relay_memory_pressure_disconnects_total counter
+paseo_relay_memory_pressure_disconnects_total 0
+# HELP paseo_relay_max_frame_bytes Largest WebSocket frame payload observed since node start.
+# TYPE paseo_relay_max_frame_bytes gauge
+paseo_relay_max_frame_bytes 0
+# HELP paseo_relay_beam_total_memory_bytes Total memory allocated by BEAM.
+# TYPE paseo_relay_beam_total_memory_bytes gauge
+paseo_relay_beam_total_memory_bytes 69236888
+# HELP paseo_relay_beam_process_memory_bytes Memory allocated by BEAM processes.
+# TYPE paseo_relay_beam_process_memory_bytes gauge
+paseo_relay_beam_process_memory_bytes 16638008
+# HELP paseo_relay_beam_binary_memory_bytes Memory allocated for BEAM binaries.
+# TYPE paseo_relay_beam_binary_memory_bytes gauge
+paseo_relay_beam_binary_memory_bytes 174528
+# HELP paseo_relay_beam_ets_memory_bytes Memory allocated for BEAM ETS tables.
+# TYPE paseo_relay_beam_ets_memory_bytes gauge
+paseo_relay_beam_ets_memory_bytes 1166256
+# HELP paseo_relay_handshake_accepted_total Client E2EE handshake frames accepted by the handshake input validator.
+# TYPE paseo_relay_handshake_accepted_total counter
+paseo_relay_handshake_accepted_total{routing_version="v1",type="hello"} 0
+paseo_relay_handshake_accepted_total{routing_version="v1",type="e2ee_hello"} 0
+paseo_relay_handshake_accepted_total{routing_version="v2",type="hello"} 0
+paseo_relay_handshake_accepted_total{routing_version="v2",type="e2ee_hello"} 0
+# HELP paseo_relay_handshake_rejected_total Client E2EE handshake frames rejected by the handshake input validator.
+# TYPE paseo_relay_handshake_rejected_total counter
+paseo_relay_handshake_rejected_total{routing_version="v1",type="hello"} 0
+paseo_relay_handshake_rejected_total{routing_version="v1",type="e2ee_hello"} 0
+paseo_relay_handshake_rejected_total{routing_version="v2",type="hello"} 0
+paseo_relay_handshake_rejected_total{routing_version="v2",type="e2ee_hello"} 0
+# HELP paseo_relay_delivery_wait_seconds Time a source waits for synchronous downstream delivery.
+# TYPE paseo_relay_delivery_wait_seconds histogram
+paseo_relay_delivery_wait_seconds_bucket{le="0.001"} 0
+paseo_relay_delivery_wait_seconds_bucket{le="0.01"} 0
+paseo_relay_delivery_wait_seconds_bucket{le="0.1"} 0
+paseo_relay_delivery_wait_seconds_bucket{le="1"} 0
+paseo_relay_delivery_wait_seconds_bucket{le="10"} 0
+paseo_relay_delivery_wait_seconds_bucket{le="+Inf"} 0
+paseo_relay_delivery_wait_seconds_sum 0.0
+paseo_relay_delivery_wait_seconds_count 0
+# HELP paseo_relay_frame_size_bytes WebSocket payload-size distribution.
+# TYPE paseo_relay_frame_size_bytes histogram
+paseo_relay_frame_size_bytes_bucket{le="1024"} 0
+paseo_relay_frame_size_bytes_bucket{le="65536"} 0
+paseo_relay_frame_size_bytes_bucket{le="1048576"} 0
+paseo_relay_frame_size_bytes_bucket{le="8388608"} 0
+paseo_relay_frame_size_bytes_bucket{le="33554418"} 0
+paseo_relay_frame_size_bytes_bucket{le="+Inf"} 0
+paseo_relay_frame_size_bytes_sum 0
+paseo_relay_frame_size_bytes_count 0
+

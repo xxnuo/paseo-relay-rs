@@ -1,0 +1,43 @@
+{
+  "implementation": "rust",
+  "image": "paseo-relay-rust:nginx",
+  "image_id": "sha256:922f573dcb1163641ba41e9fba606e503113b31ca4d78a351f34918e8b37ffcd",
+  "processes": "PID                 PPID                COMMAND             COMMAND\n400682              400659              entrypoint.sh       /bin/sh /entrypoint.sh\n400747              400682              paseo-relay         /paseo-relay\n400757              400682              nginx               nginx: master process nginx -c /tmp/nginx.conf -g daemon off;\n400763              400757              nginx               nginx: worker process\n400764              400757              nginx               nginx: worker process\n401123              400682              sleep               sleep 0.1",
+  "limits": {
+    "cpus": 2,
+    "memory_bytes": 1073741824,
+    "worker_threads": 2
+  },
+  "load": {
+    "corruption": 0,
+    "forwarded_frames": 332328,
+    "frames_per_second": 33232.66827899601,
+    "latency_us": {
+      "max": 1148,
+      "p50": 28,
+      "p95": 42,
+      "p99": 54
+    },
+    "loss": 0,
+    "measured_seconds": 10.000039636,
+    "ordering_errors": 0,
+    "pairs": 1,
+    "payload_bytes": 1024,
+    "payload_bytes_per_second": 34030252.317691915,
+    "protocol": 2,
+    "requested_seconds": 10,
+    "setup_seconds": 0.002955866
+  },
+  "cgroup_before": {
+    "cpu.stat": "usage_usec 52368\nuser_usec 18891\nsystem_usec 33476\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 1\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "62574592\n",
+    "memory.peak": "62595072\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  },
+  "cgroup_after": {
+    "cpu.stat": "usage_usec 5011135\nuser_usec 2018161\nsystem_usec 2992974\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 101\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "63459328\n",
+    "memory.peak": "64204800\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  }
+}

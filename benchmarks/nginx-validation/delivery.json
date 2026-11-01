@@ -1,0 +1,19 @@
+{
+  "source_commit": "a5df51343c18c10c5df344f46220f9a23e587e5b",
+  "runtime_image_id": "sha256:922f573dcb1163641ba41e9fba606e503113b31ca4d78a351f34918e8b37ffcd",
+  "nginx_version": "1.30.6",
+  "runtime_base": "nginx:stable-alpine@sha256:0e52bd054126cdc040b1276c0af347aeb02a41b9cfe305d6094767ac30e97949",
+  "binary_sha256": "928ec53dc4c7c753b2d103d2a8299fd734f93f21b983ea649870f422607f68f5",
+  "bench_binary_sha256": "ac3c947f5af88766eb41c0f8f5b39beb508d7cea4633ef8bf3f0363771a6cbaf",
+  "gates": {
+    "Docker-only fmt_clippy_native_example_tests": "passed: 49 tests",
+    "final_image_tests": "passed: 3 tests",
+    "original_Docker_image_build": "passed",
+    "comparative_runs": "passed: 30 runs",
+    "source_fingerprint_verification": "passed",
+    "nginx_process_inventory": "passed: master and two workers in all Rust runs",
+    "oom_events": 0,
+    "local_registry_publication": "push, digest pull, ready and graceful stop passed"
+  },
+  "remote_publication": "not performed; GHCR Docker publishing workflow configured"
+}

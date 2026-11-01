@@ -1,0 +1,43 @@
+{
+  "implementation": "elixir",
+  "image": "paseo-relay-elixir-baseline:5f4b763",
+  "image_id": "sha256:d9b58c7f4c0b8a804cf8c291da0b2a6265df4af730d0c66547341941ce410a78",
+  "processes": "PID                 PPID                COMMAND             COMMAND\n408822              408797              beam.smp            /app/erts-17.0.2/bin/beam.smp -S 2:2 -A 2 -- -root /app -bindir /app/erts-17.0.2/bin -progname erl -- -home /app -- -noshell -s elixir start_cli -mode embedded -setcookie 5SADMYNFCZTZSP5SWQRYBQI3NYIQRO32Y5AWKGVYWR4OKZKSXE3A==== -sname paseo_relay -config /app/releases/0.1.0/sys -boot /app/releases/0.1.0/start -boot_var RELEASE_LIB /app/lib -- -- -- -extra --no-halt\n408931              408822              epmd                /app/erts-17.0.2/bin/epmd -daemon\n408936              408822              erl_child_setup     erl_child_setup 65536",
+  "limits": {
+    "cpus": 2,
+    "memory_bytes": 1073741824,
+    "worker_threads": 2
+  },
+  "load": {
+    "corruption": 0,
+    "forwarded_frames": 98730,
+    "frames_per_second": 9863.426598583465,
+    "latency_us": {
+      "max": 27843,
+      "p50": 6512,
+      "p95": 9192,
+      "p99": 10928
+    },
+    "loss": 0,
+    "measured_seconds": 10.009705959,
+    "ordering_errors": 0,
+    "pairs": 64,
+    "payload_bytes": 65536,
+    "payload_bytes_per_second": 646409525.5647659,
+    "protocol": 2,
+    "requested_seconds": 10,
+    "setup_seconds": 0.316001681
+  },
+  "cgroup_before": {
+    "cpu.stat": "usage_usec 879617\nuser_usec 783523\nsystem_usec 96093\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 5\nnr_throttled 1\nthrottled_usec 44337\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "121073664\n",
+    "memory.peak": "121495552\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  },
+  "cgroup_after": {
+    "cpu.stat": "usage_usec 20884396\nuser_usec 15815515\nsystem_usec 5068881\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 109\nnr_throttled 1\nthrottled_usec 44337\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "172285952\n",
+    "memory.peak": "243658752\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  }
+}

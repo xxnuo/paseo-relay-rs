@@ -219,6 +219,56 @@ Pass `--bench rust/target/docker/relay_bench` to use that Docker-built client in
 every comparative run. Both implementations share the same total CPU/memory
 quota; the Rust container includes the two Nginx workers in that quota.
 
+## Original Docker versus Rust + Nginx Docker
+
+The Docker-only build at `a5df513` was compared with the original Elixir image
+rebuilt from the unchanged `5f4b763` source/Dockerfile. The same Docker-built
+static load client checked both implementations. Each fresh container had a
+2-CPU quota and 1 GiB memory limit; Elixir and Tokio each used two runtime
+workers. Rust's quota and memory measurements include its Nginx master, two
+Nginx workers and entrypoint. The external load client used four workers.
+
+These are loopback Docker port mappings, closed-loop bidirectional exchanges,
+20 warmup exchanges per pair, three runs per implementation with alternating
+order, and 10 measured seconds per run (three for the maximum payload).
+Latency is from sending a frame to receipt at the other endpoint. The table
+reports medians; maximum-message runs contain only a few dozen measured frames,
+so their p99 is particularly sensitive to scheduling.
+
+| Workload | Original frames/s | Rust + Nginx frames/s | Throughput ratio | p99 ms, original / Rust + Nginx | Peak container MiB, original / Rust + Nginx |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| v2, 1 pair, 1 KiB | 23,943 | 33,016 | 1.38 | 0.083 / 0.054 | 115.6 / 61.2 |
+| v2, 64 pairs, 1 KiB | 36,830 | 51,628 | 1.40 | 3.006 / 23.942 | 151.1 / 85.1 |
+| v2, 64 pairs, 64 KiB | 10,061 | 8,401 | 0.84 | 10.636 / 38.355 | 231.9 / 102.3 |
+| v1, 64 pairs, 1 KiB | 38,017 | 54,181 | 1.43 | 2.741 / 23.421 | 150.1 / 85.3 |
+| v2, 1 pair, 32 MiB − 14 bytes | 10.5 | 9.8 | 0.93 | 102.804 / 128.201 | 563.7 / 194.0 |
+
+For these workloads, small-message throughput is 38–43% higher, while 64 KiB
+throughput is 16.5% lower and maximum-message throughput is 6.6% lower. Peak
+container memory is 43–66% lower. Concurrent p99 is substantially worse with
+Nginx. CPU quota throttling is directly recorded: for v2 64-pair 1 KiB,
+Rust + Nginx has a median 101 throttled periods out of 102 observed periods.
+This coincides with the latency regression; it is not proof that quota
+throttling alone explains every difference. No CPU quota was increased to hide
+proxy overhead. This image is not a universal performance improvement.
+
+All 30 runs passed exact payload/order checks, matching server frame/byte
+counters including warmup, final socket/ingress cleanup and zero OOM events.
+Every Rust process inventory confirms the relay, Nginx master and two workers.
+[Summary and CPU observations](benchmarks/nginx-summary.json) link the raw load,
+metrics and cgroup records. Source/image/load-client fingerprints were verified
+against the frozen checkout; `source_dirty` is false in every dataset. WAN,
+open-loop capacity, cluster scaling and long-duration reliability were not
+measured. The direct-Rust results below are historical and exclude
+Nginx, so they must not be substituted for this table.
+
+Docker publication was also exercised with a temporary local registry: push,
+pull by immutable digest, Nginx-backed readiness and graceful stop all passed.
+[Publication evidence](benchmarks/nginx-validation/publication.json) records the
+digest and image ID. No remote registry or Git push was performed; the existing
+GHCR workflow is configured to publish the same default Dockerfile after both
+reference and Rust gates pass.
+
 ## Historical direct-Rust performance comparison
 
 The complete Rust implementation at `90e98b0` and retained Elixir baseline
@@ -254,6 +304,3 @@ capacity, WAN latency, cluster-gossip scaling or long-duration production
 reliability. The private cluster is functionally tested separately. Earlier
 pre-cluster results remain in `benchmarks/2026-11-01-summary.json` as historical
 evidence and are not the basis of this table.
-
-The table above predates the Nginx packaging. A fresh original-Docker versus
-Rust + Nginx comparison is required before drawing conclusions for that image.

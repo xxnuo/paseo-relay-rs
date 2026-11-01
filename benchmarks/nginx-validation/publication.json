@@ -1,0 +1,11 @@
+{
+  "scope": "temporary local HTTP registry only; no GHCR or Git push",
+  "source_commit": "a5df51343c18c10c5df344f46220f9a23e587e5b",
+  "registry_image_id": "sha256:d4032d4cc323c1731c707931ecada07a53076eac38e3b61ae57533f170f2c6c3",
+  "published_digest": "sha256:922f573dcb1163641ba41e9fba606e503113b31ca4d78a351f34918e8b37ffcd",
+  "runtime_image_id": "sha256:922f573dcb1163641ba41e9fba606e503113b31ca4d78a351f34918e8b37ffcd",
+  "push": "passed",
+  "pull_by_digest": "passed",
+  "nginx_ready_response": "passed",
+  "graceful_stop_exit_code": 0
+}

@@ -1026,3 +1026,31 @@
   Linux amd64 static-PIE executables. Original Dockerfile.elixir rebuilt
   successfully and its reference application sources remain unchanged.
   benchmarks/nginx-validation retains red/green and Docker build/gate logs.
+
+## Rust + Nginx: final comparative and publication acceptance
+
+- Frozen source a5df513, its Docker-built static load client and original
+  Dockerfile.elixir rebuilt from unchanged 5f4b763 reference sources were used
+  for 30 alternating runs: v1/v2 64-pair 1 KiB, v2 single-pair 1 KiB, v2
+  64-pair 64 KiB and v2 single-pair 33554418-byte payloads. Both complete
+  containers had the same 2-CPU/1-GiB quota; all proxy processes count toward
+  Rust's quota. No compilation or concurrent unrelated test load was run.
+- All runs passed payload/order, emitted counters including warmup, socket and
+  ingress cleanup, and zero OOM events. All five metadata records have
+  source_dirty=false and source/load-client hashes verified against a5df513;
+  image IDs match tested images and all Rust inventories include Nginx.
+- benchmarks/nginx-summary.json contains exact medians and CPU observations.
+  Small-message throughput improves 38–43%; 64 KiB throughput falls 16.5% and
+  near-limit throughput falls 6.6%. Peak memory falls 43–66%; concurrent p99
+  worsens substantially. For v2 64-pair 1 KiB, Rust + Nginx records a median
+  101/102 CPU periods throttled. README records these tradeoffs without
+  generalizing historical direct-Rust results to the proxy image.
+- Original sources and manifests still match 5f4b763; Dockerfile.elixir's SHA256
+  equals that baseline's original Dockerfile. origin/main remains the baseline
+  after fetch. The existing 106-test reference evidence therefore retains the
+  same scope; this iteration rebuilt its actual Docker image for comparison.
+- Docker-only formatting/Clippy + 49 native/example + 3 final-image tests pass.
+  Local registry push/pull-by-digest, Nginx-backed ready and clean stop are
+  verified separately in benchmarks/nginx-validation/publication.json.
+  Remote GHCR/Git publication was not performed; the CI Docker publishing
+  path builds the same default Rust + Nginx runtime.

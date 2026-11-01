@@ -1,0 +1,147 @@
+[
+  {
+    "dataset": "benchmarks/nginx-v2-single-1k",
+    "workload": {
+      "pairs": 1,
+      "seconds": 10,
+      "payload_bytes": 1024,
+      "protocol": "v2"
+    },
+    "implementations": {
+      "elixir": {
+        "image_id": "sha256:d9b58c7f4c0b8a804cf8c291da0b2a6265df4af730d0c66547341941ce410a78",
+        "median_frames_per_second": 23942.873876123285,
+        "median_p99_us": 83,
+        "median_cgroup_peak_bytes": 121253888,
+        "median_cpu_throttled_periods": 0,
+        "median_cpu_periods": 100
+      },
+      "rust": {
+        "image_id": "sha256:922f573dcb1163641ba41e9fba606e503113b31ca4d78a351f34918e8b37ffcd",
+        "median_frames_per_second": 33015.83500666614,
+        "median_p99_us": 54,
+        "median_cgroup_peak_bytes": 64204800,
+        "median_cpu_throttled_periods": 0,
+        "median_cpu_periods": 100
+      }
+    },
+    "rust_nginx_to_elixir_throughput_ratio": 1.378942025818828,
+    "rust_nginx_to_elixir_peak_memory_ratio": 0.5295071445461609
+  },
+  {
+    "dataset": "benchmarks/nginx-v2-64-1k",
+    "workload": {
+      "pairs": 64,
+      "seconds": 10,
+      "payload_bytes": 1024,
+      "protocol": "v2"
+    },
+    "implementations": {
+      "elixir": {
+        "image_id": "sha256:d9b58c7f4c0b8a804cf8c291da0b2a6265df4af730d0c66547341941ce410a78",
+        "median_frames_per_second": 36830.46369256848,
+        "median_p99_us": 3006,
+        "median_cgroup_peak_bytes": 158412800,
+        "median_cpu_throttled_periods": 7,
+        "median_cpu_periods": 101
+      },
+      "rust": {
+        "image_id": "sha256:922f573dcb1163641ba41e9fba606e503113b31ca4d78a351f34918e8b37ffcd",
+        "median_frames_per_second": 51627.98011109938,
+        "median_p99_us": 23942,
+        "median_cgroup_peak_bytes": 89190400,
+        "median_cpu_throttled_periods": 101,
+        "median_cpu_periods": 102
+      }
+    },
+    "rust_nginx_to_elixir_throughput_ratio": 1.4017738289164328,
+    "rust_nginx_to_elixir_peak_memory_ratio": 0.5630252100840336
+  },
+  {
+    "dataset": "benchmarks/nginx-v2-64-64k",
+    "workload": {
+      "pairs": 64,
+      "seconds": 10,
+      "payload_bytes": 65536,
+      "protocol": "v2"
+    },
+    "implementations": {
+      "elixir": {
+        "image_id": "sha256:d9b58c7f4c0b8a804cf8c291da0b2a6265df4af730d0c66547341941ce410a78",
+        "median_frames_per_second": 10060.878704745315,
+        "median_p99_us": 10636,
+        "median_cgroup_peak_bytes": 243167232,
+        "median_cpu_throttled_periods": 0,
+        "median_cpu_periods": 103
+      },
+      "rust": {
+        "image_id": "sha256:922f573dcb1163641ba41e9fba606e503113b31ca4d78a351f34918e8b37ffcd",
+        "median_frames_per_second": 8401.43355786053,
+        "median_p99_us": 38355,
+        "median_cgroup_peak_bytes": 107315200,
+        "median_cpu_throttled_periods": 102,
+        "median_cpu_periods": 103
+      }
+    },
+    "rust_nginx_to_elixir_throughput_ratio": 0.8350596209750455,
+    "rust_nginx_to_elixir_peak_memory_ratio": 0.44132262031094716
+  },
+  {
+    "dataset": "benchmarks/nginx-v1-64-1k",
+    "workload": {
+      "pairs": 64,
+      "seconds": 10,
+      "payload_bytes": 1024,
+      "protocol": "v2"
+    },
+    "implementations": {
+      "elixir": {
+        "image_id": "sha256:d9b58c7f4c0b8a804cf8c291da0b2a6265df4af730d0c66547341941ce410a78",
+        "median_frames_per_second": 38017.47820721057,
+        "median_p99_us": 2741,
+        "median_cgroup_peak_bytes": 157405184,
+        "median_cpu_throttled_periods": 10,
+        "median_cpu_periods": 101
+      },
+      "rust": {
+        "image_id": "sha256:922f573dcb1163641ba41e9fba606e503113b31ca4d78a351f34918e8b37ffcd",
+        "median_frames_per_second": 54181.30274513724,
+        "median_p99_us": 23421,
+        "median_cgroup_peak_bytes": 89407488,
+        "median_cpu_throttled_periods": 100,
+        "median_cpu_periods": 101
+      }
+    },
+    "rust_nginx_to_elixir_throughput_ratio": 1.4251682462952253,
+    "rust_nginx_to_elixir_peak_memory_ratio": 0.5680085352207968
+  },
+  {
+    "dataset": "benchmarks/nginx-v2-max",
+    "workload": {
+      "pairs": 1,
+      "seconds": 3,
+      "payload_bytes": 33554418,
+      "protocol": "v2"
+    },
+    "implementations": {
+      "elixir": {
+        "image_id": "sha256:d9b58c7f4c0b8a804cf8c291da0b2a6265df4af730d0c66547341941ce410a78",
+        "median_frames_per_second": 10.459655968461465,
+        "median_p99_us": 102804,
+        "median_cgroup_peak_bytes": 591073280,
+        "median_cpu_throttled_periods": 0,
+        "median_cpu_periods": 68
+      },
+      "rust": {
+        "image_id": "sha256:922f573dcb1163641ba41e9fba606e503113b31ca4d78a351f34918e8b37ffcd",
+        "median_frames_per_second": 9.772594647808821,
+        "median_p99_us": 128201,
+        "median_cgroup_peak_bytes": 203448320,
+        "median_cpu_throttled_periods": 0,
+        "median_cpu_periods": 72
+      }
+    },
+    "rust_nginx_to_elixir_throughput_ratio": 0.9343132008620255,
+    "rust_nginx_to_elixir_peak_memory_ratio": 0.34420151761893214
+  }
+]

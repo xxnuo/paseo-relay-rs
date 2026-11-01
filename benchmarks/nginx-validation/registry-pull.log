@@ -1,0 +1,20 @@
+3: Pulling from library/registry
+b6d795448ea0: Pulling fs layer
+9cf9c5d068e4: Pulling fs layer
+7b229517ed22: Pulling fs layer
+7a0bafd2eac6: Pulling fs layer
+30513d5b3b2d: Pulling fs layer
+7b229517ed22: Already exists
+b6d795448ea0: Download complete
+7a0bafd2eac6: Download complete
+9cf9c5d068e4: Download complete
+9cf9c5d068e4: Pull complete
+30513d5b3b2d: Download complete
+5b07f1fa18b6: Download complete
+828a4dc4d650: Download complete
+30513d5b3b2d: Pull complete
+b6d795448ea0: Pull complete
+7a0bafd2eac6: Pull complete
+Digest: sha256:d4032d4cc323c1731c707931ecada07a53076eac38e3b61ae57533f170f2c6c3
+Status: Downloaded newer image for registry:3
+docker.io/library/registry:3
