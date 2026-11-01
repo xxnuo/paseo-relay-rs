@@ -1,0 +1,1 @@
+{"corruption":0,"forwarded_frames":470994,"frames_per_second":47099.33799843146,"latency_us":{"max":1335,"p50":20,"p95":27,"p99":34},"loss":0,"measured_seconds":10.000013164,"ordering_errors":0,"pairs":1,"payload_bytes":1024,"payload_bytes_per_second":48229722.110393815,"protocol":2,"requested_seconds":10,"setup_seconds":0.001588869}

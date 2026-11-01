@@ -775,3 +775,29 @@
 - Gates: application tests, explicit Docker integration, warnings-as-errors
   Clippy and the static release build passed. Distributed ownership and remaining
   metric parity are still outstanding; these checks do not prove them complete.
+
+## Rust rewrite: reproducible comparative load evidence
+
+- One compiled Rust load generator drives both real container implementations.
+  It validates every text-independent binary payload including sequence and
+  direction, bounds waits, measures steady-state frame delivery latency, closes
+  all sockets and emits a structured result. A small nearest-rank percentile
+  test covers one-sample and boundary behavior.
+- The Python driver creates only its own fresh containers, alternates run order,
+  applies equal CPU/memory/worker budgets, retains exact image IDs, load stdout
+  and stderr, before/after public metrics and Linux cgroup counters, and removes
+  each owned container in `finally`. A run passes only if server frame/byte
+  counter differences equal measured messages plus warmup and all socket/ingress
+  gauges return to zero. Later invocations also capture source/binary hashes.
+- Evidence: three repetitions each of one pair at 1 KiB, 64 pairs at 1 KiB and
+  64 pairs at 64 KiB, ten measured seconds per repetition, v2 in both directions.
+  All 18 real load runs passed, with zero payload/order failures and no OOM
+  events. Median Rust throughput ratios are 1.92, 1.73 and 1.44 respectively;
+  corresponding peak-container-memory ratios are 0.046, 0.151 and 0.148.
+  The 64-pair 1 KiB p99 is essentially unchanged (3.685 ms vs 3.699 ms).
+- Scope: original Elixir sources and generic Dockerfile are unchanged from
+  `5f4b763`; the Rust image corresponds to `9fef3e8`. These runs preceded that
+  source commit, so original metadata retains the dirty parent revision and a
+  separate post-run provenance file links the committed source hashes. This
+  establishes a local-path baseline, not complete rewrite acceptance: distributed
+  ownership and metric parity must land before the final comparison matrix.

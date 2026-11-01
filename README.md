@@ -206,3 +206,36 @@ performance gates remain pending. BEAM heap/distribution settings do not apply t
 Rust; the Capacity mutation timeout has no Rust counterpart because semaphore
 mutations do not wait on an authority process. The generic published image still
 runs the retained Elixir implementation.
+
+### Preliminary local-path performance
+
+The retained Elixir baseline `5f4b763` and Rust `9fef3e8` were measured on the
+same Linux host through loopback Docker port mappings. Each fresh container had
+a 2-CPU quota, 1 GiB memory limit and two runtime workers; the external client
+used four workers. Each pair warmed up for 20 bidirectional exchanges, then ran
+for 10 seconds. The table reports medians from three runs per implementation,
+with alternating execution order. Latency measures sending a frame until the
+other endpoint receives it, not an application round trip.
+
+| v2 workload | Elixir frames/s | Rust frames/s | Rust throughput ratio | p99 ms, Elixir / Rust | Peak container MiB, Elixir / Rust |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1 pair, 1 KiB | 24,313 | 46,688 | 1.92 | 0.065 / 0.035 | 114.6 / 5.2 |
+| 64 pairs, 1 KiB | 32,615 | 56,382 | 1.73 | 3.685 / 3.699 | 151.5 / 22.9 |
+| 64 pairs, 64 KiB | 8,451 | 12,156 | 1.44 | 12.629 / 9.230 | 237.7 / 35.3 |
+
+Every measured frame passed content/order checks; server frame and byte counters
+matched the workload including warmup, WebSockets and ingress leases returned to
+zero, and no container reported OOM events. `benchmarks/2026-11-01-summary.json`
+indexes the medians; the adjacent directories retain load output, before/after
+metrics and cgroup observations, image identities and host metadata.
+`2026-11-01-provenance.json` records source/binary fingerprints and explains the
+pre-commit dirty metadata. Build the common load generator with
+`cargo build --locked --release --manifest-path rust/Cargo.toml --example relay_bench`;
+`scripts/compare-rust.py --help` describes the repeatable comparison driver
+(run it with `uv run python`).
+
+These are closed-loop, single-outstanding-message measurements of the current
+local paths. Rust still lacks distributed ownership and complete metric parity;
+rerun these gates after those features land. The results establish lower memory
+use and higher throughput for these workloads, not a universal latency or
+open-loop capacity improvement. In particular, 64-pair 1 KiB p99 did not improve.

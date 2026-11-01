@@ -1,0 +1,12 @@
+{
+  "git_commit": "c6b24e53ecc0544e717d4caad027ffe8c5235ccb",
+  "dirty": true,
+  "host": "Linux-7.2.11-arch1-1-x86_64-with-glibc2.44",
+  "cpu": "Intel(R) Core(TM) i5-14400",
+  "workload": {
+    "pairs": 64,
+    "seconds": 10,
+    "payload_bytes": 1024,
+    "protocol": "v2"
+  }
+}

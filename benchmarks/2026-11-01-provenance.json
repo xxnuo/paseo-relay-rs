@@ -1,0 +1,21 @@
+{
+  "runtime_source_commit": "9fef3e80b8fa720f6d5b6ebb3728c56bda96777b",
+  "elixir_source_commit": "5f4b7636af41a85ef20200c0b7e99dd1ea2ee1f2",
+  "source_sha256": {
+    "rust/Cargo.toml": "f2938e5b397fd161b158ab6d35caea55c38c49c3cb8760f147250f3efd073f0e",
+    "rust/Cargo.lock": "b3fd8e9c2f6dd350abf5ee69d205f52f48b07f781520286907f812bda5d91631",
+    "rust/Dockerfile": "5f0460077245486eea20f38c2b7bc0f3d168d093fea9462912d585581a875eb2",
+    "rust/examples/relay_bench.rs": "74e1226086ff33a166473f67f7494911cd1a2517e0c1021a41485eada40288b8",
+    "scripts/compare-rust.py": "13af16c7746bf8d459eb9a3875885fe98b1668800faef3d3eb1d8c0e77062a9f",
+    "rust/src/config.rs": "f395225cef61d57d56eeb65adbece69365b9c39a5408611b903b9718cc9b96b4",
+    "rust/src/connection.rs": "0b5b0e573a7a17f77be4b6d28577b2edfb1c320e27c83d3f08557dbffcb68c6d",
+    "rust/src/lib.rs": "d4c2531428db6750b63a68c9f689e510da7dff8bae4f11becaa78fd49c71a8b2",
+    "rust/src/main.rs": "70a847c272a13f6e258237a12e1e9fe917373166de8949b205f08ff00f083eb1",
+    "rust/src/protocol.rs": "c29cfab8c0104f6d389fb86b90216f9d3ba01e84df3b6376bcfbd1f067115fdb",
+    "rust/src/relay.rs": "b77e09b7592f5137977912c3aaedb5c48de642f4e2b72b8110a619737e0ef254",
+    "rust/src/server.rs": "5c1ca33bd609bb5cee117f693299d21b563b75ad788137355f8cf70f142d0003",
+    "rust/src/session.rs": "1f58dd0e5c419d6a891769bb16d2bcc712b30eadbd3bd7d7c910fe2056ed9bfa"
+  },
+  "load_generator_sha256": "4cb37cf204b8e16e1ce572af2ccc9a49c8c22a677cd51213fdcda5d4a1812e7e",
+  "provenance_note": "Captured after the runs. Per-run metadata retains the pre-commit dirty state. Runtime sources are unchanged from the measured image build; the capture-only source fingerprint fields were added to the Python driver after these runs."
+}

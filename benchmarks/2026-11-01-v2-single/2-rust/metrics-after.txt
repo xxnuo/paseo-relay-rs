@@ -1,0 +1,11 @@
+paseo_relay_ready 1
+paseo_relay_draining 0
+paseo_relay_active_websockets 0
+paseo_relay_memory_pressure_disconnects_total 0
+paseo_relay_active_sessions 1
+paseo_relay_ingress_reserved_bytes 0
+paseo_relay_frames_forwarded_total 471034
+paseo_relay_bytes_forwarded_total 482338816
+paseo_relay_connection_rejections_total 0
+paseo_relay_slow_consumer_disconnects_total 0
+paseo_relay_process_resident_memory_bytes 1572864

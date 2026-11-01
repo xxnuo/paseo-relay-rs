@@ -1,0 +1,53 @@
+[
+  {
+    "dataset": "benchmarks/2026-11-01-v2-1k",
+    "implementations": {
+      "elixir": {
+        "median_frames_per_second": 32615.45571426813,
+        "median_p99_us": 3685,
+        "median_cgroup_peak_bytes": 158883840
+      },
+      "rust": {
+        "median_frames_per_second": 56382.10530667088,
+        "median_p99_us": 3699,
+        "median_cgroup_peak_bytes": 24043520
+      }
+    },
+    "rust_to_elixir_throughput_ratio": 1.7286928565589739,
+    "rust_to_elixir_peak_memory_ratio": 0.15132766176849705
+  },
+  {
+    "dataset": "benchmarks/2026-11-01-v2-64k",
+    "implementations": {
+      "elixir": {
+        "median_frames_per_second": 8450.739664577644,
+        "median_p99_us": 12629,
+        "median_cgroup_peak_bytes": 249196544
+      },
+      "rust": {
+        "median_frames_per_second": 12156.334949401,
+        "median_p99_us": 9230,
+        "median_cgroup_peak_bytes": 36982784
+      }
+    },
+    "rust_to_elixir_throughput_ratio": 1.4384936031523763,
+    "rust_to_elixir_peak_memory_ratio": 0.14840809349266096
+  },
+  {
+    "dataset": "benchmarks/2026-11-01-v2-single",
+    "implementations": {
+      "elixir": {
+        "median_frames_per_second": 24312.622658867804,
+        "median_p99_us": 65,
+        "median_cgroup_peak_bytes": 120139776
+      },
+      "rust": {
+        "median_frames_per_second": 46688.46751680458,
+        "median_p99_us": 35,
+        "median_cgroup_peak_bytes": 5476352
+      }
+    },
+    "rust_to_elixir_throughput_ratio": 1.9203385900358798,
+    "rust_to_elixir_peak_memory_ratio": 0.04558317138863319
+  }
+]
