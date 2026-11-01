@@ -3,20 +3,81 @@ use base64::{Engine, engine::general_purpose::STANDARD};
 pub const MAX_MESSAGE_BYTES: usize = 32 * 1024 * 1024 - 14;
 pub const MAX_CONTROL_BYTES: usize = 64 * 1024;
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Handshake {
+    pub kind: &'static str,
+    pub accepted: bool,
+}
+
 // Keep aligned with lib/paseo_relay/handshake_validation.ex; payloads otherwise stay opaque.
 pub fn valid_handshake(payload: &[u8]) -> bool {
-    let Ok(message) = serde_json::from_slice::<serde_json::Value>(payload) else {
-        return true;
+    handshake(payload).is_none_or(|value| value.accepted)
+}
+
+pub fn handshake(payload: &[u8]) -> Option<Handshake> {
+    let fields = serde_json::from_slice::<Fields<'_>>(payload).ok()?;
+    let kind = match small_string(fields.kind?, 10 * 6 + 2)?.as_str() {
+        "hello" => "hello",
+        "e2ee_hello" => "e2ee_hello",
+        _ => return None,
     };
-    if !matches!(
-        message.get("type").and_then(|v| v.as_str()),
-        Some("hello" | "e2ee_hello")
-    ) {
-        return true;
+    let accepted = fields
+        .key
+        .and_then(|key| small_string(key, 44 * 6 + 2))
+        .is_some_and(|key| valid_key(&key));
+    Some(Handshake { kind, accepted })
+}
+
+pub fn control_ping(payload: &[u8]) -> bool {
+    serde_json::from_slice::<Fields<'_>>(payload)
+        .ok()
+        .and_then(|fields| fields.kind)
+        .and_then(|kind| small_string(kind, 10 * 6 + 2))
+        .is_some_and(|kind| kind == "ping")
+}
+
+// JSON may escape each ASCII character as six bytes.
+fn small_string(raw: &serde_json::value::RawValue, limit: usize) -> Option<String> {
+    (raw.get().len() <= limit)
+        .then(|| serde_json::from_str(raw.get()).ok())
+        .flatten()
+}
+
+#[derive(Default)]
+struct Fields<'a> {
+    kind: Option<&'a serde_json::value::RawValue>,
+    key: Option<&'a serde_json::value::RawValue>,
+}
+
+impl<'de> serde::Deserialize<'de> for Fields<'de> {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct Visitor;
+        impl<'de> serde::de::Visitor<'de> for Visitor {
+            type Value = Fields<'de>;
+            fn expecting(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.write_str("a JSON object")
+            }
+            fn visit_map<M: serde::de::MapAccess<'de>>(
+                self,
+                mut map: M,
+            ) -> Result<Self::Value, M::Error> {
+                let mut fields = Fields::default();
+                while let Some(name) = map.next_key::<String>()? {
+                    let value = map.next_value::<&serde_json::value::RawValue>()?;
+                    match name.as_str() {
+                        "type" => fields.kind = Some(value),
+                        "key" => fields.key = Some(value),
+                        _ => {}
+                    }
+                }
+                Ok(fields)
+            }
+        }
+        deserializer.deserialize_map(Visitor)
     }
-    let Some(encoded) = message.get("key").and_then(|v| v.as_str()) else {
-        return false;
-    };
+}
+
+fn valid_key(encoded: &str) -> bool {
     let Ok(decoded) = STANDARD.decode(encoded) else {
         return false;
     };
@@ -56,4 +117,16 @@ pub fn valid_handshake(payload: &[u8]) -> bool {
         },
     ];
     !low_order.contains(&key)
+}
+
+pub(crate) fn valid_query_encoding(query: &str) -> bool {
+    let bytes = query.as_bytes();
+    bytes.iter().enumerate().all(|(index, byte)| {
+        *byte != b'%'
+            || bytes
+                .get(index + 1..index + 3)
+                .is_some_and(|digits| digits.iter().all(u8::is_ascii_hexdigit))
+    }) && percent_encoding::percent_decode_str(query)
+        .decode_utf8()
+        .is_ok()
 }

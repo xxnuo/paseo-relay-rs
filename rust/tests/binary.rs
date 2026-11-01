@@ -511,3 +511,156 @@ async fn static_cluster_uses_real_container_dns_and_reroutes_public_websockets()
     client.close(None).await.unwrap();
     drop(containers);
 }
+
+#[tokio::test]
+async fn large_json_metadata_does_not_expand_into_an_unbounded_value_tree() {
+    use futures_util::{SinkExt, StreamExt};
+    use tokio_tungstenite::{
+        connect_async_with_config,
+        tungstenite::{Message, protocol::WebSocketConfig},
+    };
+    let (mut process, address) = limited_relay().await;
+    let ws_config =
+        WebSocketConfig::default().max_frame_size(Some(paseo_relay::protocol::MAX_MESSAGE_BYTES));
+    let (mut daemon, _) = connect_async_with_config(
+        format!("ws://{address}/ws?serverId=json&role=server"),
+        Some(ws_config),
+        true,
+    )
+    .await
+    .unwrap();
+    let (mut client, _) = connect_async_with_config(
+        format!("ws://{address}/ws?serverId=json&role=client"),
+        Some(ws_config),
+        true,
+    )
+    .await
+    .unwrap();
+    for kind in ["hello", "opaque"] {
+        let payload = format!(
+            "{{\"type\":\"{kind}\",\"key\":\"CQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\",\"padding\":[{}0]}}",
+            "0,".repeat(12 * 1024 * 1024)
+        );
+        client.send(Message::text(payload.clone())).await.unwrap();
+        let message = timeout(Duration::from_secs(15), daemon.next())
+            .await
+            .unwrap()
+            .unwrap()
+            .expect("JSON input killed the relay under its fixed address-space budget");
+        assert!(
+            message.into_data().as_ref() == payload.as_bytes(),
+            "payload changed"
+        );
+    }
+    assert!(process.0.try_wait().unwrap().is_none());
+    assert!(
+        binary_request(address, "/ready")
+            .await
+            .starts_with("HTTP/1.1 200")
+    );
+    daemon.close(None).await.unwrap();
+    client.close(None).await.unwrap();
+}
+
+#[tokio::test]
+async fn cancelled_queued_sources_cannot_retain_uncharged_payloads() {
+    use futures_util::SinkExt;
+    use tokio_tungstenite::{MaybeTlsStream, connect_async, tungstenite::Message};
+    let (mut process, address) = limited_relay().await;
+    let route = format!("ws://{address}/ws?serverId=queued-memory&v=2&connectionId=peer");
+    let (mut daemon, _) = connect_async(format!("{route}&role=server")).await.unwrap();
+    let (mut active, _) = connect_async(format!("{route}&role=client")).await.unwrap();
+    active
+        .send(Message::binary(vec![7; 8 * 1024 * 1024]))
+        .await
+        .unwrap();
+    let MaybeTlsStream::Plain(tcp) = daemon.get_ref() else {
+        panic!("expected TCP");
+    };
+    let mut header = [0; 1];
+    timeout(Duration::from_secs(3), tcp.peek(&mut header))
+        .await
+        .unwrap()
+        .unwrap();
+    for _ in 0..100 {
+        let (mut queued, _) = connect_async(format!("{route}&role=client")).await.unwrap();
+        queued
+            .send(Message::binary(vec![8; 8 * 1024 * 1024]))
+            .await
+            .unwrap();
+        timeout(Duration::from_secs(3), async {
+            loop {
+                let text = binary_request(address, "/metrics").await;
+                if text.contains("paseo_relay_ingress_reserved_bytes 67108864\n") {
+                    break;
+                }
+                tokio::task::yield_now().await;
+            }
+        })
+        .await
+        .unwrap();
+        let MaybeTlsStream::Plain(tcp) = queued.get_ref() else {
+            panic!("expected TCP");
+        };
+        socket2::SockRef::from(tcp)
+            .set_linger(Some(Duration::ZERO))
+            .unwrap();
+        drop(queued);
+        // Reverse traffic makes the dead source's independent Writer observe its real TCP reset.
+        daemon.send(Message::text("reverse")).await.unwrap();
+        timeout(Duration::from_secs(3), async {
+            loop {
+                let text = binary_request(address, "/metrics").await;
+                if text.contains("paseo_relay_active_websockets 2\n")
+                    && text.contains("paseo_relay_ingress_reserved_bytes 33554432\n")
+                {
+                    break;
+                }
+                tokio::task::yield_now().await;
+            }
+        })
+        .await
+        .unwrap();
+    }
+    assert!(
+        process.0.try_wait().unwrap().is_none(),
+        "cancelled queue entries retained payload bytes outside the ledger"
+    );
+}
+
+async fn limited_relay() -> (Process, std::net::SocketAddr) {
+    let reservation = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let address = reservation.local_addr().unwrap();
+    drop(reservation);
+    let mut process = Process(
+        Command::new("bash")
+            .args([
+                "-c",
+                "ulimit -v 524288 && exec \"$1\"",
+                "paseo-json-memory-test",
+                env!("CARGO_BIN_EXE_paseo-relay"),
+            ])
+            .env_clear()
+            .env("TOKIO_WORKER_THREADS", "2")
+            .env("PASEO_RELAY_PORT", address.port().to_string())
+            .stdout(Stdio::null())
+            .stderr(Stdio::inherit())
+            .spawn()
+            .unwrap(),
+    );
+    timeout(Duration::from_secs(5), async {
+        loop {
+            assert!(
+                process.0.try_wait().unwrap().is_none(),
+                "limited child exited before listening"
+            );
+            if TcpStream::connect(address).await.is_ok() {
+                break;
+            }
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    })
+    .await
+    .unwrap();
+    (process, address)
+}

@@ -36,6 +36,7 @@ struct Snapshot {
     sequence: u64,
     target: String,
     claims: HashMap<String, ClaimEpoch>,
+    #[serde(deserialize_with = "decode_members")]
     members: Vec<String>,
 }
 
@@ -468,4 +469,43 @@ async fn read_snapshot(
         .verify_slice(&tag)
         .map_err(|_| invalid("cluster authentication failed"))?;
     serde_json::from_slice(&body).map_err(io::Error::other)
+}
+
+fn decode_members<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Vec<String>, D::Error> {
+    struct Visitor;
+    impl<'de> serde::de::Visitor<'de> for Visitor {
+        type Value = Vec<String>;
+        fn expecting(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            f.write_str("at most 1000 node identities")
+        }
+        fn visit_seq<S: serde::de::SeqAccess<'de>>(
+            self,
+            mut seq: S,
+        ) -> Result<Self::Value, S::Error> {
+            let mut members = Vec::new();
+            while let Some(member) = seq.next_element::<String>()? {
+                if members.len() == MAX_NODES || node_address(&member).is_err() {
+                    return Err(serde::de::Error::custom(
+                        "invalid or oversized cluster membership",
+                    ));
+                }
+                members.push(member);
+            }
+            Ok(members)
+        }
+    }
+    deserializer.deserialize_seq(Visitor)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn metadata_decoder_bounds_members_before_collecting_them() {
+        let snapshot = |count| serde_json::json!({"version":1,"node":"a@localhost:4400","incarnation":vec![1u8;16],"sequence":1,"target":"a","claims":{},"members":vec!["b@localhost:4401";count]});
+        assert!(serde_json::from_value::<Snapshot>(snapshot(MAX_NODES)).is_ok());
+        assert!(serde_json::from_value::<Snapshot>(snapshot(MAX_NODES + 1)).is_err());
+    }
 }

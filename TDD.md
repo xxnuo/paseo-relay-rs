@@ -860,3 +860,65 @@
   runs. Warnings-as-errors Clippy, formatting, static musl release and diff checks
   passed. The earlier local-path performance snapshots were not relabeled as
   measurements of this newer distributed implementation.
+
+
+## Rust rewrite: bounded decoding, cancellation and operational metrics
+
+- Red: a real child with a fixed 512 MiB virtual-address limit reset its WebSocket
+  on a protocol-valid 24 MiB JSON hello containing a numeric metadata array.
+  The complete Value tree exhausted the child. Green: borrowed RawValue fields
+  scan unrelated JSON without expanding it; only bounded type/key strings decode.
+  Both the hello and an opaque JSON object now forward unchanged under the same
+  child limit. Duplicate-field last-value behavior, JSON Unicode escapes and all
+  original key-validation cases remain covered.
+- Red: the metadata deserializer accepted 1001 members before the later topology
+  check. Green: sequence decoding stops at the limit, validates each identity
+  before collection and accepts the exact 1000-member boundary.
+- Red: after peeking an emitted real TCP frame without draining the destination,
+  replacing its source left the blocked Writer alive beyond a three-second check
+  until the ten-second delivery deadline. Green: the Writer observes source-ack
+  cancellation while writing, fences that destination, releases socket/byte
+  leases, and a replacement route immediately carries fresh traffic.
+- Red: a ready real WebSocket transport emitted an already-expired accepted
+  control notification; wrapping send in timeout_at alone polled the ready send
+  first. Green: Writer checks the absolute deadline before emission and before
+  successful acknowledgement. The real-listener invariant receives explicit
+  `1013`, zero forwarded frames and exactly one timeout/slow-consumer event.
+- Red: real HTTP metrics lacked delivery gauges, histogram metadata and handshake
+  series. Green: all runtime-independent families retain the existing names,
+  routing-version/type labels and bucket bounds. Real sockets cover accepted and
+  rejected handshakes, ignored binary control input, JSON pong, live attachment
+  waits and gauge cleanup. Data send expiry counts one timeout and one slow
+  consumer despite competing timers; control queue-byte rejection increments
+  only slow consumers. BEAM-specific memory gauges stay omitted in favor of RSS.
+- Red: invalid UTF-8 in a v2 connectionId was admitted through lossy query decoding.
+  Green: malformed percent escapes and invalid UTF-8 fail with HTTP 400 before
+  route creation; an explicitly encoded valid replacement character still works.
+- Extra wire coverage: a generated v2 client ID attaches daemon data, preserves
+  pipelined ciphertext and validates repeated binary hello frames. A real
+  unresponsive control receives the ten-second sync nudge, then `1011` after
+  five more seconds while its idle client remains responsive.
+- Remaining acceptance: verify the pre-upgrade listener-concurrency boundary,
+  rerun comparisons with these metrics enabled and switch the primary build/
+  publish path from the retained Elixir baseline to Rust.
+
+- Further queued-cancellation red/green: 100 real 8 MiB v2 sources queued behind
+  an unread destination, then received real TCP resets observed through reverse
+  writes. Socket/ingress gauges returned to baseline while queued strong payload
+  references exhausted the 512 MiB child address-space limit (8,454,144-byte
+  allocation failed). Data queues now have one slot, hold weak payload references
+  and wait on source-owned charged memory. Control queues retain their own byte
+  leases. The same 100-cycle public-path test passes without raising the limit;
+  no payload or queue-metadata accumulation can bypass source cancellation.
+
+- Counter semantics red/green: an unread destination emitted one frame but the
+  new forwarded counter stayed zero after its barrier expired, unlike the
+  reference Writer. Counters now advance at emission, with a real-socket timeout
+  regression distinguishing attempts from acknowledged delivery. Expired queued
+  notifications remain un-emitted and therefore do not advance these counters.
+
+- Gates: 48 application/example tests passed (two Docker tests excluded from the
+  default run), and both rebuilt static-image tests passed separately. Clippy
+  warnings-as-errors, formatting, diff checks and the musl release build passed.
+  Existing performance data remain historical; they were not reused as results
+  for this newer runtime with complete instrumentation and bounded queues.

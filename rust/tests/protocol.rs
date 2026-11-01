@@ -70,3 +70,31 @@ fn rejects_all_elixir_low_order_keys() {
         assert!(!valid_handshake(&payload), "accepted {hex}");
     }
 }
+
+#[test]
+fn classification_preserves_last_duplicate_fields_and_json_string_escapes() {
+    use paseo_relay::protocol::{control_ping, handshake};
+    let key = STANDARD.encode({
+        let mut key = [0u8; 32];
+        key[0] = 9;
+        key
+    });
+    let escaped = key
+        .chars()
+        .map(|c| format!("\\u{:04x}", c as u32))
+        .collect::<String>();
+    let payload = format!(
+        r#"{{"type":"other","type":"\u0068ello","key":null,"key":"{escaped}","ignored":[{{"type":"hello","key":false}}]}}"#
+    );
+    let parsed = handshake(payload.as_bytes()).unwrap();
+    assert_eq!(parsed.kind, "hello");
+    assert!(parsed.accepted);
+    assert!(!valid_handshake(
+        format!(r#"{{"type":"hello","key":"{key}","key":null}}"#).as_bytes()
+    ));
+    assert!(handshake(br#"{"type":"hello","key":"bad","broken":}"#).is_none());
+    assert!(control_ping(
+        br#"{"type":"other","type":"ping","padding":[1,2,3]}"#
+    ));
+    assert!(!control_ping(br#"{"type":"ping","type":null}"#));
+}

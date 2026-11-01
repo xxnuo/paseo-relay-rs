@@ -362,6 +362,7 @@ dependencies = [
  "hmac",
  "hyper",
  "hyper-util",
+ "percent-encoding",
  "serde",
  "serde_json",
  "sha2",

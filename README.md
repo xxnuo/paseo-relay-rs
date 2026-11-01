@@ -203,11 +203,34 @@ Rust supports authenticated static and DNS-discovered clusters. Readiness observ
 the configured cluster floor; existing owned sessions continue below that floor,
 but new unowned sessions receive `503`. A known remote owner returns the existing
 `409` and configured reroute header before local connection or memory admission.
-No WebSocket payload crosses the cluster channel. Full metric parity and the
-final comparative performance gates remain pending. BEAM heap/distribution
+No WebSocket payload crosses the cluster channel. Public frame, delivery,
+handshake and capacity metric families retain their existing names and buckets;
+runtime-specific BEAM metrics are replaced by Linux process RSS. Final comparative
+performance gates remain pending. BEAM heap/distribution
 settings do not apply to Rust; the Capacity mutation timeout has no Rust
 counterpart because semaphore mutations do not wait on an authority process.
 The generic published image still runs the retained Elixir implementation.
+
+Handshake/control JSON is scanned without constructing a tree for unrelated
+metadata. Only the small type/key strings are decoded; duplicate keys retain the
+original last-value behavior and opaque frames remain byte-for-byte unchanged.
+Cluster membership is bounded during decoding, before collecting excessive
+entries. Malformed percent escapes or non-UTF-8 query values receive `400` before
+ownership/admission: Rust rejects these inputs instead of allowing lossy decoding
+to merge distinct route keys. This is a deliberate stricter input boundary than
+accepting arbitrary byte-string identifiers.
+
+A source cancelled after emission fences its destination Writer; an unused queued
+reservation may be skipped. A data destination has one queue slot behind its
+active write; queued entries borrow the live, charged source rather than retain
+payloads after source cancellation. Further senders wait under their existing byte
+leases and absolute deadlines. The destination gets one second to flush its
+retryable close before transport drop. Accepted
+control messages are never emitted after an expired queue deadline. Metrics count
+timeout/slow-consumer shedding once per destination, while a control-byte-queue
+rejection counts slow-consumer shedding without fabricating a delivery timeout.
+Forwarded frame/byte counters advance at Writer emission, matching Elixir;
+use receipt checks and timeout metrics to establish successful delivery.
 
 ### Rust cluster contract
 
@@ -277,7 +300,8 @@ pre-commit dirty metadata. Build the common load generator with
 (run it with `uv run python`).
 
 These are closed-loop, single-outstanding-message measurements of the current
-local paths. Rust still lacks distributed ownership and complete metric parity;
-rerun these gates after those features land. The results establish lower memory
+local paths. Those measured Rust snapshots predate distributed ownership and
+complete metric parity; final comparisons of the current implementation remain
+pending. The historical results establish lower memory
 use and higher throughput for these workloads, not a universal latency or
 open-loop capacity improvement. In particular, 64-pair 1 KiB p99 did not improve.

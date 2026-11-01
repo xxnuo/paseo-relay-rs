@@ -365,3 +365,145 @@ async fn exact_maximum_fragmented_payload_delivers_and_one_byte_more_closes_1009
     relay.wait_idle().await;
     task.abort();
 }
+
+#[tokio::test]
+async fn cancelling_an_emitted_source_fences_the_blocked_writer_before_its_deadline() {
+    let config = Config {
+        delivery_timeout: Duration::from_secs(10),
+        ..Config::default()
+    };
+    let (url, relay, task) = start(config).await;
+    let daemon = connect(&url, "role=server").await;
+    let mut source = connect(&url, "role=client").await;
+    source
+        .send(Message::binary(vec![7; 8 * 1024 * 1024]))
+        .await
+        .unwrap();
+    // Peek without draining to prove the destination Writer has emitted its frame.
+    let MaybeTlsStream::Plain(tcp) = daemon.get_ref() else {
+        panic!("expected TCP");
+    };
+    let mut header = [0; 1];
+    assert_eq!(
+        timeout(Duration::from_secs(3), tcp.peek(&mut header))
+            .await
+            .unwrap()
+            .unwrap(),
+        1
+    );
+    assert_eq!(header[0], 0x82);
+    let mut replacement = connect(&url, "role=client").await;
+    closed(&mut source, 1008).await;
+    timeout(Duration::from_secs(3), async {
+        while relay.active_connections() != 1 {
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    })
+    .await
+    .expect("abandoned emitted write survived until the delivery deadline");
+    assert_eq!(relay.ingress_reserved_bytes(), 0);
+    let mut recovered = connect(&url, "role=server").await;
+    replacement
+        .send(Message::text("after cancellation"))
+        .await
+        .unwrap();
+    assert_eq!(
+        receive(&mut recovered).await,
+        Message::text("after cancellation")
+    );
+    replacement.close(None).await.unwrap();
+    recovered.close(None).await.unwrap();
+    relay.wait_idle().await;
+    task.abort();
+}
+
+#[tokio::test]
+async fn generated_v2_client_id_attaches_data_and_validates_each_binary_handshake_retry() {
+    let (url, relay, task) = start(Config::default()).await;
+    let mut control = connect(&url, "role=server&v=2").await;
+    json(&mut control).await;
+    let mut client = connect(&url, "role=client&v=2").await;
+    let connected = json(&mut control).await;
+    let id = connected["connectionId"].as_str().unwrap();
+    assert!(id.starts_with("conn_"));
+    assert_eq!(id.len(), 21);
+    let mut data = connect(&url, &format!("role=server&v=2&connectionId={id}")).await;
+    let hello = Message::binary(
+        br#"{"type":"e2ee_hello","key":"CQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="}"#.to_vec(),
+    );
+    for message in [hello.clone(), Message::binary(vec![0xff; 1024]), hello] {
+        client.send(message.clone()).await.unwrap();
+        assert_eq!(receive(&mut data).await, message);
+    }
+    client
+        .send(Message::binary(
+            br#"{"type":"hello","key":"invalid"}"#.to_vec(),
+        ))
+        .await
+        .unwrap();
+    closed(&mut client, 1008).await;
+    closed(&mut data, 1001).await;
+    assert_eq!(
+        json(&mut control).await,
+        serde_json::json!({"type":"disconnected","connectionId":id})
+    );
+    control.close(None).await.unwrap();
+    relay.wait_idle().await;
+    task.abort();
+}
+
+#[tokio::test]
+async fn unresponsive_control_is_nudged_then_closed_without_dropping_its_idle_client() {
+    let (url, relay, task) = start(Config::default()).await;
+    let mut control = connect(&url, "role=server&v=2").await;
+    json(&mut control).await;
+    let mut client = connect(&url, "role=client&v=2&connectionId=watchdog").await;
+    json(&mut control).await;
+    let sync = timeout(Duration::from_secs(12), control.next())
+        .await
+        .unwrap()
+        .unwrap()
+        .unwrap();
+    assert_eq!(
+        serde_json::from_str::<serde_json::Value>(sync.to_text().unwrap()).unwrap(),
+        serde_json::json!({"type":"sync","connectionIds":["watchdog"]})
+    );
+    let Message::Close(Some(close)) = timeout(Duration::from_secs(7), control.next())
+        .await
+        .unwrap()
+        .unwrap()
+        .unwrap()
+    else {
+        panic!("missing control reset");
+    };
+    assert_eq!(u16::from(close.code), 1011);
+    assert_eq!(close.reason, "Control unresponsive");
+    client.send(Message::Ping(vec![1].into())).await.unwrap();
+    assert_eq!(receive(&mut client).await, Message::Pong(vec![1].into()));
+    client.close(None).await.unwrap();
+    relay.wait_idle().await;
+    task.abort();
+}
+
+#[tokio::test]
+async fn malformed_query_encoding_cannot_create_lossy_colliding_route_keys() {
+    let (url, relay, task) = start(Config::default()).await;
+    for query in [
+        "role=server&connectionId=%FF&v=2",
+        "role=server&extra=%GG",
+        "role=server&extra=%",
+        "role=server&extra=%C3%28",
+    ] {
+        let Err(tokio_tungstenite::tungstenite::Error::Http(response)) =
+            connect_async(format!("{url}&{query}")).await
+        else {
+            panic!("malformed query was admitted: {query}");
+        };
+        assert_eq!(response.status(), 400);
+    }
+    assert_eq!(relay.active_connections(), 0);
+    let mut valid = connect(&url, "role=server&connectionId=%EF%BF%BD&v=2").await;
+    valid.close(None).await.unwrap();
+    relay.wait_idle().await;
+    task.abort();
+}

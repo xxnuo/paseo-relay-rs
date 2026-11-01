@@ -6,7 +6,7 @@ use axum::extract::ws::Message;
 use std::{
     collections::{HashMap, HashSet},
     sync::{
-        Arc, Mutex,
+        Arc, Mutex, Weak,
         atomic::{AtomicBool, Ordering},
     },
     time::{Duration, SystemTime, UNIX_EPOCH},
@@ -19,25 +19,26 @@ use tokio::{
 pub type Close = (u16, &'static str);
 
 pub struct Write {
-    pub message: Message,
+    pub message: Weak<Message>,
     pub deadline: Instant,
     pub ack: Option<oneshot::Sender<bool>>,
-    pub _control: Option<OwnedSemaphorePermit>,
+    pub _control: Option<(Arc<Message>, OwnedSemaphorePermit)>,
 }
 
 pub struct Peer {
     pub id: u64,
+    pub metrics: Arc<crate::metrics::Metrics>,
     pub delivering: AtomicBool,
     pub connection: Connection,
-    pub writes: mpsc::UnboundedSender<Write>,
+    pub writes: mpsc::Sender<Write>,
     pub close: watch::Sender<Option<Close>>,
     pub control_budget: Arc<Semaphore>,
     pub delivery_timeout: Duration,
 }
 
 impl Peer {
-    pub fn close(&self, code: u16, reason: &'static str) {
-        self.close.send_if_modified(|value| {
+    pub fn close(&self, code: u16, reason: &'static str) -> bool {
+        let changed = self.close.send_if_modified(|value| {
             if value.is_some() {
                 false
             } else {
@@ -45,10 +46,28 @@ impl Peer {
                 true
             }
         });
+        if changed && code == 1013 {
+            match reason {
+                "Slow consumer" => {
+                    self.metrics.slow.fetch_add(1, Ordering::Relaxed);
+                }
+                "Relay memory pressure" => {
+                    self.metrics.pressure_closes.fetch_add(1, Ordering::Relaxed);
+                }
+                _ => {}
+            }
+        }
+        changed
+    }
+
+    pub fn expire(&self) {
+        if self.close(1013, "Slow consumer") {
+            self.metrics.timeouts.fetch_add(1, Ordering::Relaxed);
+        }
     }
 
     pub fn notify(&self, value: serde_json::Value) {
-        let message = Message::Text(value.to_string().into());
+        let message = Arc::new(Message::Text(value.to_string().into()));
         let Ok(permit) = self
             .control_budget
             .clone()
@@ -59,11 +78,11 @@ impl Peer {
         };
         if self
             .writes
-            .send(Write {
-                message,
+            .try_send(Write {
+                message: Arc::downgrade(&message),
                 deadline: Instant::now() + self.delivery_timeout,
                 ack: None,
-                _control: Some(permit),
+                _control: Some((message, permit)),
             })
             .is_err()
         {
@@ -76,26 +95,35 @@ impl Peer {
             return false;
         }
         let (tx, rx) = oneshot::channel();
-        if self
-            .writes
-            .send(Write {
-                message,
+        // Queued data must not outlive the charged source; only control owns a queue-byte lease.
+        let message = Arc::new(message);
+        let queued = tokio::time::timeout_at(
+            deadline,
+            self.writes.send(Write {
+                message: Arc::downgrade(&message),
                 deadline,
                 ack: Some(tx),
                 _control: None,
-            })
-            .is_err()
-        {
-            return false;
+            }),
+        )
+        .await;
+        match queued {
+            Ok(Ok(())) => {}
+            Err(_) => {
+                self.expire();
+                return false;
+            }
+            _ => return false,
         }
-        // Expiry closes the entire destination, including any write already emitted.
-        match tokio::time::timeout_at(deadline, rx).await {
+        let result = match tokio::time::timeout_at(deadline, rx).await {
             Ok(result) => result.unwrap_or(false),
             Err(_) => {
-                self.close(1013, "Slow consumer");
+                self.expire();
                 false
             }
-        }
+        };
+        drop(message);
+        result
     }
 }
 
@@ -369,9 +397,36 @@ pub fn payload(message: &Message) -> &[u8] {
     }
 }
 
-pub struct Delivery<'a>(pub &'a Peer);
+pub struct Delivery<'a> {
+    peer: &'a Peer,
+    bytes: usize,
+    started: Instant,
+}
+impl<'a> Delivery<'a> {
+    pub fn new(peer: &'a Peer, bytes: usize) -> Self {
+        peer.delivering.store(true, Ordering::Relaxed);
+        peer.metrics
+            .inflight
+            .fetch_add(bytes as u64, Ordering::Relaxed);
+        peer.metrics.backpressured.fetch_add(1, Ordering::Relaxed);
+        Self {
+            peer,
+            bytes,
+            started: Instant::now(),
+        }
+    }
+}
 impl Drop for Delivery<'_> {
     fn drop(&mut self) {
-        self.0.delivering.store(false, Ordering::Relaxed);
+        self.peer.delivering.store(false, Ordering::Relaxed);
+        self.peer
+            .metrics
+            .inflight
+            .fetch_sub(self.bytes as u64, Ordering::Relaxed);
+        self.peer
+            .metrics
+            .backpressured
+            .fetch_sub(1, Ordering::Relaxed);
+        self.peer.metrics.delivery(self.started.elapsed());
     }
 }

@@ -1,5 +1,6 @@
 mod config;
 pub mod connection;
+mod metrics;
 pub mod protocol;
 mod relay;
 mod session;

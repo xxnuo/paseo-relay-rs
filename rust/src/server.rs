@@ -124,7 +124,6 @@ impl Relay {
                 .clamp(1, 32);
             for peer in peers.into_iter().take(count) {
                 peer.close(1013, "Relay memory pressure");
-                self.0.pressure_closes.fetch_add(1, Ordering::Relaxed);
             }
         }
     }
