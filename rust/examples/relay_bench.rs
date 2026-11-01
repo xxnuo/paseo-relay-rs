@@ -5,17 +5,27 @@ use std::{
     time::{Duration, Instant},
 };
 use tokio::{net::TcpStream, sync::Barrier, time::timeout};
-use tokio_tungstenite::{WebSocketStream, client_async, tungstenite::Message};
+use tokio_tungstenite::{
+    WebSocketStream, client_async_with_config,
+    tungstenite::{Message, protocol::WebSocketConfig},
+};
 
 type Socket = WebSocketStream<TcpStream>;
 
 async fn connect(address: &str, path: &str) -> Socket {
     let tcp = TcpStream::connect(address).await.expect("connect relay");
     tcp.set_nodelay(true).unwrap();
-    client_async(format!("ws://{address}/ws?{path}"), tcp)
-        .await
-        .expect("WebSocket upgrade")
-        .0
+    client_async_with_config(
+        format!("ws://{address}/ws?{path}"),
+        tcp,
+        Some(
+            WebSocketConfig::default()
+                .max_frame_size(Some(paseo_relay::protocol::MAX_MESSAGE_BYTES)),
+        ),
+    )
+    .await
+    .expect("WebSocket upgrade")
+    .0
 }
 
 async fn exchange(source: &mut Socket, destination: &mut Socket, payload: &[u8]) {
@@ -28,9 +38,8 @@ async fn exchange(source: &mut Socket, destination: &mut Socket, payload: &[u8])
         .expect("delivery deadline")
         .expect("destination closed")
         .expect("read frame");
-    assert_eq!(
-        message,
-        Message::binary(payload.to_vec()),
+    assert!(
+        message == Message::binary(payload.to_vec()),
         "loss, corruption or ordering failure"
     );
 }

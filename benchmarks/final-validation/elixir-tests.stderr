@@ -1,0 +1,172 @@
+Unable to find image 'hexpm/elixir:1.20.2-erlang-29.0.2-debian-bookworm-20260623-slim' locally
+1.20.2-erlang-29.0.2-debian-bookworm-20260623-slim: Pulling from hexpm/elixir
+Digest: sha256:2f7018f129c268e439a4e4054d9487a85ad4c2f05141e9347a4442e8a4b3712c
+Status: Downloaded newer image for hexpm/elixir:1.20.2-erlang-29.0.2-debian-bookworm-20260623-slim
+     warning: the variable "size" is accessed inside size(...) of a bitstring but it was defined outside of the match. You must precede it with the pin operator
+     │
+ 109 │     <<payload::bytes-size(size), rest::bitstring>> = remaining
+     │                           ~
+     │
+     └─ lib/websockex/frame.ex:109:27: WebSockex.Frame.parse_frame/1
+
+     warning: the variable "len" is accessed inside size(...) of a bitstring but it was defined outside of the match. You must precede it with the pin operator
+     │
+ 125 │       <<payload::bytes-size(len), rest::bitstring>> = remaining
+     │                             ~
+     │
+     └─ lib/websockex/frame.ex:125:29: WebSockex.Frame.parse_frame/1
+
+     warning: the variable "len" is accessed inside size(...) of a bitstring but it was defined outside of the match. You must precede it with the pin operator
+     │
+ 125 │       <<payload::bytes-size(len), rest::bitstring>> = remaining
+     │                             ~
+     │
+     └─ lib/websockex/frame.ex:125:29: WebSockex.Frame.parse_frame/1
+
+     warning: the variable "len" is accessed inside size(...) of a bitstring but it was defined outside of the match. You must precede it with the pin operator
+     │
+ 145 │     <<payload::bytes-size(len), rest::bitstring>> = remaining
+     │                           ~
+     │
+     └─ lib/websockex/frame.ex:145:27: WebSockex.Frame.parse_frame/1
+
+     warning: the variable "len" is accessed inside size(...) of a bitstring but it was defined outside of the match. You must precede it with the pin operator
+     │
+ 150 │     <<payload::bytes-size(len), rest::bitstring>> = remaining
+     │                           ~
+     │
+     └─ lib/websockex/frame.ex:150:27: WebSockex.Frame.parse_frame/1
+
+     warning: the variable "len" is accessed inside size(...) of a bitstring but it was defined outside of the match. You must precede it with the pin operator
+     │
+ 155 │     <<payload::bytes-size(len), rest::bitstring>> = remaining
+     │                           ~
+     │
+     └─ lib/websockex/frame.ex:155:27: WebSockex.Frame.parse_frame/1
+
+     warning: the variable "len" is accessed inside size(...) of a bitstring but it was defined outside of the match. You must precede it with the pin operator
+     │
+ 164 │       <<payload::bytes-size(len), rest::bitstring>> = remaining
+     │                             ~
+     │
+     └─ lib/websockex/frame.ex:164:29: WebSockex.Frame.parse_frame/1
+
+     warning: the variable "len" is accessed inside size(...) of a bitstring but it was defined outside of the match. You must precede it with the pin operator
+     │
+ 171 │       <<payload::bytes-size(len), rest::bitstring>> = remaining
+     │                             ~
+     │
+     └─ lib/websockex/frame.ex:171:29: WebSockex.Frame.parse_frame/1
+
+     warning: the variable "len" is accessed inside size(...) of a bitstring but it was defined outside of the match. You must precede it with the pin operator
+     │
+ 176 │       <<payload::bytes-size(len), rest::bitstring>> = remaining
+     │                             ~
+     │
+     └─ lib/websockex/frame.ex:176:29: WebSockex.Frame.parse_frame/1
+
+     warning: the variable "len" is accessed inside size(...) of a bitstring but it was defined outside of the match. You must precede it with the pin operator
+     │
+ 164 │       <<payload::bytes-size(len), rest::bitstring>> = remaining
+     │                             ~
+     │
+     └─ lib/websockex/frame.ex:164:29: WebSockex.Frame.parse_frame/1
+
+     warning: the variable "len" is accessed inside size(...) of a bitstring but it was defined outside of the match. You must precede it with the pin operator
+     │
+ 171 │       <<payload::bytes-size(len), rest::bitstring>> = remaining
+     │                             ~
+     │
+     └─ lib/websockex/frame.ex:171:29: WebSockex.Frame.parse_frame/1
+
+     warning: the variable "len" is accessed inside size(...) of a bitstring but it was defined outside of the match. You must precede it with the pin operator
+     │
+ 176 │       <<payload::bytes-size(len), rest::bitstring>> = remaining
+     │                             ~
+     │
+     └─ lib/websockex/frame.ex:176:29: WebSockex.Frame.parse_frame/1
+
+     warning: the variable "len" is accessed inside size(...) of a bitstring but it was defined outside of the match. You must precede it with the pin operator
+     │
+ 183 │     <<payload::bytes-size(len), rest::bitstring>> = remaining
+     │                           ~
+     │
+     └─ lib/websockex/frame.ex:183:27: WebSockex.Frame.parse_frame/1
+
+     warning: the variable "len" is accessed inside size(...) of a bitstring but it was defined outside of the match. You must precede it with the pin operator
+     │
+ 188 │     <<payload::bytes-size(len), rest::bitstring>> = remaining
+     │                           ~
+     │
+     └─ lib/websockex/frame.ex:188:27: WebSockex.Frame.parse_frame/1
+
+     warning: the variable "len" is accessed inside size(...) of a bitstring but it was defined outside of the match. You must precede it with the pin operator
+     │
+ 193 │     <<payload::bytes-size(len), rest::bitstring>> = remaining
+     │                           ~
+     │
+     └─ lib/websockex/frame.ex:193:27: WebSockex.Frame.parse_frame/1
+
+     warning: the variable "len" is accessed inside size(...) of a bitstring but it was defined outside of the match. You must precede it with the pin operator
+     │
+ 199 │     <<payload::bytes-size(len), rest::bitstring>> = remaining
+     │                           ~
+     │
+     └─ lib/websockex/frame.ex:199:27: WebSockex.Frame.parse_frame/1
+
+     warning: the variable "len" is accessed inside size(...) of a bitstring but it was defined outside of the match. You must precede it with the pin operator
+     │
+ 204 │     <<payload::bytes-size(len), rest::bitstring>> = remaining
+     │                           ~
+     │
+     └─ lib/websockex/frame.ex:204:27: WebSockex.Frame.parse_frame/1
+
+     warning: the variable "len" is accessed inside size(...) of a bitstring but it was defined outside of the match. You must precede it with the pin operator
+     │
+ 209 │     <<payload::bytes-size(len), rest::bitstring>> = remaining
+     │                           ~
+     │
+     └─ lib/websockex/frame.ex:209:27: WebSockex.Frame.parse_frame/1
+
+     warning: the variable "len" is accessed inside size(...) of a bitstring but it was defined outside of the match. You must precede it with the pin operator
+     │
+ 358 │     <<payload::bytes-size(len), rest::bitstring>> = remaining
+     │                           ~
+     │
+     └─ lib/websockex/frame.ex:358:27: WebSockex.Frame.parse_text_payload/3
+
+     warning: comparison between distinct types found:
+
+         net_state.started != :no
+
+     given types:
+
+         dynamic(not :no) != :no
+
+     where "net_state" was given the types:
+
+         # type: dynamic()
+         # from: lib/dns_cluster.ex:207:8
+         net_state
+
+         # type: dynamic(not false and not nil)
+         # from: lib/dns_cluster.ex:207:8
+         net_state
+
+         # type: dynamic(%{..., started: term()})
+         # from: lib/dns_cluster.ex:210:25
+         net_state.started == :no
+
+         # type: dynamic(%{..., started: not :no})
+         # from: lib/dns_cluster.ex:220:25
+         net_state.started == :no
+
+     While Elixir can compare across all types, you are comparing across types which are always disjoint, and the result is either always true or always false
+
+     type warning found at:
+     │
+ 221 │           (!release? and net_state.started != :no and net_state[:name_domain] != :longnames) ->
+     │                                            ~
+     │
+     └─ lib/dns_cluster.ex:221:44: DNSCluster.warn_on_invalid_dist/0
+

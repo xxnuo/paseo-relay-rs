@@ -943,3 +943,24 @@
 - Focused real listener and cluster regressions, formatting, warnings-as-errors
   Clippy and diff checks passed. Primary build promotion and final comparative
   runs remain the final delivery steps.
+
+## Rust rewrite: primary Linux build promotion
+
+- Promoted the tested static Rust image to the root Dockerfile and existing image
+  publishing entry point; retained the original Dockerfile as Dockerfile.elixir.
+  CI keeps the reference gate and extracts the standalone amd64 executable with
+  SHA256SUMS. Reference lib/config/test and Mix manifests remain byte-identical
+  to baseline 5f4b763. README now describes Rust deployment, configuration,
+  cluster replacement boundaries and the upstream-to-Rust maintenance map.
+- All 49 native/example tests passed, followed by both ignored tests against
+  paseo-relay-rust:final (restart and authenticated private-container cluster).
+  Formatting and warnings-as-errors Clippy passed. The exact Elixir/OTP reference
+  container passed all 106 tests (seed 804904). Logs are in
+  benchmarks/final-validation.
+- The root image produced a stripped x86-64 static-PIE Linux executable, SHA256
+  928ec53dc4c7c753b2d103d2a8299fd734f93f21b983ea649870f422607f68f5.
+  systemd-analyze verify passed using that extracted executable as ExecStart.
+  No host service was installed or started and no registry image was published.
+- The common load client now accepts the protocol's maximum data frame instead
+  of tungstenite's smaller default. Near-limit end-to-end comparative validation
+  and the final full-runtime performance results follow in the next evidence set.

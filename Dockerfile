@@ -1,20 +1,12 @@
-FROM hexpm/elixir:1.20.2-erlang-29.0.2-debian-bookworm-20260623-slim AS build
+FROM rust:1.97.1-alpine AS build
 WORKDIR /app
-ENV MIX_ENV=prod
-COPY mix.exs mix.lock ./
-RUN mix local.hex --force && mix local.rebar --force && mix deps.get --only prod
-COPY config config
-COPY lib lib
-RUN mix compile && mix release
+COPY rust/Cargo.toml rust/Cargo.lock ./
+COPY rust/src ./src
+RUN cargo build --locked --release
 
-FROM debian:bookworm-slim
-RUN apt-get update && apt-get install -y --no-install-recommends libstdc++6 libsctp1 openssl ca-certificates && rm -rf /var/lib/apt/lists/*
-WORKDIR /app
-COPY --from=build /app/_build/prod/rel/paseo_relay ./
-ENV HOME=/app \
-    PASEO_RELAY_HOST=0.0.0.0 \
-    PASEO_RELAY_PORT=4000 \
-    PASEO_RELAY_DRAIN=false
-EXPOSE 4000
-ENTRYPOINT ["/app/bin/paseo_relay"]
-CMD ["start"]
+FROM scratch
+COPY --from=build /app/target/release/paseo-relay /paseo-relay
+USER 65532:65532
+ENV PASEO_RELAY_HOST=0.0.0.0 PASEO_RELAY_PORT=4000
+EXPOSE 4000 4400
+ENTRYPOINT ["/paseo-relay"]

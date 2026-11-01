@@ -1,0 +1,9 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running tests/binary.rs (rust/target/debug/deps/binary-f123df4e3ffcf247)
+
+running 2 tests
+test static_nonroot_container_serves_websockets_after_restart ... ok
+test static_cluster_uses_real_container_dns_and_reroutes_public_websockets ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 1.39s
+

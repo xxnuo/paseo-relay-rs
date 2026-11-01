@@ -1,0 +1,375 @@
+* creating /root/.mix/archives/hex-2.6.0
+* creating /root/.mix/elixir/1-20-otp-29/rebar3
+Resolving Hex dependencies...
+Resolution completed in 0.008s
+* Getting cowboy (Hex package)
+* Getting dns_cluster (Hex package)
+* Getting jason (Hex package)
+* Getting syn (Hex package)
+* Getting websockex (Hex package)
+* Getting telemetry (Hex package)
+* Getting cowlib (Hex package)
+* Getting ranch (Hex package)
+You have added/upgraded packages you could sponsor, run `mix hex.sponsor` to learn more
+==> jason
+Compiling 10 files (.ex)
+Generated jason app
+==> paseo_relay
+===> Analyzing applications...
+===> Compiling ranch
+===> Analyzing applications...
+===> Compiling cowlib
+===> Analyzing applications...
+===> Compiling syn
+     ┌─ src/syn_event_handler.erl:
+     │
+ 222 │      catch CustomEventHandler:module_info(exports),
+     │      ╰── Warning: 'catch ...' is deprecated; please use 'try ... catch ... end' instead.
+Compile directive 'nowarn_deprecated_catch' can be used to suppress
+warnings in selected modules.
+
+
+===> Analyzing applications...
+===> Compiling telemetry
+==> websockex
+Compiling 6 files (.ex)
+Generated websockex app
+==> paseo_relay
+===> Analyzing applications...
+===> Compiling cowboy
+==> dns_cluster
+Compiling 1 file (.ex)
+Generated dns_cluster app
+==> paseo_relay
+Compiling 19 files (.ex)
+Generated paseo_relay app
+
+07:42:17.468 [notice] [scope: :paseo_relay_owners, event: :tables_created]
+
+07:42:17.472 [notice] [scope: :paseo_relay_owners, handler: :registry, event: :discovering_cluster]
+
+07:42:17.472 [notice] [scope: :paseo_relay_owners, handler: :pg, event: :discovering_cluster]
+
+07:42:17.494 [notice] [scope: :paseo_relay_owners, handler: :registry, from: :paseo_relay_test_11426@582e4057fd14, event: :nodeup]
+
+07:42:17.494 [notice] [scope: :paseo_relay_owners, handler: :pg, from: :paseo_relay_test_11426@582e4057fd14, event: :nodeup]
+
+07:42:17.494 [notice] [scope: :paseo_relay_owners, handler: :registry, from: :paseo_relay_test_11426@582e4057fd14, event: :discover_request]
+
+07:42:17.494 [notice] [scope: :paseo_relay_owners, handler: :pg, from: :paseo_relay_test_11426@582e4057fd14, event: :discover_request]
+
+07:42:17.494 [notice] [scope: :paseo_relay_owners, handler: :registry, from: :paseo_relay_test_11426@582e4057fd14, event: :ack_sync, entries: 0]
+
+07:42:17.494 [notice] [scope: :paseo_relay_owners, handler: :pg, from: :paseo_relay_test_11426@582e4057fd14, event: :ack_sync, entries: 0]
+Running ExUnit with seed: 804904, max_cases: 8
+
+........................
+07:42:20.380 [notice] [scope: :paseo_relay_owners, handler: :pg, from: :static_peer_12034@582e4057fd14, event: :nodeup]
+
+07:42:20.380 [notice] [scope: :paseo_relay_owners, handler: :registry, from: :static_peer_12034@582e4057fd14, event: :nodeup]
+
+07:42:20.432 [notice] [scope: :paseo_relay_owners, handler: :registry, from: :static_peer_12034@582e4057fd14, event: :nodeup]
+
+07:42:20.432 [notice] [scope: :paseo_relay_owners, handler: :pg, from: :static_peer_12034@582e4057fd14, event: :nodeup]
+......
+07:42:20.550 [notice] [scope: :paseo_relay_owners, handler: :pg, from: :relay_peer_10053@582e4057fd14, event: :nodeup]
+
+07:42:20.550 [notice] [scope: :paseo_relay_owners, handler: :registry, from: :relay_peer_10053@582e4057fd14, event: :nodeup]
+=NOTICE REPORT==== 1-Nov-2026::07:42:20.562301 ===
+    scope: paseo_relay_owners
+    event: tables_created
+=NOTICE REPORT==== 1-Nov-2026::07:42:20.568268 ===
+    scope: paseo_relay_owners
+    handler: registry
+    event: discovering_cluster
+
+07:42:20.568 [notice] [scope: :paseo_relay_owners, handler: :registry, from: :relay_peer_10053@582e4057fd14, event: :discover_request]
+=NOTICE REPORT==== 1-Nov-2026::07:42:20.568516 ===
+    scope: paseo_relay_owners
+    handler: registry
+    event: ack_sync
+    from: paseo_relay_test_11426@582e4057fd14
+    entries: 2
+
+07:42:20.568 [notice] [scope: :paseo_relay_owners, handler: :registry, from: :relay_peer_10053@582e4057fd14, event: :ack_sync, entries: 0]
+
+07:42:20.569 [notice] [scope: :paseo_relay_owners, handler: :pg, from: :relay_peer_10053@582e4057fd14, event: :discover_request]
+=NOTICE REPORT==== 1-Nov-2026::07:42:20.569197 ===
+    scope: paseo_relay_owners
+    handler: pg
+    event: discovering_cluster
+
+07:42:20.569 [notice] [scope: :paseo_relay_owners, event: :scope_added]
+=NOTICE REPORT==== 1-Nov-2026::07:42:20.569374 ===
+    scope: paseo_relay_owners
+    handler: pg
+    event: ack_sync
+    from: paseo_relay_test_11426@582e4057fd14
+    entries: 0
+
+07:42:20.569 [notice] [scope: :paseo_relay_owners, handler: :pg, from: :relay_peer_10053@582e4057fd14, event: :ack_sync, entries: 0]
+.
+07:42:20.625 [notice] [reason: :noconnection, scope: :paseo_relay_owners, handler: :pg, from: :relay_peer_10053@582e4057fd14, event: :scope_down]
+
+07:42:20.625 [notice] [reason: :noconnection, scope: :paseo_relay_owners, handler: :registry, from: :relay_peer_10053@582e4057fd14, event: :scope_down]
+
+07:42:20.720 [notice] [scope: :paseo_relay_owners, handler: :registry, from: :relay_peer_11459@582e4057fd14, event: :nodeup]
+
+07:42:20.720 [notice] [scope: :paseo_relay_owners, handler: :pg, from: :relay_peer_11459@582e4057fd14, event: :nodeup]
+=NOTICE REPORT==== 1-Nov-2026::07:42:20.731759 ===
+    scope: paseo_relay_owners
+    event: tables_created
+=NOTICE REPORT==== 1-Nov-2026::07:42:20.737463 ===
+    scope: paseo_relay_owners
+    handler: registry
+    event: discovering_cluster
+
+07:42:20.737 [notice] [scope: :paseo_relay_owners, handler: :registry, from: :relay_peer_11459@582e4057fd14, event: :discover_request]
+=NOTICE REPORT==== 1-Nov-2026::07:42:20.737656 ===
+    scope: paseo_relay_owners
+    handler: registry
+    event: ack_sync
+    from: paseo_relay_test_11426@582e4057fd14
+    entries: 2
+
+07:42:20.737 [notice] [scope: :paseo_relay_owners, handler: :registry, from: :relay_peer_11459@582e4057fd14, event: :ack_sync, entries: 0]
+
+07:42:20.738 [notice] [scope: :paseo_relay_owners, handler: :pg, from: :relay_peer_11459@582e4057fd14, event: :discover_request]
+=NOTICE REPORT==== 1-Nov-2026::07:42:20.738281 ===
+    scope: paseo_relay_owners
+    handler: pg
+    event: discovering_cluster
+
+07:42:20.738 [notice] [scope: :paseo_relay_owners, event: :scope_added]
+
+07:42:20.738 [notice] [scope: :paseo_relay_owners, handler: :pg, from: :relay_peer_11459@582e4057fd14, event: :ack_sync, entries: 0]
+=NOTICE REPORT==== 1-Nov-2026::07:42:20.738438 ===
+    scope: paseo_relay_owners
+    handler: pg
+    event: ack_sync
+    from: paseo_relay_test_11426@582e4057fd14
+    entries: 0
+
+07:42:20.786 [notice] [reason: :noconnection, scope: :paseo_relay_owners, handler: :pg, from: :relay_peer_11459@582e4057fd14, event: :scope_down]
+
+07:42:20.786 [notice] [reason: :noconnection, scope: :paseo_relay_owners, handler: :registry, from: :relay_peer_11459@582e4057fd14, event: :scope_down]
+...............
+07:42:34.864 [notice] [scope: :paseo_relay_owners, handler: :pg, from: :relay_peer_a@582e4057fd14, event: :nodeup]
+
+07:42:34.864 [notice] [scope: :paseo_relay_owners, handler: :registry, from: :relay_peer_a@582e4057fd14, event: :nodeup]
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.868703 ===
+    scope: paseo_relay_owners
+    event: tables_created
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.875078 ===
+    scope: paseo_relay_owners
+    handler: registry
+    event: discovering_cluster
+
+07:42:34.875 [notice] [scope: :paseo_relay_owners, handler: :registry, from: :relay_peer_a@582e4057fd14, event: :discover_request]
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.875251 ===
+    scope: paseo_relay_owners
+    handler: registry
+    event: ack_sync
+    from: paseo_relay_test_11426@582e4057fd14
+    entries: 14
+
+07:42:34.875 [notice] [scope: :paseo_relay_owners, handler: :registry, from: :relay_peer_a@582e4057fd14, event: :ack_sync, entries: 0]
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.875952 ===
+    scope: paseo_relay_owners
+    handler: pg
+    event: discovering_cluster
+
+07:42:34.876 [notice] [scope: :paseo_relay_owners, handler: :pg, from: :relay_peer_a@582e4057fd14, event: :discover_request]
+
+07:42:34.876 [notice] [scope: :paseo_relay_owners, event: :scope_added]
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.876065 ===
+    scope: paseo_relay_owners
+    handler: pg
+    event: ack_sync
+    from: paseo_relay_test_11426@582e4057fd14
+    entries: 0
+
+07:42:34.876 [notice] [scope: :paseo_relay_owners, handler: :pg, from: :relay_peer_a@582e4057fd14, event: :ack_sync, entries: 0]
+
+07:42:34.878 [notice] [scope: :paseo_relay_owners, handler: :registry, from: :relay_peer_b@582e4057fd14, event: :nodeup]
+
+07:42:34.878 [notice] [scope: :paseo_relay_owners, handler: :pg, from: :relay_peer_b@582e4057fd14, event: :nodeup]
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.882779 ===
+    scope: paseo_relay_owners
+    event: tables_created
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.891324 ===
+    scope: paseo_relay_owners
+    handler: registry
+    event: discovering_cluster
+
+07:42:34.891 [notice] [scope: :paseo_relay_owners, handler: :registry, from: :relay_peer_b@582e4057fd14, event: :discover_request]
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.891573 ===
+    scope: paseo_relay_owners
+    handler: registry
+    event: ack_sync
+    from: paseo_relay_test_11426@582e4057fd14
+    entries: 14
+
+07:42:34.891 [notice] [scope: :paseo_relay_owners, handler: :registry, from: :relay_peer_b@582e4057fd14, event: :ack_sync, entries: 0]
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.892132 ===
+    scope: paseo_relay_owners
+    handler: pg
+    event: discovering_cluster
+
+07:42:34.892 [notice] [scope: :paseo_relay_owners, handler: :pg, from: :relay_peer_b@582e4057fd14, event: :discover_request]
+
+07:42:34.892 [notice] [scope: :paseo_relay_owners, event: :scope_added]
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.892308 ===
+    scope: paseo_relay_owners
+    handler: pg
+    event: ack_sync
+    from: paseo_relay_test_11426@582e4057fd14
+    entries: 0
+
+07:42:34.892 [notice] [scope: :paseo_relay_owners, handler: :pg, from: :relay_peer_b@582e4057fd14, event: :ack_sync, entries: 0]
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.894266 ===
+    scope: paseo_relay_owners
+    handler: registry
+    event: nodeup
+    from: relay_peer_b@582e4057fd14
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.894279 ===
+    scope: paseo_relay_owners
+    handler: pg
+    event: nodeup
+    from: relay_peer_a@582e4057fd14
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.894298 ===
+    scope: paseo_relay_owners
+    handler: pg
+    event: nodeup
+    from: relay_peer_b@582e4057fd14
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.894268 ===
+    scope: paseo_relay_owners
+    handler: registry
+    event: nodeup
+    from: relay_peer_a@582e4057fd14
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.894369 ===
+    scope: paseo_relay_owners
+    handler: registry
+    event: discover_request
+    from: relay_peer_b@582e4057fd14
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.894364 ===
+    scope: paseo_relay_owners
+    handler: registry
+    event: discover_request
+    from: relay_peer_a@582e4057fd14
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.894388 ===
+    scope: paseo_relay_owners
+    handler: pg
+    event: discover_request
+    from: relay_peer_b@582e4057fd14
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.894408 ===
+    scope: paseo_relay_owners
+    handler: pg
+    event: discover_request
+    from: relay_peer_a@582e4057fd14
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.894435 ===
+    scope: paseo_relay_owners
+    handler: registry
+    event: ack_sync
+    from: relay_peer_b@582e4057fd14
+    entries: 0
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.894456 ===
+    scope: paseo_relay_owners
+    handler: registry
+    event: ack_sync
+    from: relay_peer_a@582e4057fd14
+    entries: 0
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.894477 ===
+    scope: paseo_relay_owners
+    handler: pg
+    event: ack_sync
+    from: relay_peer_a@582e4057fd14
+    entries: 0
+=NOTICE REPORT==== 1-Nov-2026::07:42:34.894486 ===
+    scope: paseo_relay_owners
+    handler: pg
+    event: ack_sync
+    from: relay_peer_b@582e4057fd14
+    entries: 0
+...
+07:42:35.047 [notice] [reason: :noconnection, scope: :paseo_relay_owners, handler: :registry, event: :scope_down, from: :relay_peer_b@582e4057fd14]
+
+07:42:35.047 [notice] [reason: :noconnection, scope: :paseo_relay_owners, handler: :pg, event: :scope_down, from: :relay_peer_b@582e4057fd14]
+
+07:42:35.047 [notice] [reason: :noconnection, scope: :paseo_relay_owners, handler: :pg, event: :scope_down, from: :relay_peer_a@582e4057fd14]
+
+07:42:35.047 [notice] [reason: :noconnection, scope: :paseo_relay_owners, handler: :registry, event: :scope_down, from: :relay_peer_a@582e4057fd14]
+
+07:42:35.082 [notice] [scope: :paseo_relay_owners, handler: :registry, event: :nodeup, from: :relay_peer_b@582e4057fd14]
+
+07:42:35.082 [notice] [scope: :paseo_relay_owners, handler: :registry, event: :nodeup, from: :relay_peer_a@582e4057fd14]
+
+07:42:35.082 [notice] [scope: :paseo_relay_owners, handler: :pg, event: :nodeup, from: :relay_peer_b@582e4057fd14]
+
+07:42:35.082 [notice] [scope: :paseo_relay_owners, handler: :registry, event: :discover_request, from: :relay_peer_b@582e4057fd14]
+
+07:42:35.082 [notice] [scope: :paseo_relay_owners, handler: :pg, event: :nodeup, from: :relay_peer_a@582e4057fd14]
+
+07:42:35.082 [notice] [scope: :paseo_relay_owners, handler: :pg, event: :discover_request, from: :relay_peer_b@582e4057fd14]
+
+07:42:35.082 [notice] [scope: :paseo_relay_owners, handler: :registry, event: :discover_request, from: :relay_peer_a@582e4057fd14]
+
+07:42:35.082 [notice] [scope: :paseo_relay_owners, handler: :pg, event: :discover_request, from: :relay_peer_a@582e4057fd14]
+
+07:42:35.082 [notice] [scope: :paseo_relay_owners, handler: :registry, event: :ack_sync, from: :relay_peer_a@582e4057fd14, entries: 1]
+
+07:42:35.082 [notice] [scope: :paseo_relay_owners, handler: :registry, event: :ack_sync, from: :relay_peer_b@582e4057fd14, entries: 1]
+
+07:42:35.082 [notice] [scope: :paseo_relay_owners, handler: :pg, event: :ack_sync, from: :relay_peer_a@582e4057fd14, entries: 0]
+
+07:42:35.082 [notice] [scope: :paseo_relay_owners, handler: :pg, event: :ack_sync, from: :relay_peer_b@582e4057fd14, entries: 0]
+
+07:42:35.083 [notice] [local: {#PID<0.414.0>, "relay_peer_a@582e4057fd14"}, name: "partition-12642", scope: :paseo_relay_owners, remote: {#PID<10641.383.0>, "relay_peer_b@582e4057fd14"}, keep: :remote, handler: :registry, event: :registry_conflict]
+
+07:42:35.083 [notice] [local: {#PID<0.383.0>, "relay_peer_b@582e4057fd14"}, name: "partition-12642", scope: :paseo_relay_owners, remote: {#PID<10059.414.0>, "relay_peer_a@582e4057fd14"}, keep: :local, handler: :registry, event: :registry_conflict]
+...
+07:42:35.387 [notice] [reason: :noconnection, scope: :paseo_relay_owners, handler: :pg, from: :relay_peer_a@582e4057fd14, event: :scope_down]
+
+07:42:35.387 [notice] [reason: :noconnection, scope: :paseo_relay_owners, handler: :registry, from: :relay_peer_a@582e4057fd14, event: :scope_down]
+
+07:42:35.388 [notice] [reason: :noconnection, scope: :paseo_relay_owners, handler: :pg, from: :relay_peer_b@582e4057fd14, event: :scope_down]
+
+07:42:35.388 [notice] [reason: :noconnection, scope: :paseo_relay_owners, handler: :registry, from: :relay_peer_b@582e4057fd14, event: :scope_down]
+.............................................
+07:45:18.067 [error] Ranch listener {:backpressure, 12195} had connection process started with :cowboy_clear:start_link/3 at #PID<0.11304.0> exit with reason: :killed
+
+
+07:45:18.067 [error]      Process:            #PID<0.11304.0> on node :paseo_relay_test_11426@582e4057fd14
+     Context:            maximum heap size reached
+     Max Heap Size:      3145728
+     Total Heap Size:    3572
+     Kill:               true
+     Error Logger:       true
+     Message Queue Len:  1
+     GC Info:            [
+  old_heap_block_size: 987,
+  heap_block_size: 2585,
+  mbuf_size: 120,
+  recent_size: 63,
+  stack_size: 9,
+  old_heap_size: 235,
+  heap_size: 867,
+  bin_vheap_size: 4289319,
+  bin_vheap_block_size: 1418682,
+  bin_old_vheap_size: 1522032,
+  bin_old_vheap_block_size: 416440
+]
+     Stacktrace:         [
+  {:cowboy_websocket, :commands, 3,
+   [file: ~c"/work/deps/cowboy/src/cowboy_websocket.erl", line: 662]},
+  {:cowboy_websocket, :handler_call_result, 5,
+   [file: ~c"/work/deps/cowboy/src/cowboy_websocket.erl", line: 653]},
+  {:cowboy_http, :loop, 1,
+   [file: ~c"/work/deps/cowboy/src/cowboy_http.erl", line: 296]},
+  {:proc_lib, :init_p_do_apply, 3, [file: ~c"proc_lib.erl", line: 333]}
+]
+
+.........
+Finished in 228.8 seconds (0.7s async, 228.1s sync)
+
+Result: 106 passed

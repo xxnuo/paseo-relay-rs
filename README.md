@@ -1,241 +1,128 @@
 # Paseo Relay
 
-A distributed, protocol-compatible relay for [Paseo](https://github.com/getpaseo/paseo).
+A distributed, protocol-compatible relay for [Paseo](https://github.com/getpaseo/paseo),
+implemented in Rust as one Linux executable. The default Dockerfile and image
+publishing pipeline build Rust. The Elixir implementation remains at its upstream
+source paths as a tested compatibility and performance reference, not a runtime
+dependency. Frames remain end-to-end encrypted; the relay routes opaque payloads.
 
-Paseo Relay keeps its public WebSocket protocol independent from its deployment platform. Nodes use OTP only for discovery and route ownership. A deployment adapter reroutes WebSocket upgrades to the owning node, so frames stay inside one BEAM node.
-
-This project is under active development and its internal protocols may change without notice.
-
-## Protocol compatibility
-
-`serverId` and v2 `connectionId` are accepted only up to 256 bytes. This is a
-deliberate compatibility difference from the Durable Object relay, which does
-not impose this relay-side route-key limit. Oversized identifiers receive `400`
-before they can create ownership or session state.
-
-## Development
-
-The Elixir and Erlang versions are managed with [asdf](https://asdf-vm.com/):
-
-```sh
-asdf install
-mix deps.get
-mix test
-scripts/ci.sh
-```
-
-`scripts/ci.sh` runs dependency checks, formatting, tests, the production release
-and generic container health, readiness, metrics and restart checks.
-
-See [LICENSE](LICENSE).
-
-## Runtime contract
-
-The release has no deployment-provider dependency. Its settings are intentionally
-generic:
-
-| Setting | Default | Meaning |
-| --- | --- | --- |
-| `PASEO_RELAY_HOST` | `127.0.0.1` | Public listener IP. |
-| `PASEO_RELAY_PORT` | `4000` | Public HTTP/WebSocket listener. |
-| `PASEO_RELAY_DRAIN` | `false` | Start not-ready while existing sessions drain. |
-| `PASEO_RELAY_OWNERSHIP_TARGET` | `local` | Opaque target advertised to other relay nodes. |
-| `PASEO_RELAY_REROUTE_HEADER` | `x-reroute-target` | Response header used by the deployment adapter. |
-| `PASEO_RELAY_CLUSTER_QUERY` | unset | Optional DNS query used to discover BEAM peers. |
-| `PASEO_RELAY_CLUSTER_NODES` | unset | Optional comma-separated `name@host` peers, connected at startup and retried every 5 seconds alongside DNS discovery. |
-| `PASEO_RELAY_MIN_CLUSTER_SIZE` | `1` | Minimum nodes required before accepting unowned sessions. |
-| `PASEO_RELAY_ACCEPTORS` | `100` | Listener acceptor processes. |
-| `PASEO_RELAY_CONNECTIONS_PER_ACCEPTOR` | `200` | Capacity factor multiplied by the acceptor count to set the node-local active-WebSocket ceiling; the default is 20,000. |
-| `PASEO_RELAY_HTTP_IDLE_TIMEOUT_MS` | `15000` | Maximum idle time for pre-upgrade HTTP parsing and unread request bodies. Upgraded WebSockets remain exempt. |
-| `PASEO_RELAY_CAPACITY_MUTATION_TIMEOUT_MS` | `5000` | Maximum wait for a state-changing Capacity decision before the exact ledger epoch is invalidated. Choose a value appropriate to the runtime. |
-| `PASEO_RELAY_INGRESS_BUDGET_BYTES` | `536870912` | Node-wide weighted ceiling for complete WebSocket messages admitted to relay delivery. Must admit one maximum message at the configured weight. |
-| `PASEO_RELAY_INGRESS_WEIGHT` | `4` | Conservative memory weight charged per wire payload byte. |
-| `PASEO_RELAY_DELIVERY_TIMEOUT_MS` | `30000` | Maximum Writer reservation/write-barrier wait before a slow destination is shed. Also the shared budget for starting delivery of a closing peer's last messages. |
-| `PASEO_RELAY_TRANSPORT_SEND_TIMEOUT_MS` | `35000` | TCP send timeout. Must be greater than the Writer deadline so application shedding is recorded before the transport's final fallback. |
-| `PASEO_RELAY_CONTROL_QUEUE_BYTES` | `1048576` | Per-destination bound for queued control notifications. |
-| `PASEO_RELAY_DATA_ATTACH_TIMEOUT_MS` | `15000` | Maximum time a v2 client frame waits for its daemon-data socket. |
-| `PASEO_RELAY_TCP_RECEIVE_BUFFER_BYTES` | `65536` | Per-socket TCP receive buffer. |
-| `PASEO_RELAY_WEBSOCKET_MAX_HEAP_WORDS` | `33554432` | Per-WebSocket BEAM heap fuse, including shared binaries. Values below this protocol-safe floor are rejected. |
-| `PASEO_RELAY_MEMORY_WATERMARK_BYTES` | `0` | Optional BEAM total-memory watermark that pauses admission and sheds WebSockets with `1013` until measured memory reaches the recovery threshold; disabled generically because the safe threshold depends on the deployment memory limit. |
-| `RELEASE_NODE` / `RELEASE_COOKIE` | unset | Standard distributed-release identity. |
-
-`GET /health` is a liveness probe. `GET /ready` returns `200` only while the
-node accepts new work, and returns `503 {"status":"unready"}` while draining
-or below the configured cluster floor, when the node-local Capacity ledger does
-not answer its one-second status observation, during a memory-pressure episode,
-or while the application WebSocket ceiling is full. Temporary ingress-byte occupancy does not make the application unready. `GET
-/metrics` is Prometheus text and exposes readiness, draining, active WebSockets,
-active sessions, reroutes, connection rejections, delivery pressure and latency,
-frame sizes, slow-consumer closes, ingress reservations, and BEAM memory for the
-local node. If Capacity is unavailable, its four gauge families are omitted
-rather than reported as zero.
-
-State-changing Capacity decisions use a separate configured fail-closed
-boundary. Each caller captures the current ledger PID; a timeout kills that
-exact Capacity epoch, and `:rest_for_one` drains its listener and sockets before
-a clean replacement admits traffic. Read-only readiness and metrics status uses
-one second and never kills the ledger.
-
-Payloads never pass through a node-wide relay mailbox. Each `serverId` Owner
-stores topology metadata only, and every destination has a Writer allowing one
-payload write at a time. During delivery Cowboy's native `{active, false}`
-flow control suspends source reads while the WebSocket process remains available
-for full-duplex writes; the source is rearmed only after the destination's
-synchronous HTTP/1 send barrier. One absolute delivery deadline includes Owner
-lookup, destination attachment, Writer reservation, and the send barrier;
-accepted control notifications are either written within their deadline or
-close the destination with retryable `1013`. Kernel TCP pressure therefore
-reaches the producer without deadlocking simultaneous opposite-direction
-traffic. Cowboy
-may finish parsing frames already buffered before suspension, so every completed
-message receives an explicit token from one node-local capacity ledger and is
-queued in source order. The same ledger owns connection slots, weighted retained
-bytes, delivery state, pressure order, and their gauges; a socket monitor, rather
-than its termination callback, releases all tokens after abnormal death. Losing
-the ledger stops the production listener and its existing connections before a
-fresh ledger can reopen admission. Budget exhaustion closes that source with
-retryable `1013`.
-
-Client-originated JSON frames with type `hello` or `e2ee_hello` are the narrow
-exception to opaque forwarding. After message-capacity admission, a stateless
-validation requires the `key` to be canonical padded Base64 for a canonical
-32-byte X25519 public key and rejects unsupported values. It checks every
-matching text or binary frame on both routing versions; other frames remain
-opaque. A rejection is never forwarded and closes the client with `1008 Invalid
-handshake key`.
-
-The compatible masked data-frame ceiling remains exactly 32 MiB, which permits
-`32 MiB - 14 bytes` of payload. Cowboy applies that payload limit to individual
-frames and reassembled fragmented messages and closes an oversized message with
-`1009`. The only supported inbound v2 control message is the legacy JSON ping;
-control input has a separate 64 KiB Cowboy ceiling and is charged to the same
-ledger through parsing. Outbound control notifications use the same Writer
-boundary with their own bounded byte queue. Cowboy assembles a complete payload
-before the application can request its byte-only Capacity token, and incomplete
-fragment assembly remains inside the connection process. The 32 MiB ceiling,
-per-WebSocket heap fuse, and configured node memory watermark limit and shed
-this staging risk; they do not provide a strict pre-parser memory reservation.
-Generic operators should set a nonzero watermark from their runtime limit;
-blocked deliveries are shed first.
-
-Build a production release with `MIX_ENV=prod asdf exec mix release`, or build
-the generic container with `docker build -t paseo-relay .`.
-
-CI publishes `ghcr.io/getpaseo/paseo-relay` after successful verification on
-`main`, tags, and same-repository pull requests. Main also updates
-`latest`; pull requests publish only `sha-<commit>` candidate tags. Pin consumers
-to the `sha256` digest reported in the publish job summary:
-
-```sh
-docker pull ghcr.io/getpaseo/paseo-relay@sha256:<64-hex-digest>
-docker run --rm -p 4000:4000 ghcr.io/getpaseo/paseo-relay@sha256:<64-hex-digest>
-```
-
-The image and this environment contract are the supported integration boundary.
-The container starts the release on port 4000; set `RELEASE_NODE`,
-`RELEASE_DISTRIBUTION=name` and `RELEASE_COOKIE` for distributed operation.
-Standard OTP settings (`ERL_FLAGS`, `ERL_AFLAGS`, `ERL_EPMD_ADDRESS`) control
-VM scheduling and distribution listeners.
-
-Cluster ownership uses [Syn](https://hexdocs.pm/syn/readme.html), an eventually
-consistent distributed process registry. A network partition can temporarily
-admit one owner for the same `serverId` on each side. When the registry
-converges, Syn keeps one owner and the losing owner's WebSockets close with
-`1012`, causing clients to reconnect through normal routing. Existing
-WebSockets have no transparent migration or cross-partition forwarding. Restore
-or fence a prolonged partition before treating reconnects as one session again.
-
-## Rust rewrite (refactor-rust)
-
-The Rust replacement is being developed in `rust/`. The Elixir sources remain
-unchanged as the upstream reference and performance baseline; the published image
-still runs Elixir. Keep upstream changes as normal Git rebases and compare the
-matching modules (`connection.ex` / `connection.rs`, `handshake_validation.ex` /
-`protocol.rs`, `ownership.ex` / `session.rs` and `cluster.rs`, `socket.ex` / `relay.rs`). Rust
-real-network tests exercise the same public v1/v2 wire contract rather than OTP
-implementation details.
-
-Build and start a Linux executable without an Erlang installation:
+## Build and Linux deployment
 
 ```sh
 cargo build --locked --release --manifest-path rust/Cargo.toml
 PASEO_RELAY_HOST=127.0.0.1 PASEO_RELAY_PORT=4000 rust/target/release/paseo-relay
 ```
 
-For a self-contained Linux amd64 executable, install the Rust
-`x86_64-unknown-linux-musl` target and build with
-`--target x86_64-unknown-linux-musl`. The resulting
-`rust/target/x86_64-unknown-linux-musl/release/paseo-relay` needs no system libc or
-Erlang runtime. `deploy/paseo-relay.service` runs `/usr/local/bin/paseo-relay` as
-an unprivileged dynamic systemd user and optionally reads
-`/etc/paseo-relay/environment`. Its stop timeout includes the relay drain grace.
-The generic, nonroot container also contains only the static executable:
+The executable accepts environment configuration and needs no Erlang installation.
+The normal host build uses the host libc. A self-contained Linux amd64 build is:
 
 ```sh
-docker build -f rust/Dockerfile -t paseo-relay-rust .
+rustup target add x86_64-unknown-linux-musl
+cargo build --locked --release --manifest-path rust/Cargo.toml --target x86_64-unknown-linux-musl
+```
+
+Use `rust/target/x86_64-unknown-linux-musl/release/paseo-relay` on the server.
+`deploy/paseo-relay.service` runs `/usr/local/bin/paseo-relay` as an unprivileged
+systemd dynamic user, optionally reads `/etc/paseo-relay/environment`, and allows
+40 seconds for shutdown. Set the host and memory watermark for the deployment.
+The repository contains no provider inventories or proxy/operator configuration.
+
+```sh
+docker build -t paseo-relay-rust .
 docker run --rm -p 127.0.0.1:4000:4000 paseo-relay-rust
 ```
 
-Rust implements v1/v2 local routing, control sync/connected/disconnected/ping,
-duplicate-role replacement, byte-budget admission, bounded control notifications,
-synchronous destination writes and slow-consumer shedding. SIGTERM/SIGINT disables
-admission, allows 30 seconds for sessions to drain, then sends retryable `1012`
-closes before exit. Health, readiness and core Prometheus counters use the
-existing URLs. `PASEO_RELAY_HOST`, `PORT`, `DRAIN`, `ACCEPTORS`,
-`CONNECTIONS_PER_ACCEPTOR`, `INGRESS_BUDGET_BYTES`, `INGRESS_WEIGHT`,
-`DELIVERY_TIMEOUT_MS`, `TRANSPORT_SEND_TIMEOUT_MS`, `CONTROL_QUEUE_BYTES`,
-`DATA_ATTACH_TIMEOUT_MS`, `HTTP_IDLE_TIMEOUT_MS`, `TCP_RECEIVE_BUFFER_BYTES` and
-`MEMORY_WATERMARK_BYTES` retain the defaults and bounds above (all names have the
-`PASEO_RELAY_` prefix). Acceptor settings determine the connection ceiling; Tokio
-schedules I/O. Its acceptor count also bounds concurrent pre-upgrade HTTP
-connections independently of the WebSocket ceiling. Upgrading releases that HTTP
-slot immediately; an idle HTTP connection releases it on timeout. The transport
-timeout is validated as an upper bound; writes use
-the stricter absolute delivery deadline. HTTP idle time includes incomplete
-headers and unread bodies; upgraded WebSockets are exempt.
+The scratch image contains only the static executable and runs as UID/GID 65532.
+It listens on 0.0.0.0:4000; native defaults are loopback. CI verifies tests, image
+restart and a private two-container cluster, then retains the standalone amd64
+binary with SHA256SUMS as a workflow artifact. Successful main/tag/same-repository
+PR workflows are configured to publish `ghcr.io/getpaseo/paseo-relay`; pin a
+consumer to the digest reported by that workflow. Existing registry images are
+not changed just by checking out this branch. See [LICENSE](LICENSE).
 
-The Rust watermark measures Linux process RSS, not BEAM allocated memory. An
-episode pauses admission and readiness, sheds blocked sources first and then
-newest remaining sockets, and remeasures RSS every 100 ms between bounded batches.
-Admission recovers after RSS falls below the watermark minus one maximum payload.
-`paseo_relay_process_resident_memory_bytes` exposes RSS; runtime-specific BEAM
-metrics do not apply. A failed enabled RSS observation stops admission, closes
-sessions and terminates the service rather than assuming zero memory usage.
+## Runtime contract
 
-Rust supports authenticated static and DNS-discovered clusters. Readiness observes
-the configured cluster floor; existing owned sessions continue below that floor,
-but new unowned sessions receive `503`. A known remote owner returns the existing
-`409` and configured reroute header before local connection or memory admission.
-No WebSocket payload crosses the cluster channel. Public frame, delivery,
-handshake and capacity metric families retain their existing names and buckets;
-runtime-specific BEAM metrics are replaced by Linux process RSS. Final comparative
-performance gates remain pending. BEAM heap/distribution
-settings do not apply to Rust; the Capacity mutation timeout has no Rust
-counterpart because semaphore mutations do not wait on an authority process.
-The generic published image still runs the retained Elixir implementation.
+All rows below have the `PASEO_RELAY_` prefix unless named otherwise.
 
-Handshake/control JSON is scanned without constructing a tree for unrelated
-metadata. Only the small type/key strings are decoded; duplicate keys retain the
-original last-value behavior and opaque frames remain byte-for-byte unchanged.
-Cluster membership is bounded during decoding, before collecting excessive
-entries. Malformed percent escapes or non-UTF-8 query values receive `400` before
-ownership/admission: Rust rejects these inputs instead of allowing lossy decoding
-to merge distinct route keys. This is a deliberate stricter input boundary than
-accepting arbitrary byte-string identifiers.
+| Setting | Default | Meaning / accepted bounds |
+| --- | --- | --- |
+| `HOST` | `127.0.0.1` | Public listener IP address. |
+| `PORT` | `4000` | HTTP/WebSocket port, 1–65535. |
+| `DRAIN` | `false` | Start unready and reject new upgrades; true/false. |
+| `ACCEPTORS` | `100` | Maximum pre-upgrade HTTP connections, 1–1000; also a factor in the WebSocket ceiling. Tokio schedules I/O. |
+| `CONNECTIONS_PER_ACCEPTOR` | `200` | Second ceiling factor, 1–1000000. The default active WebSocket ceiling is 20000. |
+| `HTTP_IDLE_TIMEOUT_MS` | `15000` | Incomplete headers/unread bodies/HTTP keepalive idle limit, 100–120000 ms. Upgraded sockets are exempt and release their HTTP slot immediately. |
+| `INGRESS_BUDGET_BYTES` | `536870912` | Weighted complete-message ceiling, 128 MiB–8 GiB; must admit one maximum message at its configured weight. |
+| `INGRESS_WEIGHT` | `4` | Charge per payload byte, 1–16. |
+| `DELIVERY_TIMEOUT_MS` | `30000` | Absolute attachment/queue/write budget, 100–120000 ms. |
+| `TRANSPORT_SEND_TIMEOUT_MS` | `35000` | Compatibility upper bound, 100–300000 ms; must exceed delivery timeout. Rust writes use the stricter delivery deadline. |
+| `CONTROL_QUEUE_BYTES` | `1048576` | Per-control-destination byte queue, 64 bytes–64 MiB. |
+| `DATA_ATTACH_TIMEOUT_MS` | `15000` | v2 client wait for daemon data, 1000–120000 ms, capped by the delivery deadline. |
+| `TCP_RECEIVE_BUFFER_BYTES` | `65536` | Per-socket receive buffer, 4 KiB–1 MiB. |
+| `MEMORY_WATERMARK_BYTES` | `0` | Disabled, or 256 MiB–64 GiB Linux process RSS watermark. Choose it from the real memory limit. |
+| `OWNERSHIP_TARGET` | `local` | Opaque reroute target, valid HTTP header value up to 1024 bytes; required non-default in a cluster. |
+| `REROUTE_HEADER` | `x-reroute-target` | Valid HTTP response header name. |
+| `MIN_CLUSTER_SIZE` | `1` | Required live membership for unowned sessions, 1–1000. |
+| `CLUSTER_NODES` | unset | Static peer identities; see below. |
+| `CLUSTER_QUERY` | unset | DNS discovery seed; see below. |
+| `CLUSTER_LISTEN` | `127.0.0.1:4400` when enabled | Separate private control listener; configuring it enables clustering. |
+| `RELEASE_NODE` / `RELEASE_COOKIE` | unset | Rust cluster identity/shared secret, described below. |
 
-A source cancelled after emission fences its destination Writer; an unused queued
-reservation may be skipped. A data destination has one queue slot behind its
-active write; queued entries borrow the live, charged source rather than retain
-payloads after source cancellation. Further senders wait under their existing byte
-leases and absolute deadlines. The destination gets one second to flush its
-retryable close before transport drop. Accepted
-control messages are never emitted after an expired queue deadline. Metrics count
-timeout/slow-consumer shedding once per destination, while a control-byte-queue
-rejection counts slow-consumer shedding without fabricating a delivery timeout.
-Forwarded frame/byte counters advance at Writer emission, matching Elixir;
-use receipt checks and timeout metrics to establish successful delivery.
+`GET /health` returns `200 {"status":"ok"}`. `GET /ready` returns
+`200 {"status":"ready"}` only while admission is open, and
+`503 {"status":"unready"}` while draining, under memory pressure, below the
+cluster floor or at the WebSocket ceiling. Ingress-byte occupancy alone does not
+make the node unready. `GET /metrics` is Prometheus text: readiness, drain,
+connections/sessions, reroutes/rejections, ingress and in-flight bytes, pressured
+sources, shedding/timeouts, frame and delivery histograms and fixed-dimension
+handshake outcomes. Names, labels and buckets match the runtime-independent
+Elixir families. Linux RSS replaces BEAM memory families. Forwarded counters
+advance at emission, so receipt/timeout evidence is still needed for delivery.
 
-### Rust cluster contract
+SIGTERM/SIGINT stops admission, allows 30 seconds for existing sessions to drain,
+then sends retryable `1012` closes and allows two seconds for socket cleanup.
+Sessions retain a 30-second empty-owner grace; leases pin the owner across an
+upgrade and idle expiry checks the exact generation. Fatal listener/cluster
+failure closes existing sessions before service exit.
+
+## Public protocol and resource boundaries
+
+`/ws` retains v1 and v2 server/client roles, duplicate-role replacement, v2
+sync/connected/disconnected/ping-pong control, generated client connection IDs,
+per-client data routes and fanout. An unresponsive control is nudged after ten
+seconds without client data attachment and reset five seconds later.
+`serverId` and v2 `connectionId` are limited to 256 UTF-8 bytes. Malformed percent
+escapes and invalid UTF-8 queries fail with 400 before route/admission state;
+this deliberately avoids lossy route-key collisions, rather than accepting
+arbitrary byte-string identifiers.
+
+Maximum data payloads and reassembled messages are exactly `32 MiB - 14 bytes`,
+matching the masked 32 MiB wire-frame contract. Control input is limited to
+64 KiB. Oversized messages close with `1009`. Every matching client text/binary
+`hello` or `e2ee_hello` frame requires a canonical padded Base64 supported
+32-byte canonical X25519 key; a rejection closes with `1008` and is not forwarded.
+Only small type/key strings decode; unrelated JSON metadata is scanned without
+building a Value tree. Duplicate fields retain the original last-value behavior.
+Other payloads remain byte-for-byte opaque.
+
+Per-session state contains topology only. Independent Writers flush before
+acknowledging a source, keeping reverse traffic available while source reads
+pause. Each data Writer has one queue slot; queued data borrows the live charged
+source, while further senders wait under their existing byte leases/deadlines.
+Control notifications own bounded byte leases and cannot emit after expiry.
+Cancelling an emitted write fences its destination; an unused queued reservation
+may be skipped. A closing destination gets one second to flush its retryable
+close before transport drop. Source last messages finish before normal detach.
+
+The byte ledger starts at complete messages. Incomplete frame assembly remains
+outside it; no strict pre-parser reservation is claimed. The RSS watermark pauses
+admission, sheds blocked sources first then newest sockets, and remeasures every
+100 ms between bounded batches. Recovery requires RSS below the watermark minus
+one maximum payload. Enabled RSS-observation failure drains/closes the service.
+Pre-upgrade HTTP slots, frame bounds, bounded decoding and measured RSS recovery
+complement the weighted byte budget.
+
+## Cluster contract
 
 | Setting | Rust behavior |
 | --- | --- |
@@ -275,7 +162,50 @@ Elixir sources remain the reference for upstream public-protocol changes; Rust's
 multi-process tests cover equivalent routing/failure behavior rather than OTP
 internals.
 
-### Preliminary local-path performance
+## Development and upstream maintenance
+
+```sh
+cargo fmt --manifest-path rust/Cargo.toml --check
+cargo clippy --locked --manifest-path rust/Cargo.toml --all-targets -- -D warnings
+cargo test --locked --manifest-path rust/Cargo.toml --all-targets
+docker build -t paseo-relay-rust:local .
+cargo test --locked --manifest-path rust/Cargo.toml --test binary -- --ignored
+```
+
+The build image pins Rust 1.97.1 and Cargo.lock pins dependencies. Tests use real
+listeners, child processes, TCP partitions, DNS and containers. TDD.md records
+red/green evidence and the exact remaining validation scope.
+
+The Elixir reference at upstream baseline `5f4b763` keeps its original
+`lib/`, `config/`, `test/`, mix.exs and mix.lock paths so ordinary rebases carry
+upstream changes forward. Dockerfile.elixir builds it; scripts/ci.sh and the
+reference CI job retain its original checks. With Elixir/OTP installed, run
+`mix deps.get` and `mix test`; this is not required to deploy Rust.
+
+| Upstream change | Rust implementation / verification |
+| --- | --- |
+| connection.ex / protocol.ex | connection.rs / protocol.rs, query and real-socket ceiling tests |
+| handshake_validation.ex | protocol.rs, key/duplicate-field/memory-limit tests |
+| ownership.ex / static_cluster.ex | session.rs / cluster.rs, real-process discovery/partition/restart tests |
+| socket.ex / delivery/ / capacity.ex | relay.rs / session.rs / server.rs, pressure, cancellation and lifetime tests |
+| metrics.ex / config.ex | metrics.rs / config.rs, public metric and environment tests |
+
+For an upstream update, fetch and rebase the branch, inspect changes to these
+boundaries, port behavior with a failing Rust regression first, then run both
+reference and Rust gates and repeat comparative loads if a hot path changed.
+Keep incoming Elixir Docker changes in Dockerfile.elixir when resolving the
+intentional Dockerfile conflict; the default Dockerfile remains Rust. Public
+protocol changes generally do not require changing the internal cluster format.
+
+Comparisons use the same compiled WebSocket client for both images, validate each
+payload/order, check server counters and final socket/byte cleanup, and retain
+cgroup peaks, logs, source hashes and exact image IDs. Rebuild the baseline with
+`docker build -f Dockerfile.elixir -t paseo-relay-elixir-baseline:5f4b763 .`, build
+the Rust image as above, compile the load client using
+`cargo build --locked --release --manifest-path rust/Cargo.toml --example relay_bench`,
+and run the driver with `uv run python scripts/compare-rust.py --help`.
+
+## Historical comparison
 
 The retained Elixir baseline `5f4b763` and Rust `9fef3e8` were measured on the
 same Linux host through loopback Docker port mappings. Each fresh container had

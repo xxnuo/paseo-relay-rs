@@ -65,7 +65,7 @@ kill "${release_pid}"
 wait "${release_pid}" || true
 release_pid=""
 
-docker build --tag "${generic_image}" .
+docker build --file Dockerfile.elixir --tag "${generic_image}" .
 
 docker run --detach --name "${generic_container}" \
   --publish "127.0.0.1:${container_port}:4000" "${generic_image}" >/dev/null

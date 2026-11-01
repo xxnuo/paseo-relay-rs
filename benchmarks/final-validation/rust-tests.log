@@ -1,0 +1,141 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running unittests src/lib.rs (rust/target/debug/deps/paseo_relay-910d0ef4c74aa00a)
+
+running 2 tests
+test relay::tests::expired_control_is_closed_before_a_ready_transport_can_emit_it ... ok
+test relay::cluster::tests::metadata_decoder_bounds_members_before_collecting_them ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (rust/target/debug/deps/paseo_relay-a6dd917378a2b108)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/binary.rs (rust/target/debug/deps/binary-f123df4e3ffcf247)
+
+running 7 tests
+test static_cluster_uses_real_container_dns_and_reroutes_public_websockets ... ignored, requires a built Rust Docker image and a local Docker daemon
+test static_nonroot_container_serves_websockets_after_restart ... ignored, requires a built Rust Docker image and a local Docker daemon
+paseo-relay listening on 127.0.0.1:46169
+paseo-relay listening on 127.0.0.1:41671
+test invalid_config_exits_without_listening ... ok
+paseo-relay listening on 127.0.0.1:45565
+paseo-relay listening on 127.0.0.1:41913
+test linux_binary_serves_probes_and_stops_on_sigterm ... ok
+test linux_rss_watermark_recovers_from_real_fragment_memory_without_configuration_change ... ok
+test large_json_metadata_does_not_expand_into_an_unbounded_value_tree ... ok
+test cancelled_queued_sources_cannot_retain_uncharged_payloads ... ok
+
+test result: ok. 5 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 2.08s
+
+     Running tests/cluster.rs (rust/target/debug/deps/cluster-300030d68d4148bc)
+
+running 9 tests
+paseo-relay listening on 127.0.0.1:40905
+paseo-relay listening on paseo-relay listening on paseo-relay listening on paseo-relay listening on paseo-relay listening on 127127127127127.....00000.....00000...1..11:1::37083:4212345971
+135487
+
+
+:35929
+paseo-relay listening on paseo-relay listening on 127127..00..00..11::33357paseo-relay listening on 42175
+127
+.0.0.1:35565
+test unauthenticated_cluster_input_cannot_raise_readiness_or_claim_ownership ... ok
+paseo-relay listening on paseo-relay listening on paseo-relay listening on 127127127...000...000...111:::438214574138799
+
+
+paseo-relay listening on 127.0.0.1:38613
+paseo-relay listening on 127.0.0.1:44443
+paseo-relay listening on 127.0.0.1:33283
+paseo-relay listening on 127.0.0.1:41937
+paseo-relay listening on 127.0.0.1:42337
+Error: Custom { kind: InvalidData, error: "duplicate RELEASE_NODE identity" }
+test duplicate_authenticated_node_identity_fails_closed_with_explicit_socket_closes ... ok
+test floor_blocks_unowned_admission_and_remote_reroute_bypasses_a_full_landing_node ... ok
+test dns_discovery_reroutes_then_public_replay_exchanges_ordered_payloads ... ok
+test peers_learn_transitive_membership_and_converge_all_claims_across_three_processes ... ok
+test different_cluster_cookies_never_count_each_other_toward_the_floor ... ok
+test an_authenticated_snapshot_cannot_be_replayed_under_a_fresh_server_challenge ... ok
+paseo-relay listening on 127.0.0.1:35565
+test partition_heals_to_one_owner_and_loser_receives_explicit_retryable_close ... ok
+test dead_owner_expires_and_a_restarted_peer_learns_the_replacement_claim ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.08s
+
+     Running tests/config.rs (rust/target/debug/deps/config-16cdb4ec92d9d0a8)
+
+running 5 tests
+test default_and_supported_linux_environment_match_original_contract ... ok
+test linux_runtime_protection_settings_are_loaded ... ok
+test distributed_settings_require_authenticated_node_configuration ... ok
+test rejects_invalid_values_and_unsafe_budget_and_timeout_combinations ... ok
+test cluster_environment_validates_identity_authentication_and_http_headers ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/connection.rs (rust/target/debug/deps/connection-116db00b70461653)
+
+running 2 tests
+test route_limits_count_utf8_bytes_and_trim_only_connection_id ... ok
+test follows_original_query_contract ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/metrics.rs (rust/target/debug/deps/metrics-1b2588feb17c6fef)
+
+running 3 tests
+test prometheus_tracks_real_frames_handshakes_delivery_and_control_input ... ok
+test slow_consumer_timeouts_are_counted_once_and_control_budget_closes_are_distinct ... ok
+test waiting_for_attachment_exposes_and_releases_live_delivery_gauges ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.50s
+
+     Running tests/protocol.rs (rust/target/debug/deps/protocol-ee975cb92ede9be4)
+
+running 5 tests
+test matches_cowboy_payload_contract ... ok
+test opaque_payloads_are_not_interpreted_as_handshakes ... ok
+test classification_preserves_last_duplicate_fields_and_json_string_escapes ... ok
+test rejects_all_elixir_low_order_keys ... ok
+test validates_both_handshake_names_and_canonical_x25519_coordinates ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/relay.rs (rust/target/debug/deps/relay-f22bda457a3ba4da)
+
+running 13 tests
+test oversized_control_message_is_explicitly_closed_with_1009 ... ok
+test weighted_ingress_exhaustion_closes_only_new_source_and_recovers ... ok
+test malformed_query_encoding_cannot_create_lossy_colliding_route_keys ... ok
+test generated_v2_client_id_attaches_data_and_validates_each_binary_handshake_retry ... ok
+test v1_forwards_both_opcodes_and_replaces_only_same_role ... ok
+test v2_notifies_waits_for_data_and_preserves_last_messages_before_close ... ok
+test v2_fanout_and_replacement_keep_client_routes_and_notify_control ... ok
+test validates_client_handshakes_over_real_websockets ... ok
+test capacity_rejection_and_attach_deadline_recover_without_leaking_slots ... ok
+test exact_maximum_fragmented_payload_delivers_and_one_byte_more_closes_1009 ... ok
+test slow_fanout_peer_does_not_deadlock_reverse_traffic_or_healthy_order ... ok
+test cancelling_an_emitted_source_fences_the_blocked_writer_before_its_deadline ... ok
+test unresponsive_control_is_nudged_then_closed_without_dropping_its_idle_client ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.01s
+
+     Running tests/server.rs (rust/target/debug/deps/server-07968e6b8c133c88)
+
+running 4 tests
+test pressure_sheds_an_incomplete_fragment_and_admission_recovers_when_disabled ... ok
+test preupgrade_slots_bound_slow_http_and_are_released_at_upgrade_not_first_ws_read ... ok
+test idle_http_and_withheld_request_body_expire_but_websockets_do_not ... ok
+test stale_idle_timer_cannot_remove_a_reused_session_before_its_new_grace_period ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 31.02s
+
+     Running unittests examples/relay_bench.rs (rust/target/debug/examples/relay_bench-746a3d6604e52b48)
+
+running 1 test
+test percentile_is_nearest_rank_with_defined_small_sample_behavior ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
