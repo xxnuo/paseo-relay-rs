@@ -256,9 +256,21 @@ impl Drop for Container {
 #[tokio::test]
 #[ignore = "requires a built Rust Docker image and a local Docker daemon"]
 async fn nginx_nonroot_container_serves_websockets_after_restart() {
+    let image = std::env::var("PASEO_RELAY_TEST_IMAGE").unwrap_or("paseo-relay-rust:local".into());
+    container_serves_websockets_after_restart(image, true).await;
+}
+
+#[tokio::test]
+#[ignore = "requires a built direct Rust Docker image and a local Docker daemon"]
+async fn direct_nonroot_container_serves_websockets_after_restart() {
+    let image =
+        std::env::var("PASEO_RELAY_DIRECT_TEST_IMAGE").unwrap_or("paseo-relay-rust:direct".into());
+    container_serves_websockets_after_restart(image, false).await;
+}
+
+async fn container_serves_websockets_after_restart(image: String, nginx: bool) {
     use futures_util::{SinkExt, StreamExt};
     use tokio_tungstenite::{connect_async, tungstenite::Message};
-    let image = std::env::var("PASEO_RELAY_TEST_IMAGE").unwrap_or("paseo-relay-rust:local".into());
     let output = Command::new("docker")
         .args(["run", "--detach", "--publish", "127.0.0.1::4000", &image])
         .output()
@@ -308,13 +320,13 @@ async fn nginx_nonroot_container_serves_websockets_after_restart() {
                 .unwrap()
                 .matches("nginx: worker process")
                 .count(),
-            1
+            usize::from(nginx)
         );
         let health = binary_request(address, "/health").await;
         assert!(health.contains(r#"{"status":"ok"}"#));
         assert!(
-            health.to_ascii_lowercase().contains("server: nginx"),
-            "Nginx was bypassed: {health}"
+            health.to_ascii_lowercase().contains("server: nginx") == nginx,
+            "unexpected proxy: {health}"
         );
         assert!(
             binary_request(address, "/ready")

@@ -1092,3 +1092,29 @@
   without treating this as a universal throughput improvement. Source hashes,
   images, raw metrics/cgroups and summaries are in
   benchmarks/vps-worker-comparison. No live VPS deployment or WAN test occurred.
+
+## Direct Rust versus proxy: long-lived connection cost experiment
+
+- No relay runtime behavior changed. The existing scratch binary target is now
+  built alongside the proxy image by scripts/ci-rust.sh. A shared real-image
+  test verifies both direct and proxy modes: expected process inventory/header,
+  nonroot execution, 61-second idle traffic, restart and resource cleanup.
+- Red: the previous Docker-built client rejects the new idle argument before
+  connection setup (red-idle.stderr). Idle mode now prewarms every socket,
+  holds it, probes both directions and accounts exactly two final frames/pair.
+  The driver waits for exact warmup counters/active socket counts, samples idle
+  CPU/memory separately, asserts counters/socket counts did not change during
+  sampling, then validates delivery, counters and cleanup. Child load processes
+  are killed/reaped on sampling errors.
+- CPU and memory observations retain elapsed wall time, cgroup CPU usage/current
+  and peak memory. One/two CPU and runtime-worker choices support cheap-VPS
+  comparisons without changing relay limits. Workload fingerprints include mode
+  and selected resources. No TLS/Cloudflare runtime is represented by these
+  plaintext local experiments. Operator selected ordinary orange-cloud DNS
+  proxying, not Tunnel; an origin TLS implementation remains necessary for
+  Full (strict). Production TLS/certificate settings are not changed by this
+  experiment. Final gates and measured conclusions follow below.
+
+- Gate passed: Docker formatting/Clippy and 49 native/example tests; all four
+  final-image tests passed. A further real Docker DNS/ownership/reroute/replay
+  test passed against the direct image itself (direct-cluster.log).

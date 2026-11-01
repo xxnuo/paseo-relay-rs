@@ -54,9 +54,10 @@ fn percentile(sorted: &[u64], percent: usize) -> u64 {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = std::env::args().collect();
-    if args.len() != 6 {
-        return Err("usage: relay_bench HOST:PORT PAIRS SECONDS PAYLOAD_BYTES v1|v2".into());
+    if args.len() != 6 && !(args.len() == 7 && args[6] == "idle") {
+        return Err("usage: relay_bench HOST:PORT PAIRS SECONDS PAYLOAD_BYTES v1|v2 [idle]".into());
     }
+    let idle = args.len() == 7;
     let address = args[1].clone();
     let pairs: usize = args[2].parse()?;
     let seconds: u64 = args[3].parse()?;
@@ -90,7 +91,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
             let start = Instant::now();
             let mut latencies = Vec::new();
             let mut sequence = 0u64;
-            while start.elapsed() < Duration::from_secs(seconds) {
+            if idle {
+                tokio::time::sleep(Duration::from_secs(seconds)).await;
+            }
+            loop {
                 payload[..8].copy_from_slice(&sequence.to_le_bytes());
                 payload[8] = 0;
                 let frame_start = Instant::now();
@@ -101,6 +105,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 exchange(&mut daemon, &mut client, &payload).await;
                 latencies.push(frame_start.elapsed().as_micros() as u64);
                 sequence += 1;
+                if idle || start.elapsed() >= Duration::from_secs(seconds) {
+                    break;
+                }
             }
             let elapsed = start.elapsed();
             // Drain the data socket first so v2 detach cannot race client closure.
@@ -124,7 +131,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     println!(
         "{}",
         serde_json::json!({
-            "protocol":version,"pairs":pairs,"payload_bytes":bytes,"requested_seconds":seconds,
+            "protocol":version,"pairs":pairs,"payload_bytes":bytes,"requested_seconds":seconds,"idle":idle,
             "measured_seconds":elapsed.as_secs_f64(),"setup_seconds":setup.as_secs_f64(),
             "forwarded_frames":latencies.len(),"frames_per_second":latencies.len() as f64/elapsed.as_secs_f64(),
             "payload_bytes_per_second":latencies.len() as f64 * bytes as f64/elapsed.as_secs_f64(),
