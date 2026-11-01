@@ -6,6 +6,30 @@ publishing pipeline build a direct Rust scratch image without Nginx.
 The Elixir implementation remains at its upstream source paths as a tested
 compatibility and performance reference, not a runtime dependency. Frames remain end-to-end encrypted; the relay routes opaque payloads.
 
+## Published Docker images
+
+Docker Hub: `xxnuo/paseo-relay:latest`  
+GHCR: `ghcr.io/xxnuo/paseo-relay:latest`
+
+Both names publish the same direct Rust runtime for `linux/amd64` and
+`linux/arm64` (64-bit x86 and ARM). Docker selects the host architecture.
+Use `sha-<full Git commit>` or the published manifest digest to pin a release;
+`latest` follows the repository default branch. Pull requests run tests only.
+CI tests Rust on native amd64 and arm64 runners before publishing both registries.
+
+```sh
+docker run -d --name paseo-relay --restart unless-stopped \
+  --stop-timeout 40 --ulimit nofile=65536:65536 \
+  -p 127.0.0.1:4000:4000 \
+  ghcr.io/xxnuo/paseo-relay:latest
+curl --fail http://127.0.0.1:4000/ready
+```
+
+Replace the image with `xxnuo/paseo-relay:latest` to use Docker Hub.
+The loopback binding is for a local ingress; clients use its public WebSocket
+endpoint, with both session roles routed to the same node. The image has no TLS.
+An orange-cloud Full (strict) deployment still needs origin HTTPS; see below.
+
 ## Build and Linux deployment
 
 ```sh
@@ -17,7 +41,7 @@ and real-process tests inside the pinned Rust toolchain image, builds the
 the Rust image, and runs real container lifecycle/cluster tests, including
 61-second idle/resume, restart and live shutdown drain.
 It needs Docker on Linux and access to its socket; no host Rust installation is
-required. It extracts the static amd64 executable, common load client and
+required. It extracts the static host-architecture executable, common load client and
 SHA256SUMS to `rust/target/docker/`. CI uses this same script and retains those
 artifacts. The standalone binary needs neither Erlang nor Nginx:
 

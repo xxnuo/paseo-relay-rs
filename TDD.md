@@ -1270,3 +1270,12 @@
   benchmarks README indexes raw metrics, file SHA256 checks and provenance.
   No Rust application/source contract change, UI/provider/TLS/Cloudflare/WAN
   acceptance, Git push, remote deployment or registry publication occurred.
+
+## Multi-architecture Docker Hub and GHCR publication
+
+- Before: CI named all Linux artifacts amd64, built only one platform and targeted
+  the upstream GHCR namespace, with no Docker Hub publication.
+- Publication now targets xxnuo/paseo-relay in both registries and builds
+  linux/amd64 plus linux/arm64. Native runners verify both architectures; PRs
+  cannot publish. Artifact names follow the Docker daemon architecture.
+- Runtime, protocol, defaults and capacity contracts are unchanged.

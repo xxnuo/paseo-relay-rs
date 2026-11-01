@@ -1,8 +1,9 @@
 name: CI
 on:
+  workflow_dispatch:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, refactor-rust]
     tags: ['*']
 permissions:
   contents: read
@@ -22,19 +23,27 @@ jobs:
       - name: Elixir reference tests, release and image
         run: scripts/ci.sh
   rust-verify:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Docker Rust checks, relay image and Linux artifacts
         run: scripts/ci-rust.sh
       - uses: actions/upload-artifact@v4
         with:
-          name: paseo-relay-linux-amd64
+          name: paseo-relay-linux-${{ matrix.arch }}
           path: rust/target/docker/
   publish:
     needs: [verify, rust-verify]
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -42,7 +51,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.sha }}
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -51,10 +66,12 @@ jobs:
       - uses: docker/metadata-action@v5
         id: meta
         with:
-          images: ghcr.io/getpaseo/paseo-relay
+          images: |
+            xxnuo/paseo-relay
+            ghcr.io/xxnuo/paseo-relay
           tags: |
-            type=raw,value=sha-${{ github.event.pull_request.head.sha || github.sha }}
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=sha-${{ github.sha }}
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
             type=ref,event=tag
           flavor: latest=false
       - uses: docker/build-push-action@v6
@@ -62,9 +79,16 @@ jobs:
         with:
           context: .
           push: true
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       - name: Record immutable image reference
         env:
           DIGEST: ${{ steps.image.outputs.digest }}
-        run: echo "ghcr.io/getpaseo/paseo-relay@$DIGEST" >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          {
+            echo "xxnuo/paseo-relay@$DIGEST"
+            echo "ghcr.io/xxnuo/paseo-relay@$DIGEST"
+          } >> "$GITHUB_STEP_SUMMARY"
