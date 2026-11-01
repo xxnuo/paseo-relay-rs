@@ -1,0 +1,32 @@
+[
+  {
+    "workers": "",
+    "exit": 1,
+    "stderr": "Invalid PASEO_RELAY_NGINX_WORKERS\n"
+  },
+  {
+    "workers": "0",
+    "exit": 1,
+    "stderr": "Invalid PASEO_RELAY_NGINX_WORKERS: expected 1 to 64\n"
+  },
+  {
+    "workers": "65",
+    "exit": 1,
+    "stderr": "Invalid PASEO_RELAY_NGINX_WORKERS: expected 1 to 64\n"
+  },
+  {
+    "workers": "auto",
+    "exit": 1,
+    "stderr": "Invalid PASEO_RELAY_NGINX_WORKERS\n"
+  },
+  {
+    "workers": "-1",
+    "exit": 1,
+    "stderr": "Invalid PASEO_RELAY_NGINX_WORKERS\n"
+  },
+  {
+    "workers": "1;exit 0",
+    "exit": 1,
+    "stderr": "Invalid PASEO_RELAY_NGINX_WORKERS\n"
+  }
+]

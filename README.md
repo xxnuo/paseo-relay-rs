@@ -39,7 +39,7 @@ the public `PASEO_RELAY_HOST:PORT` listener (default 0.0.0.0:4000); Rust listens
 only on 127.0.0.1:4001 inside the container, or :4002 when the public port is
 4001. The independent cluster port remains unchanged. The entrypoint raises
 the soft file limit to 65536, requiring a hard limit of at least that value.
-Two Nginx workers have 65536 connection slots each; proxy sockets also consume
+Each Nginx worker has 65536 connection slots; proxy sockets also consume
 slots and file descriptors. WebSocket upgrades and ownership headers pass
 through with HTTP/1.1, without response/request buffering or URI rewriting.
 The Nginx upstream read/write inactivity timeout is 24 hours, including idle
@@ -56,6 +56,41 @@ Successful main/tag/same-repository PR workflows publish the default Rust + Ngin
 image to `ghcr.io/getpaseo/paseo-relay`; pin consumers to the reported digest.
 Checking out this branch does not update registry images. See [LICENSE](LICENSE).
 
+## Self-managed VPS deployment target
+
+Rust targets long-running nodes on independently purchased VPS hosts around the
+world. Fly.io is the original deployment context supplied by the operator; Rust
+does not depend on its edge routing, private network, autostart or TLS service.
+Keep actual VPS addresses, credentials, certificates and provider inventories
+outside this repository.
+
+Use systemd's existing restart policy for the native binary, or Docker's
+`--restart unless-stopped` for the image, with the documented 40-second stop
+allowance. Terminate public TLS at the VPS ingress and expose a stable `wss://`
+endpoint; the embedded Nginx currently serves plain HTTP/WebSocket, not automatic
+certificate provisioning. Keep `/metrics` and the cluster listener on management
+or private-network paths. Authenticated cluster traffic is not encrypted: use
+an encrypted private overlay between public VPS hosts rather than exposing its
+control port globally.
+
+For independent regional nodes, connect both roles of a session to the same
+regional endpoint. Geography-based DNS alone can send the two roles to different
+owners. A shared multi-region cluster requires an owner-aware ingress or client
+that consumes `409 + x-reroute-target`: the embedded Nginx passes that response
+through and does not implement Fly-style replay or automatic global forwarding.
+A target is an opaque routing identity, not permission to proxy an arbitrary URL.
+No automatic nearest-region selection or live cross-region socket migration is
+claimed. These integration decisions belong to the consuming deployment.
+
+The image defaults to one Nginx worker to reduce the fixed memory footprint on
+small VPS hosts. Set `PASEO_RELAY_NGINX_WORKERS` (1–64) and optionally
+`TOKIO_WORKER_THREADS` for the actual VPS resources; neither CPU quota nor worker
+count should be copied blindly from the two-CPU comparison. Configure ingress
+and RSS limits with headroom for Nginx/kernel memory. Current 2-second cluster
+exchanges and 3-second membership expiry remain unchanged; assess real regional
+RTT, loss and partitions before changing them. The local Docker tests do not
+establish global availability, TLS integration or WAN performance.
+
 ## Runtime contract
 
 All rows below have the `PASEO_RELAY_` prefix unless named otherwise.
@@ -64,6 +99,7 @@ All rows below have the `PASEO_RELAY_` prefix unless named otherwise.
 | --- | --- | --- |
 | `HOST` | `127.0.0.1` | Public listener IP address. |
 | `PORT` | `4000` | HTTP/WebSocket port, 1–65535. |
+| `NGINX_WORKERS` | `1` | Container proxy worker count, 1–64; native executable does not use this setting. |
 | `DRAIN` | `false` | Start unready and reject new upgrades; true/false. |
 | `ACCEPTORS` | `100` | Maximum pre-upgrade HTTP connections, 1–1000; also a factor in the WebSocket ceiling. Tokio schedules I/O. |
 | `CONNECTIONS_PER_ACCEPTOR` | `200` | Second ceiling factor, 1–1000000. The default active WebSocket ceiling is 20000. |
@@ -217,11 +253,12 @@ the Rust image and load client with `scripts/ci-rust.sh`, and run
 `uv run python scripts/compare-rust.py --bench rust/target/docker/relay_bench --help`.
 Pass `--bench rust/target/docker/relay_bench` to use that Docker-built client in
 every comparative run. Both implementations share the same total CPU/memory
-quota; the Rust container includes the two Nginx workers in that quota.
+quota; the Rust container includes all Nginx workers in that quota.
 
-## Original Docker versus Rust + Nginx Docker
+## Original Docker versus Rust + Nginx Docker (two-worker snapshot)
 
-The Docker-only build at `a5df513` was compared with the original Elixir image
+This historical two-worker snapshot predates the configurable one-worker VPS
+default described above. The Docker-only build at `a5df513` was compared with the original Elixir image
 rebuilt from the unchanged `5f4b763` source/Dockerfile. The same Docker-built
 static load client checked both implementations. Each fresh container had a
 2-CPU quota and 1 GiB memory limit; Elixir and Tokio each used two runtime

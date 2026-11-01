@@ -16,7 +16,14 @@ if [ "$port" -eq 4001 ]; then NGINX_BACKEND_PORT=4002; fi
 NGINX_HTTP_IDLE_TIMEOUT=${PASEO_RELAY_HTTP_IDLE_TIMEOUT_MS-15000}
 case "$NGINX_HTTP_IDLE_TIMEOUT" in ''|*[!0-9]*) echo 'Invalid PASEO_RELAY_HTTP_IDLE_TIMEOUT_MS' >&2; exit 1;; esac
 export NGINX_LISTEN NGINX_BACKEND_PORT NGINX_HTTP_IDLE_TIMEOUT
-envsubst '${NGINX_LISTEN} ${NGINX_BACKEND_PORT} ${NGINX_HTTP_IDLE_TIMEOUT}' \
+NGINX_WORKERS=${PASEO_RELAY_NGINX_WORKERS-1}
+case "$NGINX_WORKERS" in ''|*[!0-9]*) echo 'Invalid PASEO_RELAY_NGINX_WORKERS' >&2; exit 1;; esac
+if ! [ "$NGINX_WORKERS" -ge 1 ] 2>/dev/null || ! [ "$NGINX_WORKERS" -le 64 ] 2>/dev/null; then
+    echo 'Invalid PASEO_RELAY_NGINX_WORKERS: expected 1 to 64' >&2
+    exit 1
+fi
+export NGINX_WORKERS
+envsubst '${NGINX_LISTEN} ${NGINX_BACKEND_PORT} ${NGINX_HTTP_IDLE_TIMEOUT} ${NGINX_WORKERS}' \
     < /etc/nginx/paseo.conf.template > /tmp/nginx.conf
 nginx -t -c /tmp/nginx.conf
 

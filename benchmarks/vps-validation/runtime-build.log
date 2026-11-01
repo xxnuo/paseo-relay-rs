@@ -1,0 +1,64 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.32kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/nginx:stable-alpine@sha256:0e52bd054126cdc040b1276c0af347aeb02a41b9cfe305d6094767ac30e97949
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/rust:1.97.1-alpine
+#3 DONE 0.6s
+
+#4 [toolchain 1/5] FROM docker.io/library/rust:1.97.1-alpine@sha256:3c38f3f82c2f3d73da3b38e18d279393a04cb43ddded0e35088a8c3324d40900
+#4 resolve docker.io/library/rust:1.97.1-alpine@sha256:3c38f3f82c2f3d73da3b38e18d279393a04cb43ddded0e35088a8c3324d40900 done
+#4 DONE 0.0s
+
+#5 [toolchain 5/5] COPY rust/src ./src
+#5 CACHED
+
+#6 [internal] load .dockerignore
+#6 transferring context: 104B done
+#6 DONE 0.0s
+
+#7 [internal] load build context
+#7 transferring context: 4.29kB done
+#7 DONE 0.0s
+
+#8 [runtime 1/4] FROM docker.io/library/nginx:stable-alpine@sha256:0e52bd054126cdc040b1276c0af347aeb02a41b9cfe305d6094767ac30e97949
+#8 resolve docker.io/library/nginx:stable-alpine@sha256:0e52bd054126cdc040b1276c0af347aeb02a41b9cfe305d6094767ac30e97949 0.0s done
+#8 DONE 0.0s
+
+#9 [toolchain 4/5] COPY rust/Cargo.toml rust/Cargo.lock ./
+#9 CACHED
+
+#10 [toolchain 5/5] COPY rust/src ./src
+#10 CACHED
+
+#11 [build 1/1] RUN cargo build --locked --release
+#11 CACHED
+
+#12 [toolchain 2/5] RUN apk add --no-cache bash docker-cli && rustup component add rustfmt clippy
+#12 CACHED
+
+#13 [toolchain 3/5] WORKDIR /app
+#13 CACHED
+
+#14 [runtime 2/4] COPY --from=build /app/target/release/paseo-relay /paseo-relay
+#14 CACHED
+
+#15 [runtime 3/4] COPY deploy/nginx.conf.template /etc/nginx/paseo.conf.template
+#15 DONE 1.5s
+
+#16 [runtime 4/4] COPY --chmod=755 deploy/docker-entrypoint.sh /entrypoint.sh
+#16 DONE 0.1s
+
+#17 exporting to image
+#17 exporting layers 0.0s done
+#17 exporting manifest sha256:4f720be651a816a1455a488dff6fee13fd89985c8bce1bf512d9102b06670948 done
+#17 exporting config sha256:2a332cfb1b56ad95c247ce9c1fc1c837435930d9feb3285779b9220e8f37d4bc done
+#17 exporting attestation manifest sha256:f9e45edb5653be5350b6bef006e9ea7e9095bc54a2a3e6bf4c3e9afcdec2e116 done
+#17 exporting manifest list sha256:7df0b0e19020b9d943f37764463a29864e4d316c00e26a0f8e20ec4103d4c00b done
+#17 naming to docker.io/library/paseo-relay-rust:vps done
+#17 unpacking to docker.io/library/paseo-relay-rust:vps 0.0s done
+#17 DONE 0.1s

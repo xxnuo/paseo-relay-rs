@@ -298,6 +298,18 @@ async fn nginx_nonroot_container_serves_websockets_after_restart() {
             .parse()
             .unwrap();
         wait_container_ready(address).await;
+        let workers = Command::new("docker")
+            .args(["top", &container.0, "-eo", "pid,args"])
+            .output()
+            .unwrap();
+        assert!(workers.status.success());
+        assert_eq!(
+            String::from_utf8(workers.stdout)
+                .unwrap()
+                .matches("nginx: worker process")
+                .count(),
+            1
+        );
         let health = binary_request(address, "/health").await;
         assert!(health.contains(r#"{"status":"ok"}"#));
         assert!(
@@ -370,6 +382,8 @@ async fn nginx_container_preserves_drain_and_exits_if_either_service_dies() {
                 "127.0.0.1::4001",
                 "--env",
                 "PASEO_RELAY_PORT=4001",
+                "--env",
+                "PASEO_RELAY_NGINX_WORKERS=3",
                 "--stop-timeout",
                 "40",
                 &image,
@@ -388,6 +402,18 @@ async fn nginx_container_preserves_drain_and_exits_if_either_service_dies() {
             .parse()
             .unwrap();
         wait_container_ready(address).await;
+        let workers = Command::new("docker")
+            .args(["top", &container.0, "-eo", "pid,args"])
+            .output()
+            .unwrap();
+        assert!(workers.status.success());
+        assert_eq!(
+            String::from_utf8(workers.stdout)
+                .unwrap()
+                .matches("nginx: worker process")
+                .count(),
+            3
+        );
         let output = Command::new("docker")
             .args([
                 "inspect",

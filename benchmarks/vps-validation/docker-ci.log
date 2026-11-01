@@ -1,0 +1,581 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 DONE 0.0s
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.32kB done
+#1 DONE 0.0s
+
+#2 [auth] library/rust:pull token for registry-1.docker.io
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/rust:1.97.1-alpine
+#3 DONE 1.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 104B done
+#4 DONE 0.0s
+
+#5 [toolchain 1/5] FROM docker.io/library/rust:1.97.1-alpine@sha256:3c38f3f82c2f3d73da3b38e18d279393a04cb43ddded0e35088a8c3324d40900
+#5 resolve docker.io/library/rust:1.97.1-alpine@sha256:3c38f3f82c2f3d73da3b38e18d279393a04cb43ddded0e35088a8c3324d40900 done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 97.94kB done
+#6 DONE 0.0s
+
+#7 [toolchain 2/5] RUN apk add --no-cache bash docker-cli && rustup component add rustfmt clippy
+#7 CACHED
+
+#8 [toolchain 3/5] WORKDIR /app
+#8 CACHED
+
+#9 [toolchain 4/5] COPY rust/Cargo.toml rust/Cargo.lock ./
+#9 CACHED
+
+#10 [toolchain 5/5] COPY rust/src ./src
+#10 CACHED
+
+#11 [test 1/3] COPY rust/tests ./tests
+#11 DONE 0.1s
+
+#12 [test 2/3] COPY rust/examples ./examples
+#12 DONE 0.0s
+
+#13 [test 3/3] RUN cargo fmt --check && cargo clippy --locked --all-targets -- -D warnings     && cargo test --locked --all-targets     && cargo build --locked --release --example relay_bench
+#13 0.343     Updating crates.io index
+#13 13.41  Downloading crates ...
+#13 13.75   Downloaded cpufeatures v0.2.17
+#13 13.75   Downloaded block-buffer v0.10.4
+#13 13.75   Downloaded atomic-waker v1.1.2
+#13 13.75   Downloaded crypto-common v0.1.7
+#13 13.75   Downloaded form_urlencoded v1.2.2
+#13 13.75   Downloaded cfg-if v1.0.5
+#13 13.75   Downloaded futures-core v0.3.34
+#13 13.76   Downloaded errno v0.3.14
+#13 13.76   Downloaded futures-macro v0.3.34
+#13 13.76   Downloaded futures-task v0.3.34
+#13 13.76   Downloaded generic-array v0.14.7
+#13 13.76   Downloaded futures-sink v0.3.34
+#13 13.76   Downloaded data-encoding v2.11.1
+#13 13.76   Downloaded digest v0.10.7
+#13 13.76   Downloaded http-body v1.1.0
+#13 13.76   Downloaded http-body-util v0.1.5
+#13 13.77   Downloaded hmac v0.12.1
+#13 13.77   Downloaded base64 v0.22.1
+#13 13.77   Downloaded bytes v1.12.1
+#13 13.77   Downloaded getrandom v0.3.4
+#13 13.78   Downloaded http v1.5.0
+#13 13.78   Downloaded axum v0.8.9
+#13 13.78   Downloaded axum-core v0.5.6
+#13 13.78   Downloaded itoa v1.0.18
+#13 13.78   Downloaded futures-util v0.3.34
+#13 13.79   Downloaded socket2 v0.6.5
+#13 13.79   Downloaded version_check v0.9.5
+#13 13.79   Downloaded once_cell v1.21.4
+#13 13.80   Downloaded rand_core v0.9.5
+#13 13.80   Downloaded rand_chacha v0.9.0
+#13 13.80   Downloaded mime v0.3.17
+#13 13.80   Downloaded hyper v1.12.0
+#13 13.80   Downloaded serde_urlencoded v0.7.1
+#13 13.81   Downloaded tungstenite v0.29.0
+#13 13.81   Downloaded httpdate v1.0.3
+#13 13.81   Downloaded tower-service v0.3.3
+#13 13.82   Downloaded sha1 v0.10.7
+#13 13.82   Downloaded tokio-macros v2.7.2
+#13 13.82   Downloaded rand v0.9.5
+#13 13.82   Downloaded tower-layer v0.3.3
+#13 13.83   Downloaded sync_wrapper v1.0.2
+#13 13.83   Downloaded percent-encoding v2.3.2
+#13 13.83   Downloaded thiserror v2.0.21
+#13 13.84   Downloaded log v0.4.35
+#13 13.84   Downloaded tokio-tungstenite v0.29.0
+#13 13.84   Downloaded smallvec v1.16.4
+#13 13.84   Downloaded subtle v2.6.1
+#13 13.84   Downloaded sha2 v0.10.9
+#13 13.84   Downloaded ppv-lite86 v0.2.21
+#13 13.85   Downloaded unicode-ident v1.0.27
+#13 13.85   Downloaded serde_json v1.0.154
+#13 13.85   Downloaded proc-macro2 v1.0.107
+#13 13.86   Downloaded serde_path_to_error v0.1.20
+#13 13.86   Downloaded quote v1.0.47
+#13 13.86   Downloaded thiserror-impl v2.0.21
+#13 13.86   Downloaded zmij v1.0.23
+#13 13.86   Downloaded matchit v0.8.4
+#13 13.86   Downloaded slab v0.4.12
+#13 13.86   Downloaded signal-hook-registry v1.4.8
+#13 13.86   Downloaded httparse v1.10.1
+#13 13.89   Downloaded pin-project-lite v0.2.17
+#13 13.90   Downloaded ryu v1.0.23
+#13 13.90   Downloaded serde_core v1.0.229
+#13 13.90   Downloaded tracing-core v0.1.36
+#13 13.90   Downloaded serde_derive v1.0.229
+#13 13.91   Downloaded serde v1.0.229
+#13 13.91   Downloaded mio v1.2.4
+#13 13.91   Downloaded memchr v2.8.3
+#13 13.92   Downloaded typenum v1.20.1
+#13 13.92   Downloaded tower v0.5.3
+#13 13.93   Downloaded hyper-util v0.1.21
+#13 13.94   Downloaded syn v3.0.9
+#13 13.95   Downloaded zerocopy v0.8.63
+#13 13.97   Downloaded tracing v0.1.44
+#13 14.00   Downloaded libc v0.2.191
+#13 14.03   Downloaded tokio v1.54.1
+#13 14.09    Compiling proc-macro2 v1.0.107
+#13 14.09    Compiling quote v1.0.47
+#13 14.09    Compiling unicode-ident v1.0.27
+#13 14.09    Compiling libc v0.2.191
+#13 14.09     Checking itoa v1.0.18
+#13 14.09    Compiling version_check v0.9.5
+#13 14.09     Checking bytes v1.12.1
+#13 14.09     Checking pin-project-lite v0.2.17
+#13 14.09     Checking typenum v1.20.1
+#13 14.09     Checking cfg-if v1.0.5
+#13 14.09    Compiling getrandom v0.3.4
+#13 14.09    Compiling zerocopy v0.8.63
+#13 14.09     Checking futures-core v0.3.34
+#13 14.09    Compiling httparse v1.10.1
+#13 14.09     Checking subtle v2.6.1
+#13 14.09    Compiling serde_core v1.0.229
+#13 14.14     Checking log v0.4.35
+#13 14.16    Compiling thiserror v2.0.21
+#13 14.22     Checking once_cell v1.21.4
+#13 14.26     Checking cpufeatures v0.2.17
+#13 14.30    Compiling serde v1.0.229
+#13 14.33     Checking futures-task v0.3.34
+#13 14.35    Compiling zmij v1.0.23
+#13 14.43     Checking futures-sink v0.3.34
+#13 14.52     Checking tracing-core v0.1.36
+#13 14.52     Checking slab v0.4.12
+#13 14.61     Checking tower-service v0.3.3
+#13 14.61     Checking httpdate v1.0.3
+#13 14.63    Compiling generic-array v0.14.7
+#13 14.64     Checking tower-layer v0.3.3
+#13 14.70     Checking sync_wrapper v1.0.2
+#13 14.80     Checking atomic-waker v1.1.2
+#13 14.81     Checking percent-encoding v2.3.2
+#13 14.84     Checking smallvec v1.16.4
+#13 14.87    Compiling serde_json v1.0.154
+#13 14.87     Checking data-encoding v2.11.1
+#13 14.91     Checking memchr v2.8.3
+#13 14.95     Checking ryu v1.0.23
+#13 15.02     Checking mime v0.3.17
+#13 15.03     Checking form_urlencoded v1.2.2
+#13 15.12     Checking base64 v0.22.1
+#13 15.15     Checking matchit v0.8.4
+#13 15.18     Checking http v1.5.0
+#13 15.20     Checking tracing v0.1.44
+#13 15.79    Compiling syn v3.0.9
+#13 15.84     Checking http-body v1.1.0
+#13 15.92     Checking http-body-util v0.1.5
+#13 15.94     Checking crypto-common v0.1.7
+#13 15.94     Checking block-buffer v0.10.4
+#13 15.99     Checking errno v0.3.14
+#13 15.99     Checking socket2 v0.6.5
+#13 15.99     Checking mio v1.2.4
+#13 16.03     Checking digest v0.10.7
+#13 16.07     Checking signal-hook-registry v1.4.8
+#13 16.10     Checking rand_core v0.9.5
+#13 16.20     Checking sha1 v0.10.7
+#13 16.20     Checking hmac v0.12.1
+#13 16.20     Checking sha2 v0.10.9
+#13 16.27     Checking axum-core v0.5.6
+#13 17.06     Checking serde_path_to_error v0.1.20
+#13 18.21     Checking ppv-lite86 v0.2.21
+#13 18.23    Compiling tokio-macros v2.7.2
+#13 18.23    Compiling thiserror-impl v2.0.21
+#13 18.23    Compiling futures-macro v0.3.34
+#13 18.23    Compiling serde_derive v1.0.229
+#13 18.48     Checking rand_chacha v0.9.0
+#13 18.64     Checking rand v0.9.5
+#13 18.74     Checking tokio v1.54.1
+#13 18.83     Checking futures-util v0.3.34
+#13 19.21     Checking tungstenite v0.29.0
+#13 20.64     Checking serde_urlencoded v0.7.1
+#13 21.64     Checking hyper v1.12.0
+#13 21.64     Checking tower v0.5.3
+#13 21.64     Checking tokio-tungstenite v0.29.0
+#13 22.13     Checking hyper-util v0.1.21
+#13 22.30     Checking axum v0.8.9
+#13 24.84     Checking paseo-relay v0.1.0 (/app)
+#13 25.97     Finished `dev` profile [unoptimized + debuginfo] target(s) in 25.68s
+#13 26.12    Compiling itoa v1.0.18
+#13 26.12    Compiling bytes v1.12.1
+#13 26.12    Compiling typenum v1.20.1
+#13 26.12    Compiling pin-project-lite v0.2.17
+#13 26.12    Compiling cfg-if v1.0.5
+#13 26.12    Compiling futures-core v0.3.34
+#13 26.13    Compiling subtle v2.6.1
+#13 26.13    Compiling log v0.4.35
+#13 26.13    Compiling libc v0.2.191
+#13 26.13    Compiling zerocopy v0.8.63
+#13 26.13    Compiling serde_core v1.0.229
+#13 26.13    Compiling httparse v1.10.1
+#13 26.13    Compiling once_cell v1.21.4
+#13 26.13    Compiling cpufeatures v0.2.17
+#13 26.13    Compiling futures-task v0.3.34
+#13 26.14    Compiling slab v0.4.12
+#13 26.18    Compiling futures-sink v0.3.34
+#13 26.19    Compiling tower-service v0.3.3
+#13 26.21    Compiling thiserror v2.0.21
+#13 26.26    Compiling atomic-waker v1.1.2
+#13 26.29    Compiling smallvec v1.16.4
+#13 26.29    Compiling data-encoding v2.11.1
+#13 26.31    Compiling percent-encoding v2.3.2
+#13 26.35    Compiling futures-util v0.3.34
+#13 26.37    Compiling httpdate v1.0.3
+#13 26.39    Compiling sync_wrapper v1.0.2
+#13 26.40    Compiling tracing-core v0.1.36
+#13 26.42    Compiling tower-layer v0.3.3
+#13 26.45    Compiling zmij v1.0.23
+#13 26.47    Compiling mime v0.3.17
+#13 26.48    Compiling memchr v2.8.3
+#13 26.61    Compiling form_urlencoded v1.2.2
+#13 26.64    Compiling ryu v1.0.23
+#13 26.65    Compiling matchit v0.8.4
+#13 26.76    Compiling base64 v0.22.1
+#13 27.07    Compiling http v1.5.0
+#13 27.14    Compiling tracing v0.1.44
+#13 27.26    Compiling generic-array v0.14.7
+#13 27.70    Compiling errno v0.3.14
+#13 27.70    Compiling getrandom v0.3.4
+#13 27.70    Compiling socket2 v0.6.5
+#13 27.70    Compiling mio v1.2.4
+#13 27.79    Compiling signal-hook-registry v1.4.8
+#13 27.87    Compiling rand_core v0.9.5
+#13 27.88    Compiling block-buffer v0.10.4
+#13 27.88    Compiling crypto-common v0.1.7
+#13 27.97    Compiling digest v0.10.7
+#13 27.99    Compiling http-body v1.1.0
+#13 28.09    Compiling http-body-util v0.1.5
+#13 28.15    Compiling sha1 v0.10.7
+#13 28.15    Compiling sha2 v0.10.9
+#13 28.15    Compiling hmac v0.12.1
+#13 28.30    Compiling tokio v1.54.1
+#13 28.38    Compiling axum-core v0.5.6
+#13 29.20    Compiling serde v1.0.229
+#13 29.20    Compiling serde_path_to_error v0.1.20
+#13 29.20    Compiling serde_json v1.0.154
+#13 29.82    Compiling serde_urlencoded v0.7.1
+#13 30.79    Compiling ppv-lite86 v0.2.21
+#13 31.05    Compiling rand_chacha v0.9.0
+#13 31.18    Compiling rand v0.9.5
+#13 31.61    Compiling tungstenite v0.29.0
+#13 31.96    Compiling hyper v1.12.0
+#13 31.96    Compiling tower v0.5.3
+#13 32.04    Compiling tokio-tungstenite v0.29.0
+#13 32.66    Compiling hyper-util v0.1.21
+#13 32.91    Compiling axum v0.8.9
+#13 35.67    Compiling paseo-relay v0.1.0 (/app)
+#13 43.31     Finished `test` profile [unoptimized + debuginfo] target(s) in 17.29s
+#13 43.32      Running unittests src/lib.rs (target/debug/deps/paseo_relay-b8e8c2bb0c0bc1e8)
+#13 43.32 
+#13 43.32 running 2 tests
+#13 43.32 test relay::tests::expired_control_is_closed_before_a_ready_transport_can_emit_it ... ok
+#13 43.32 test relay::cluster::tests::metadata_decoder_bounds_members_before_collecting_them ... ok
+#13 43.32 
+#13 43.32 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+#13 43.32 
+#13 43.32      Running unittests src/main.rs (target/debug/deps/paseo_relay-c95f95e902807eba)
+#13 43.32 
+#13 43.32 running 0 tests
+#13 43.32 
+#13 43.32 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+#13 43.32 
+#13 43.32      Running tests/binary.rs (target/debug/deps/binary-69541ddf63e8196c)
+#13 43.32 
+#13 43.32 running 8 tests
+#13 43.32 test nginx_container_preserves_drain_and_exits_if_either_service_dies ... ignored, requires a built Rust + Nginx image and a local Docker daemon
+#13 43.32 test nginx_nonroot_container_serves_websockets_after_restart ... ignored, requires a built Rust Docker image and a local Docker daemon
+#13 43.32 test static_cluster_uses_real_container_dns_and_reroutes_public_websockets ... ignored, requires a built Rust Docker image and a local Docker daemon
+#13 43.32 paseo-relay listening on 127.0.0.1:34039
+#13 43.32 paseo-relay listening on 127.0.0.1:45071
+#13 43.32 test invalid_config_exits_without_listening ... ok
+#13 43.33 paseo-relay listening on 127.0.0.1:41723
+#13 43.33 paseo-relay listening on 127.0.0.1:38303
+#13 43.34 test linux_binary_serves_probes_and_stops_on_sigterm ... ok
+#13 43.85 test linux_rss_watermark_recovers_from_real_fragment_memory_without_configuration_change ... ok
+#13 44.76 test large_json_metadata_does_not_expand_into_an_unbounded_value_tree ... ok
+#13 45.73 test cancelled_queued_sources_cannot_retain_uncharged_payloads ... ok
+#13 45.73 
+#13 45.73 test result: ok. 5 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 2.41s
+#13 45.73 
+#13 45.73      Running tests/cluster.rs (target/debug/deps/cluster-e491fd43ede73c73)
+#13 45.73 
+#13 45.73 running 9 tests
+#13 45.73 paseo-relay listening on 127.0.0.1:45905
+#13 45.73 paseo-relay listening on 127.0.0.1:34175
+#13 45.75 paseo-relay listening on 127.0.0.1:40029
+#13 45.75 paseo-relay listening on 127.0.0.1:39657
+#13 45.75 paseo-relay listening on 127.0.0.1:33683
+#13 45.75 paseo-relay listening on 127.0.0.1:33919
+#13 45.75 paseo-relay listening on 127.0.0.1:34141
+#13 45.75 paseo-relay listening on 127.0.0.1:45883
+#13 45.75 paseo-relay listening on 127.0.0.1:36443
+#13 45.75 paseo-relay listening on 127.0.0.1:34003
+#13 45.76 paseo-relay listening on 127.0.0.1:36179
+#13 45.77 paseo-relay listening on 127.0.0.1:44783
+#13 45.77 paseo-relay listening on 127.0.0.1:40965
+#13 45.77 paseo-relay listening on 127.0.0.1:45209
+#13 45.77 paseo-relay listening on 127.0.0.1:36865
+#13 45.77 test unauthenticated_cluster_input_cannot_raise_readiness_or_claim_ownership ... ok
+#13 45.77 paseo-relay listening on 127.0.0.1:44263
+#13 45.79 paseo-relay listening on 127.0.0.1:33833
+#13 46.75 Error: Custom { kind: InvalidData, error: "duplicate RELEASE_NODE identity" }
+#13 46.78 test duplicate_authenticated_node_identity_fails_closed_with_explicit_socket_closes ... ok
+#13 46.79 test floor_blocks_unowned_admission_and_remote_reroute_bypasses_a_full_landing_node ... ok
+#13 47.30 test dns_discovery_reroutes_then_public_replay_exchanges_ordered_payloads ... ok
+#13 47.34 test peers_learn_transitive_membership_and_converge_all_claims_across_three_processes ... ok
+#13 47.78 test different_cluster_cookies_never_count_each_other_toward_the_floor ... ok
+#13 49.77 test an_authenticated_snapshot_cannot_be_replayed_under_a_fresh_server_challenge ... ok
+#13 50.79 paseo-relay listening on 127.0.0.1:45883
+#13 51.29 test partition_heals_to_one_owner_and_loser_receives_explicit_retryable_close ... ok
+#13 51.82 test dead_owner_expires_and_a_restarted_peer_learns_the_replacement_claim ... ok
+#13 51.82 
+#13 51.82 test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.08s
+#13 51.82 
+#13 51.82      Running tests/config.rs (target/debug/deps/config-9e3ab4ff13c82ffc)
+#13 51.82 
+#13 51.82 running 5 tests
+#13 51.82 test default_and_supported_linux_environment_match_original_contract ... ok
+#13 51.82 test linux_runtime_protection_settings_are_loaded ... ok
+#13 51.82 test distributed_settings_require_authenticated_node_configuration ... ok
+#13 51.82 test rejects_invalid_values_and_unsafe_budget_and_timeout_combinations ... ok
+#13 51.82 test cluster_environment_validates_identity_authentication_and_http_headers ... ok
+#13 51.82 
+#13 51.82 test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+#13 51.82 
+#13 51.82      Running tests/connection.rs (target/debug/deps/connection-fcb20b39d5ae5e31)
+#13 51.82 
+#13 51.82 running 2 tests
+#13 51.82 test route_limits_count_utf8_bytes_and_trim_only_connection_id ... ok
+#13 51.82 test follows_original_query_contract ... ok
+#13 51.82 
+#13 51.82 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+#13 51.82 
+#13 51.82      Running tests/metrics.rs (target/debug/deps/metrics-be36839144500968)
+#13 51.82 
+#13 51.82 running 3 tests
+#13 51.91 test prometheus_tracks_real_frames_handshakes_delivery_and_control_input ... ok
+#13 52.06 test slow_consumer_timeouts_are_counted_once_and_control_budget_closes_are_distinct ... ok
+#13 52.32 test waiting_for_attachment_exposes_and_releases_live_delivery_gauges ... ok
+#13 52.32 
+#13 52.32 test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.50s
+#13 52.32 
+#13 52.32      Running tests/protocol.rs (target/debug/deps/protocol-3860e245c5099d83)
+#13 52.32 
+#13 52.32 running 5 tests
+#13 52.32 test opaque_payloads_are_not_interpreted_as_handshakes ... ok
+#13 52.32 test matches_cowboy_payload_contract ... ok
+#13 52.32 test rejects_all_elixir_low_order_keys ... ok
+#13 52.32 test classification_preserves_last_duplicate_fields_and_json_string_escapes ... ok
+#13 52.32 test validates_both_handshake_names_and_canonical_x25519_coordinates ... ok
+#13 52.32 
+#13 52.32 test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+#13 52.32 
+#13 52.32      Running tests/relay.rs (target/debug/deps/relay-b722357ee83c71c1)
+#13 52.32 
+#13 52.32 running 13 tests
+#13 52.33 test oversized_control_message_is_explicitly_closed_with_1009 ... ok
+#13 52.33 test weighted_ingress_exhaustion_closes_only_new_source_and_recovers ... ok
+#13 52.34 test generated_v2_client_id_attaches_data_and_validates_each_binary_handshake_retry ... ok
+#13 52.34 test v1_forwards_both_opcodes_and_replaces_only_same_role ... ok
+#13 52.34 test v2_notifies_waits_for_data_and_preserves_last_messages_before_close ... ok
+#13 52.34 test malformed_query_encoding_cannot_create_lossy_colliding_route_keys ... ok
+#13 52.34 test v2_fanout_and_replacement_keep_client_routes_and_notify_control ... ok
+#13 52.39 test validates_client_handshakes_over_real_websockets ... ok
+#13 52.44 test capacity_rejection_and_attach_deadline_recover_without_leaking_slots ... ok
+#13 52.52 test exact_maximum_fragmented_payload_delivers_and_one_byte_more_closes_1009 ... ok
+#13 52.69 test slow_fanout_peer_does_not_deadlock_reverse_traffic_or_healthy_order ... ok
+#13 53.38 test cancelling_an_emitted_source_fences_the_blocked_writer_before_its_deadline ... ok
+#13 67.34 test unresponsive_control_is_nudged_then_closed_without_dropping_its_idle_client ... ok
+#13 67.34 
+#13 67.34 test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.02s
+#13 67.34 
+#13 67.34      Running tests/server.rs (target/debug/deps/server-fc1bb193c219782b)
+#13 67.34 
+#13 67.34 running 4 tests
+#13 67.35 test pressure_sheds_an_incomplete_fragment_and_admission_recovers_when_disabled ... ok
+#13 67.65 test preupgrade_slots_bound_slow_http_and_are_released_at_upgrade_not_first_ws_read ... ok
+#13 67.70 test idle_http_and_withheld_request_body_expire_but_websockets_do_not ... ok
+#13 98.36 test stale_idle_timer_cannot_remove_a_reused_session_before_its_new_grace_period ... ok
+#13 98.36 
+#13 98.36 test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 31.02s
+#13 98.36 
+#13 98.36      Running unittests examples/relay_bench.rs (target/debug/examples/relay_bench-727c58852adf260a)
+#13 98.36 
+#13 98.36 running 1 test
+#13 98.36 test percentile_is_nearest_rank_with_defined_small_sample_behavior ... ok
+#13 98.36 
+#13 98.36 test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+#13 98.36 
+#13 98.43    Compiling proc-macro2 v1.0.107
+#13 98.43    Compiling unicode-ident v1.0.27
+#13 98.43    Compiling quote v1.0.47
+#13 98.43    Compiling libc v0.2.191
+#13 98.43    Compiling version_check v0.9.5
+#13 98.43    Compiling itoa v1.0.18
+#13 98.43    Compiling bytes v1.12.1
+#13 98.43    Compiling typenum v1.20.1
+#13 98.43    Compiling pin-project-lite v0.2.17
+#13 98.43    Compiling cfg-if v1.0.5
+#13 98.44    Compiling zerocopy v0.8.63
+#13 98.44    Compiling futures-core v0.3.34
+#13 98.44    Compiling getrandom v0.3.4
+#13 98.44    Compiling httparse v1.10.1
+#13 98.44    Compiling serde_core v1.0.229
+#13 98.44    Compiling subtle v2.6.1
+#13 98.48    Compiling log v0.4.35
+#13 98.53    Compiling thiserror v2.0.21
+#13 98.57    Compiling once_cell v1.21.4
+#13 98.61    Compiling cpufeatures v0.2.17
+#13 98.63    Compiling futures-sink v0.3.34
+#13 98.67    Compiling tower-service v0.3.3
+#13 98.73    Compiling zmij v1.0.23
+#13 98.76    Compiling serde v1.0.229
+#13 98.77    Compiling slab v0.4.12
+#13 98.78    Compiling futures-task v0.3.34
+#13 98.84    Compiling sync_wrapper v1.0.2
+#13 98.84    Compiling percent-encoding v2.3.2
+#13 98.91    Compiling generic-array v0.14.7
+#13 98.92    Compiling tracing-core v0.1.36
+#13 98.95    Compiling httpdate v1.0.3
+#13 99.04    Compiling smallvec v1.16.4
+#13 99.12    Compiling data-encoding v2.11.1
+#13 99.18    Compiling serde_json v1.0.154
+#13 99.21    Compiling atomic-waker v1.1.2
+#13 99.21    Compiling tower-layer v0.3.3
+#13 99.22    Compiling form_urlencoded v1.2.2
+#13 99.32    Compiling ryu v1.0.23
+#13 99.43    Compiling memchr v2.8.3
+#13 99.44    Compiling mime v0.3.17
+#13 99.45    Compiling matchit v0.8.4
+#13 99.47    Compiling base64 v0.22.1
+#13 99.77    Compiling http v1.5.0
+#13 99.77    Compiling tracing v0.1.44
+#13 100.4    Compiling syn v3.0.9
+#13 100.5    Compiling crypto-common v0.1.7
+#13 100.5    Compiling block-buffer v0.10.4
+#13 100.6    Compiling digest v0.10.7
+#13 100.8    Compiling sha1 v0.10.7
+#13 100.8    Compiling sha2 v0.10.9
+#13 100.8    Compiling hmac v0.12.1
+#13 101.0    Compiling http-body v1.1.0
+#13 101.0    Compiling errno v0.3.14
+#13 101.0    Compiling mio v1.2.4
+#13 101.0    Compiling socket2 v0.6.5
+#13 101.1    Compiling signal-hook-registry v1.4.8
+#13 101.2    Compiling http-body-util v0.1.5
+#13 101.2    Compiling rand_core v0.9.5
+#13 101.6    Compiling axum-core v0.5.6
+#13 102.2    Compiling serde_path_to_error v0.1.20
+#13 103.4    Compiling tokio-macros v2.7.2
+#13 103.4    Compiling futures-macro v0.3.34
+#13 103.4    Compiling thiserror-impl v2.0.21
+#13 103.4    Compiling serde_derive v1.0.229
+#13 103.6    Compiling ppv-lite86 v0.2.21
+#13 103.9    Compiling rand_chacha v0.9.0
+#13 103.9    Compiling tokio v1.54.1
+#13 104.1    Compiling futures-util v0.3.34
+#13 104.1    Compiling rand v0.9.5
+#13 104.7    Compiling tungstenite v0.29.0
+#13 106.0    Compiling serde_urlencoded v0.7.1
+#13 108.0    Compiling hyper v1.12.0
+#13 108.0    Compiling tokio-tungstenite v0.29.0
+#13 108.0    Compiling tower v0.5.3
+#13 108.7    Compiling hyper-util v0.1.21
+#13 108.9    Compiling axum v0.8.9
+#13 112.0    Compiling paseo-relay v0.1.0 (/app)
+#13 124.4     Finished `release` profile [optimized] target(s) in 26.03s
+#13 DONE 124.7s
+
+#14 exporting to image
+#14 exporting layers
+#14 exporting layers 14.8s done
+#14 exporting manifest sha256:6bed3e1d204c20000b82f9015728651a046b9aa1b9a2b50663b1e965e0f92000 done
+#14 exporting config sha256:44500f028b0b4ad867b38770dc64b32824ad87bf057a7e3e68030aecd0a22e3c done
+#14 exporting attestation manifest sha256:bfd60d82746bef1a7a5105c2914a69735e7d7b305ad7b7a3bb444ff53cdf6a57 done
+#14 exporting manifest list sha256:eea523a65fc81a984ff36833d6eb3cadccb7d5853aba5af27f4f2d05925a220d done
+#14 naming to docker.io/library/paseo-relay-rust:vps-test done
+#14 unpacking to docker.io/library/paseo-relay-rust:vps-test
+#14 unpacking to docker.io/library/paseo-relay-rust:vps-test 5.2s done
+#14 DONE 20.0s
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 DONE 0.0s
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.32kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/nginx:stable-alpine@sha256:0e52bd054126cdc040b1276c0af347aeb02a41b9cfe305d6094767ac30e97949
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/rust:1.97.1-alpine
+#3 DONE 0.6s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 104B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 4.29kB done
+#5 DONE 0.0s
+
+#6 [runtime 1/4] FROM docker.io/library/nginx:stable-alpine@sha256:0e52bd054126cdc040b1276c0af347aeb02a41b9cfe305d6094767ac30e97949
+#6 resolve docker.io/library/nginx:stable-alpine@sha256:0e52bd054126cdc040b1276c0af347aeb02a41b9cfe305d6094767ac30e97949 0.0s done
+#6 DONE 0.0s
+
+#7 [toolchain 1/5] FROM docker.io/library/rust:1.97.1-alpine@sha256:3c38f3f82c2f3d73da3b38e18d279393a04cb43ddded0e35088a8c3324d40900
+#7 resolve docker.io/library/rust:1.97.1-alpine@sha256:3c38f3f82c2f3d73da3b38e18d279393a04cb43ddded0e35088a8c3324d40900 0.0s done
+#7 DONE 0.0s
+
+#8 [build 1/1] RUN cargo build --locked --release
+#8 CACHED
+
+#9 [runtime 2/4] COPY --from=build /app/target/release/paseo-relay /paseo-relay
+#9 CACHED
+
+#10 [toolchain 2/5] RUN apk add --no-cache bash docker-cli && rustup component add rustfmt clippy
+#10 CACHED
+
+#11 [runtime 3/4] COPY deploy/nginx.conf.template /etc/nginx/paseo.conf.template
+#11 CACHED
+
+#12 [toolchain 4/5] COPY rust/Cargo.toml rust/Cargo.lock ./
+#12 CACHED
+
+#13 [toolchain 3/5] WORKDIR /app
+#13 CACHED
+
+#14 [toolchain 5/5] COPY rust/src ./src
+#14 CACHED
+
+#15 [runtime 4/4] COPY --chmod=755 deploy/docker-entrypoint.sh /entrypoint.sh
+#15 CACHED
+
+#16 exporting to image
+#16 exporting layers done
+#16 exporting manifest sha256:4f720be651a816a1455a488dff6fee13fd89985c8bce1bf512d9102b06670948 done
+#16 exporting config sha256:2a332cfb1b56ad95c247ce9c1fc1c837435930d9feb3285779b9220e8f37d4bc done
+#16 exporting attestation manifest sha256:8ded749b3e97cce9f9a3e0cf3ef48f3706de0befb27c2be053ec97cdf58ba2bd done
+#16 exporting manifest list sha256:b589d1d3843ca49ceb81c5ba579dd9cdd25ea02e110d5e0e02143dbc5c2d6ff4 done
+#16 naming to docker.io/library/paseo-relay-rust:vps done
+#16 unpacking to docker.io/library/paseo-relay-rust:vps done
+#16 DONE 0.0s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.05s
+     Running tests/binary.rs (target/debug/deps/binary-69541ddf63e8196c)
+
+running 3 tests
+wget: can't connect to remote host (172.17.0.2): Connection refused
+wget: can't connect to remote host (172.17.0.2): Connection refused
+test static_cluster_uses_real_container_dns_and_reroutes_public_websockets ... ok
+wget: can't connect to remote host (172.17.0.2): Connection refused
+test nginx_container_preserves_drain_and_exits_if_either_service_dies ... ok
+test nginx_nonroot_container_serves_websockets_after_restart has been running for over 60 seconds
+test nginx_nonroot_container_serves_websockets_after_restart ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 62.00s
+

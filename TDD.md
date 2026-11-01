@@ -1054,3 +1054,29 @@
   verified separately in benchmarks/nginx-validation/publication.json.
   Remote GHCR/Git publication was not performed; the CI Docker publishing
   path builds the same default Rust + Nginx runtime.
+
+## Independent multi-region VPS deployment target
+
+- Operator clarification: Rust runs on independently purchased, persistent VPS
+  hosts worldwide. AGENTS.md records this as the ongoing deployment premise.
+  README distinguishes regional pairing, owner-aware ingress, encrypted cluster
+  overlays, TLS termination and service restart from Fly-managed facilities.
+  No provider inventory, arbitrary-target proxy, automatic GeoDNS ownership or
+  speculative WAN timeout change was introduced.
+- Red: a real Docker image ignored PASEO_RELAY_NGINX_WORKERS=3 and started two
+  workers. The corrected process-count assertion failed with actual 2 versus
+  expected 3 (benchmarks/vps-validation/red-workers.log). Green implementation
+  validates 1–64 workers, substitutes only the validated value and defaults to
+  one worker for a smaller fixed proxy footprint on small VPS hosts.
+- Existing image restart test now checks the one-worker default. Three-scenario
+  drain/failure test explicitly selects and checks three workers before running
+  its lifecycle assertions. Six empty, invalid and out-of-range worker settings
+  were rejected by the real entrypoint (invalid-workers.json).
+- Full Docker-only gates and the two-versus-one-worker load comparison follow
+  below. Prior two-worker performance tables are explicitly historical; local
+  results do not validate real cross-region VPS routing, TLS or WAN reliability.
+
+- scripts/ci-rust.sh passed on the final VPS image: formatting, Clippy, all
+  49 native/example tests and all three real image tests (including default/
+  overridden process counts and 61-second idle/restart). Logs are retained in
+  benchmarks/vps-validation/docker-ci.log.

@@ -18,6 +18,11 @@ scripts/ci-rust.sh
 
 ## Conventions
 
+- Rust targets long-running, self-managed VPS nodes across multiple regions.
+  Fly.io is the original deployment context, not a Rust runtime dependency.
+  Do not assume Fly replay/routing, private DNS, autostart or automatic TLS.
+  Keep provider inventories outside this repo. Tune per VPS resources and
+  measured WAN behavior; loopback Docker results are not global acceptance.
 - Platform-agnostic core: no provider dependencies in application or scripts.
 - Use real TCP listeners, WebSockets, Rust child processes and Docker/DNS,
   without mocks. The retained Elixir tests use real Cowboy/:peer BEAM nodes.

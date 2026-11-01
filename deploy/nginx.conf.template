@@ -1,4 +1,4 @@
-worker_processes 2;
+worker_processes ${NGINX_WORKERS};
 pid /tmp/nginx.pid;
 error_log stderr warn;
 worker_shutdown_timeout 2s;
