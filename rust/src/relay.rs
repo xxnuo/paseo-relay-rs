@@ -1,3 +1,5 @@
+#[path = "cluster.rs"]
+mod cluster;
 #[path = "server.rs"]
 mod server;
 
@@ -44,6 +46,8 @@ pub(crate) struct Pressure {
 
 struct Runtime {
     config: Config,
+    cluster: Option<cluster::Cluster>,
+    reroutes: AtomicU64,
     pressure: Mutex<Pressure>,
     pressure_closes: AtomicU64,
     draining: AtomicBool,
@@ -61,7 +65,10 @@ impl Relay {
     pub fn new(config: Config) -> Self {
         assert!(config.max_connections > 0);
         assert!(config.ingress_weight > 0);
+        let cluster = config.cluster.as_ref().map(|_| cluster::Cluster::new());
         Self(Arc::new(Runtime {
+            cluster,
+            reroutes: AtomicU64::new(0),
             pressure: Mutex::new(Pressure {
                 watermark: config.memory_watermark_bytes,
                 active: false,
@@ -124,7 +131,8 @@ impl Relay {
     }
 
     fn ready(&self) -> bool {
-        !self.0.draining.load(Ordering::Relaxed)
+        self.cluster_size() >= self.0.config.minimum_cluster_size
+            && !self.0.draining.load(Ordering::Relaxed)
             && !self.0.pressure.lock().unwrap().active
             && self.0.slots.available_permits() > 0
     }
@@ -148,6 +156,11 @@ async fn metrics(State(relay): State<Relay>) -> Response {
             u64::from(runtime.draining.load(Ordering::Relaxed)),
         ),
         ("active_websockets", relay.active_connections() as u64),
+        ("cluster_nodes", relay.cluster_size() as u64),
+        (
+            "reroute_responses_total",
+            runtime.reroutes.load(Ordering::Relaxed),
+        ),
         (
             "memory_pressure_disconnects_total",
             runtime.pressure_closes.load(Ordering::Relaxed),
@@ -202,6 +215,9 @@ async fn upgrade(
         Ok(connection) => connection,
         Err(error) => return (StatusCode::BAD_REQUEST, error).into_response(),
     };
+    if let Some(target) = relay.remote_target(&connection.server_id) {
+        return reroute_response(&relay, target);
+    }
     if relay.0.draining.load(Ordering::Relaxed) {
         return (StatusCode::SERVICE_UNAVAILABLE, "draining").into_response();
     }
@@ -212,6 +228,35 @@ async fn upgrade(
     let Ok(slot) = relay.0.slots.clone().try_acquire_owned() else {
         relay.0.rejected.fetch_add(1, Ordering::Relaxed);
         return (StatusCode::SERVICE_UNAVAILABLE, "Relay connection capacity").into_response();
+    };
+    let lease = {
+        let mut sessions = relay.0.sessions.lock().unwrap();
+        if let Some(target) = relay.remote_target_with_local(
+            &connection.server_id,
+            sessions
+                .get(&connection.server_id)
+                .map(|session| session.claim),
+        ) {
+            return reroute_response(&relay, target);
+        }
+        if !sessions.contains_key(&connection.server_id)
+            && relay.cluster_size() < relay.0.config.minimum_cluster_size
+        {
+            return (StatusCode::SERVICE_UNAVAILABLE, "cluster").into_response();
+        }
+        let session = sessions
+            .entry(connection.server_id.clone())
+            .or_default()
+            .clone();
+        if !session.reserve() {
+            return (StatusCode::SERVICE_UNAVAILABLE, "owner").into_response();
+        }
+        Lease {
+            relay: relay.clone(),
+            session,
+            server_id: connection.server_id.clone(),
+            _slot: slot,
+        }
     };
     let max = if is_control(&connection) {
         MAX_CONTROL_BYTES
@@ -224,7 +269,7 @@ async fn upgrade(
     ws.max_frame_size(max)
         .max_message_size(max)
         .write_buffer_size(0)
-        .on_upgrade(move |socket| serve_socket(relay, connection, socket, slot))
+        .on_upgrade(move |socket| serve_socket(relay, connection, socket, lease))
 }
 
 fn is_control(connection: &Connection) -> bool {
@@ -233,27 +278,38 @@ fn is_control(connection: &Connection) -> bool {
         && connection.connection_id.as_deref() == Some("")
 }
 
-struct Attachment {
+fn reroute_response(relay: &Relay, target: String) -> Response {
+    relay.0.reroutes.fetch_add(1, Ordering::Relaxed);
+    let mut response = (StatusCode::CONFLICT, "").into_response();
+    response.headers_mut().insert(
+        relay.0.config.reroute_header.clone(),
+        axum::http::HeaderValue::from_str(&target).expect("validated target"),
+    );
+    response
+}
+
+struct Lease {
     relay: Relay,
     session: Arc<Session>,
-    peer: Arc<Peer>,
+    server_id: String,
     _slot: OwnedSemaphorePermit,
 }
 
-impl Drop for Attachment {
+impl Drop for Lease {
     fn drop(&mut self) {
-        self.peer.close(1013, "Delivery unavailable");
-        self.session.detach(&self.peer);
+        let Some(epoch) = self.session.release() else {
+            return;
+        };
         let relay = self.relay.clone();
         let session = self.session.clone();
-        let id = self.peer.connection.server_id.clone();
+        let id = self.server_id.clone();
         tokio::spawn(async move {
             tokio::time::sleep(Duration::from_secs(30)).await;
             let mut sessions = relay.0.sessions.lock().unwrap();
             if sessions
                 .get(&id)
                 .is_some_and(|current| Arc::ptr_eq(current, &session))
-                && session.is_empty()
+                && session.idle_at(epoch)
             {
                 sessions.remove(&id);
             }
@@ -261,12 +317,20 @@ impl Drop for Attachment {
     }
 }
 
-async fn serve_socket(
-    relay: Relay,
-    connection: Connection,
-    socket: WebSocket,
-    slot: OwnedSemaphorePermit,
-) {
+struct Attachment {
+    session: Arc<Session>,
+    peer: Arc<Peer>,
+    _lease: Lease,
+}
+
+impl Drop for Attachment {
+    fn drop(&mut self) {
+        self.peer.close(1013, "Delivery unavailable");
+        self.session.detach(&self.peer);
+    }
+}
+
+async fn serve_socket(relay: Relay, connection: Connection, socket: WebSocket, lease: Lease) {
     let (sink, stream) = socket.split();
     let (tx, rx) = mpsc::unbounded_channel();
     let (close, closed) = watch::channel(None);
@@ -279,19 +343,11 @@ async fn serve_socket(
         control_budget: Arc::new(Semaphore::new(relay.0.config.control_queue_bytes)),
         delivery_timeout: relay.0.config.delivery_timeout,
     });
-    let session = relay
-        .0
-        .sessions
-        .lock()
-        .unwrap()
-        .entry(peer.connection.server_id.clone())
-        .or_default()
-        .clone();
+    let session = lease.session.clone();
     let attachment = Attachment {
-        relay: relay.clone(),
         session: session.clone(),
         peer: peer.clone(),
-        _slot: slot,
+        _lease: lease,
     };
     session.attach(peer.clone());
     let writer = writer(&relay, &peer, sink, rx, closed.clone());

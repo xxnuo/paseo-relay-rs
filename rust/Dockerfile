@@ -8,5 +8,5 @@ FROM scratch
 COPY --from=build /app/target/release/paseo-relay /paseo-relay
 USER 65532:65532
 ENV PASEO_RELAY_HOST=0.0.0.0 PASEO_RELAY_PORT=4000
-EXPOSE 4000
+EXPOSE 4000 4400
 ENTRYPOINT ["/paseo-relay"]

@@ -151,7 +151,7 @@ The Rust replacement is being developed in `rust/`. The Elixir sources remain
 unchanged as the upstream reference and performance baseline; the published image
 still runs Elixir. Keep upstream changes as normal Git rebases and compare the
 matching modules (`connection.ex` / `connection.rs`, `handshake_validation.ex` /
-`protocol.rs`, `ownership.ex` / `session.rs`, `socket.ex` / `relay.rs`). Rust
+`protocol.rs`, `ownership.ex` / `session.rs` and `cluster.rs`, `socket.ex` / `relay.rs`). Rust
 real-network tests exercise the same public v1/v2 wire contract rather than OTP
 implementation details.
 
@@ -199,13 +199,55 @@ Admission recovers after RSS falls below the watermark minus one maximum payload
 metrics do not apply. A failed enabled RSS observation stops admission, closes
 sessions and terminates the service rather than assuming zero memory usage.
 
-This is not yet a replacement for distributed deployments: configured cluster
-peers, DNS discovery and a cluster floor above one currently fail startup
-explicitly. Distributed ownership, full metric parity and the final comparative
-performance gates remain pending. BEAM heap/distribution settings do not apply to
-Rust; the Capacity mutation timeout has no Rust counterpart because semaphore
-mutations do not wait on an authority process. The generic published image still
-runs the retained Elixir implementation.
+Rust supports authenticated static and DNS-discovered clusters. Readiness observes
+the configured cluster floor; existing owned sessions continue below that floor,
+but new unowned sessions receive `503`. A known remote owner returns the existing
+`409` and configured reroute header before local connection or memory admission.
+No WebSocket payload crosses the cluster channel. Full metric parity and the
+final comparative performance gates remain pending. BEAM heap/distribution
+settings do not apply to Rust; the Capacity mutation timeout has no Rust
+counterpart because semaphore mutations do not wait on an authority process.
+The generic published image still runs the retained Elixir implementation.
+
+### Rust cluster contract
+
+| Setting | Rust behavior |
+| --- | --- |
+| `PASEO_RELAY_CLUSTER_LISTEN` | Optional dedicated IP:port listener, default `127.0.0.1:4400` when clustering is enabled. Set it to a private reachable interface for multi-host use. |
+| `PASEO_RELAY_CLUSTER_NODES` | Comma-separated exact `RELEASE_NODE` identities, `name@host` or `name@host:port`; the default control port is 4400. IPv6 with a port uses brackets. Maximum 1000 configured nodes. |
+| `PASEO_RELAY_CLUSTER_QUERY` | Optional DNS name, with optional `:port`, resolved every 5 seconds. Returned endpoints are authenticated before their identity or membership is accepted. |
+| `RELEASE_NODE` | Required unique identity when static peers, DNS discovery or the cluster listener is configured. Its advertised host/control port must be reachable by peers. |
+| `RELEASE_COOKIE` | Required shared secret of 32–256 bytes for Rust clusters. Debug formatting omits it. |
+| `PASEO_RELAY_OWNERSHIP_TARGET` | Required non-default opaque routing target for a cluster node, at most 1024 bytes and valid as an HTTP header value. |
+| `PASEO_RELAY_REROUTE_HEADER` | Existing default `x-reroute-target`; must be a valid HTTP header name. |
+| `PASEO_RELAY_MIN_CLUSTER_SIZE` | Existing default 1; counts this node and directly authenticated live peers, including transitively discovered peers. |
+
+Peers exchange versioned topology snapshots every 500 ms. Mutual HMAC-SHA256
+challenge authentication binds headers and bodies to fresh connection nonces;
+replayed packets cannot refresh membership. Each exchange has one two-second
+budget. A peer expires after three seconds without fresh authenticated contact;
+learned endpoints are retried for 60 seconds, while configured peers and DNS
+seeds continue discovery. Snapshots are limited to 16 MiB and reserve a separate
+64 MiB staging budget at four bytes per wire byte before allocation/JSON parsing.
+At most 128 inbound exchanges run concurrently. Headers are authenticated before
+allocating a declared body. This channel authenticates topology metadata; it does
+not encrypt it and belongs on the deployment's private network.
+
+Owners retain the original 30-second empty-session grace. Connection leases pin
+an owner across upgrades, and idle expiry checks the exact lease generation.
+After a partition, the same deterministic claim ordering on every node
+(creation timestamp, random epoch, node identity) keeps one owner and fences the losing epoch with explicit `1012` closes. A failed
+cluster listener/task or duplicate authenticated `RELEASE_NODE` identity drains
+admission and closes existing sockets before service exit. As with Syn, a
+partition can temporarily admit duplicate owners and there is no transparent
+socket migration.
+
+Rust's cluster protocol is independent of BEAM/Syn. Elixir and Rust nodes cannot
+share one cluster: switch the complete relay cluster and let sockets reconnect.
+Keep internal-protocol versions compatible across the Rust nodes. The retained
+Elixir sources remain the reference for upstream public-protocol changes; Rust's
+multi-process tests cover equivalent routing/failure behavior rather than OTP
+internals.
 
 ### Preliminary local-path performance
 

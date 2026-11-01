@@ -801,3 +801,62 @@
   separate post-run provenance file links the committed source hashes. This
   establishes a local-path baseline, not complete rewrite acceptance: distributed
   ownership and metric parity must land before the final comparison matrix.
+
+
+## Rust rewrite: authenticated distributed ownership
+
+- Red: five initial real-child-process cluster tests failed at startup because
+  static/DNS clustering was explicitly unimplemented. They cover floor admission,
+  reroutes at capacity, DNS discovery and frame replay to the owner, a TCP-gated
+  partition, peer death/restart and unauthenticated input.
+- Green: dedicated control TCP listeners exchange authenticated, versioned
+  topology snapshots only. Static seeds and real DNS resolution discover peers;
+  directly authenticated members advertise further endpoints for transitive
+  discovery. Readiness counts fresh peers. Remote owners retain the public
+  configured-header `409` path before local capacity or pressure admission.
+  Public encrypted frames remain on the selected owner node.
+- Trust boundaries: fresh server/client nonces mutually authenticate HMAC-SHA256
+  exchanges; header signatures are checked before allocating a declared body,
+  and body signatures precede JSON/state updates. RPCs are bounded to two
+  seconds, snapshots to 16 MiB, weighted staging to 64 MiB and inbound exchanges
+  to 128. Secrets are omitted from config Debug output. Invalid or incompatible
+  peer data never counts toward the cluster floor.
+- Real multi-process coverage now includes three-node transitive discovery and
+  all nine distinct claims converging on every landing node; mismatched cookies;
+  valid authenticated packets rejected when replayed under a fresh server
+  challenge; and duplicate authenticated node identities closing an existing
+  public socket with explicit `1012` before admission stops. A losing owner after
+  a real TCP partition/heal is fenced with `1012`, while the winner stays usable.
+  A killed node's claim expires and a restarted process learns its replacement.
+- Fixture correction: the first parallel partition run failed with AddrInUse
+  because unreserved ephemeral listener addresses could collide with the proxy.
+  Node ports are now held until process launch and the TCP gates use a separate
+  loopback address. Both isolated and full parallel cluster runs passed after
+  this correction; production binding behavior was unchanged. A separate repeated
+  container run proved the upgrade probe can itself create a competing claim
+  before discovery converges: node B then returned `409 target-a` and its old
+  daemon received `1012`. The container fixture now accepts either deterministic
+  winner, requires explicit loser fencing when B loses, and replays traffic to
+  the actual owner instead of assuming B must win a concurrent claim.
+- Owner lease red/green: a real 31-second regression against `2f58372` failed
+  because an earlier idle timer deleted a reused session during its newer grace.
+  Connection leases now pin the selected owner before HTTP upgrade, late attach
+  to a retired epoch fails closed, and cleanup checks the exact idle generation.
+  The same regression passes on the new code and also observes ordinary unused
+  sessions expiring. Its temporary detached reference worktree was removed.
+- Linux packaging: the rebuilt static nonroot scratch image forms a real private
+  two-container DNS cluster, returns the opaque remote-owner header, and carries
+  public text/binary traffic after replay to that owner. CI now runs both this
+  image test and the existing restart test. Rust and BEAM clusters deliberately
+  cannot interoperate; the README records the complete-cluster migration boundary
+  and every new/changed control protocol limit.
+- Remaining acceptance: source-death Writer cancellation, bounded handshake and
+  metadata JSON decoding, full metric parity and final performance comparisons
+  against the complete implementation, not just the earlier local path. The
+  generic published image remains Elixir until the final switch.
+- Final gates for this change: 36 application/example tests passed with the two
+  Docker tests excluded from the default run; both Docker tests then passed
+  together. The corrected container-cluster case also passed eight consecutive
+  runs. Warnings-as-errors Clippy, formatting, static musl release and diff checks
+  passed. The earlier local-path performance snapshots were not relabeled as
+  measurements of this newer distributed implementation.

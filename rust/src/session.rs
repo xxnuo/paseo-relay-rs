@@ -9,7 +9,7 @@ use std::{
         Arc, Mutex,
         atomic::{AtomicBool, Ordering},
     },
-    time::Duration,
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 use tokio::{
     sync::{OwnedSemaphorePermit, Semaphore, mpsc, oneshot, watch},
@@ -102,6 +102,9 @@ impl Peer {
 #[derive(Default)]
 struct Topology {
     peers: HashMap<u64, Arc<Peer>>,
+    leases: usize,
+    epoch: u64,
+    retired: bool,
     v1_server: Option<u64>,
     v1_client: Option<u64>,
     control: Option<u64>,
@@ -109,14 +112,33 @@ struct Topology {
     data: HashMap<String, u64>,
 }
 
+#[derive(
+    Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize,
+)]
+#[serde(deny_unknown_fields)]
+pub struct ClaimEpoch {
+    created_ms: u64,
+    nonce: [u8; 16],
+}
+
 pub struct Session {
+    pub claim: ClaimEpoch,
     topology: Mutex<Topology>,
     changed: watch::Sender<()>,
 }
 
 impl Default for Session {
     fn default() -> Self {
+        let mut nonce = [0; 16];
+        getrandom::fill(&mut nonce).expect("session entropy unavailable");
         Self {
+            claim: ClaimEpoch {
+                created_ms: SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_millis() as u64,
+                nonce,
+            },
             topology: Mutex::new(Topology::default()),
             changed: watch::channel(()).0,
         }
@@ -124,8 +146,34 @@ impl Default for Session {
 }
 
 impl Session {
+    pub fn reserve(&self) -> bool {
+        let mut state = self.topology.lock().unwrap();
+        if state.retired {
+            return false;
+        }
+        state.leases += 1;
+        state.epoch += 1;
+        true
+    }
+
+    pub fn release(&self) -> Option<u64> {
+        let mut state = self.topology.lock().unwrap();
+        state.leases -= 1;
+        state.epoch += 1;
+        (state.leases == 0 && state.peers.is_empty()).then_some(state.epoch)
+    }
+
+    pub fn idle_at(&self, epoch: u64) -> bool {
+        let state = self.topology.lock().unwrap();
+        state.epoch == epoch && state.leases == 0 && state.peers.is_empty()
+    }
+
     pub fn attach(self: &Arc<Self>, peer: Arc<Peer>) {
         let mut state = self.topology.lock().unwrap();
+        if state.retired {
+            peer.close(1012, "Session owner moved");
+            return;
+        }
         let connection = &peer.connection;
         let id = connection.connection_id.as_deref().unwrap_or("");
         let old = if connection.version == 1 {
@@ -197,7 +245,9 @@ impl Session {
 
     pub fn detach(&self, peer: &Peer) {
         let mut state = self.topology.lock().unwrap();
-        state.peers.remove(&peer.id);
+        if state.peers.remove(&peer.id).is_none() {
+            return;
+        }
         let connection = &peer.connection;
         let id = connection.connection_id.as_deref().unwrap_or("");
         if connection.version == 1 {
@@ -249,13 +299,12 @@ impl Session {
     }
 
     pub fn close_all(&self) {
-        for peer in self.topology.lock().unwrap().peers.values() {
+        let mut state = self.topology.lock().unwrap();
+        state.retired = true;
+        for peer in state.peers.values() {
             peer.close(1012, "Session owner moved");
         }
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.topology.lock().unwrap().peers.is_empty()
+        self.changed.send_replace(());
     }
 
     pub async fn destinations(
@@ -269,7 +318,7 @@ impl Session {
         loop {
             {
                 let state = self.topology.lock().unwrap();
-                if !state.peers.contains_key(&peer.id) {
+                if state.retired || !state.peers.contains_key(&peer.id) {
                     return Err((1013, "Delivery unavailable"));
                 }
                 let connection = &peer.connection;

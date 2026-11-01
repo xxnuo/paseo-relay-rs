@@ -28,11 +28,13 @@ impl Relay {
     ) -> io::Result<()> {
         let mut connections = JoinSet::new();
         let monitor = self.monitor_memory();
-        tokio::pin!(shutdown, monitor);
+        let cluster = self.run_cluster();
+        tokio::pin!(shutdown, monitor, cluster);
         let result = loop {
             tokio::select! {
                 biased;
                 _ = &mut shutdown => break Ok(()),
+                result = &mut cluster => { break result; },
                 result = &mut monitor => {
                     break result;
                 },

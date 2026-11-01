@@ -328,3 +328,186 @@ async fn static_nonroot_container_serves_websockets_after_restart() {
         .unwrap();
     }
 }
+
+struct Network(String);
+impl Drop for Network {
+    fn drop(&mut self) {
+        let _ = Command::new("docker")
+            .args(["network", "rm", &self.0])
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status();
+    }
+}
+
+#[tokio::test]
+#[ignore = "requires a built Rust Docker image and a local Docker daemon"]
+async fn static_cluster_uses_real_container_dns_and_reroutes_public_websockets() {
+    use futures_util::{SinkExt, StreamExt};
+    use tokio_tungstenite::{
+        connect_async,
+        tungstenite::{Error, Message},
+    };
+    let image = std::env::var("PASEO_RELAY_TEST_IMAGE").unwrap_or("paseo-relay-rust:local".into());
+    let network = Network(format!("paseo-rust-cluster-test-{}", std::process::id()));
+    assert!(
+        Command::new("docker")
+            .args(["network", "create", &network.0])
+            .stdout(Stdio::null())
+            .status()
+            .unwrap()
+            .success()
+    );
+    let mut containers = Vec::new();
+    let mut addresses = Vec::new();
+    for (name, peer) in [("a", "b"), ("b", "a")] {
+        let output = Command::new("docker")
+            .args([
+                "run",
+                "--detach",
+                "--network",
+                &network.0,
+                "--network-alias",
+                name,
+                "--publish",
+                "127.0.0.1::4000",
+                "--env",
+                "PASEO_RELAY_CLUSTER_LISTEN=0.0.0.0:4400",
+                "--env",
+                "PASEO_RELAY_MIN_CLUSTER_SIZE=2",
+                "--env",
+                "TOKIO_WORKER_THREADS=2",
+                "--env",
+                "RELEASE_COOKIE=test-only-docker-cookie-at-least-32-bytes",
+                "--env",
+                &format!("RELEASE_NODE={name}@{name}:4400"),
+                "--env",
+                &format!("PASEO_RELAY_OWNERSHIP_TARGET=target-{name}"),
+                "--env",
+                &format!("PASEO_RELAY_CLUSTER_NODES={peer}@{peer}:4400"),
+                &image,
+            ])
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let container = Container(String::from_utf8(output.stdout).unwrap().trim().to_owned());
+        let output = Command::new("docker")
+            .args(["port", &container.0, "4000/tcp"])
+            .output()
+            .unwrap();
+        addresses.push(
+            String::from_utf8(output.stdout)
+                .unwrap()
+                .trim()
+                .parse::<std::net::SocketAddr>()
+                .unwrap(),
+        );
+        containers.push(container);
+    }
+    for address in &addresses {
+        timeout(Duration::from_secs(8), async {
+            loop {
+                if TcpStream::connect(address).await.is_ok()
+                    && binary_request(*address, "/ready")
+                        .await
+                        .starts_with("HTTP/1.1 200")
+                {
+                    break;
+                }
+                tokio::time::sleep(Duration::from_millis(50)).await;
+            }
+        })
+        .await
+        .expect("static containers did not form a cluster");
+    }
+    let (mut daemon, _) = connect_async(format!(
+        "ws://{}/ws?serverId=docker-cluster&role=server",
+        addresses[1]
+    ))
+    .await
+    .unwrap();
+    daemon.send(Message::Ping(vec![1].into())).await.unwrap();
+    daemon.next().await.unwrap().unwrap();
+    let owner = timeout(Duration::from_secs(8), async {
+        loop {
+            for (landing, address) in addresses.iter().enumerate() {
+                match connect_async(format!(
+                    "ws://{}/ws?serverId=docker-cluster&role=client",
+                    address
+                ))
+                .await
+                {
+                    Err(Error::Http(response)) if response.status() == 409 => {
+                        let owner = 1 - landing;
+                        assert_eq!(
+                            response.headers()["x-reroute-target"],
+                            format!("target-{}", if owner == 0 { "a" } else { "b" })
+                        );
+                        return owner;
+                    }
+                    Ok((mut temporary, _)) => {
+                        temporary.close(None).await.unwrap();
+                    }
+                    other => panic!("unexpected {other:?}"),
+                }
+            }
+            tokio::time::sleep(Duration::from_millis(50)).await;
+        }
+    })
+    .await
+    .unwrap();
+    if owner == 0 {
+        let Message::Close(Some(close)) = timeout(Duration::from_secs(3), daemon.next())
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap()
+        else {
+            panic!("losing daemon was not fenced");
+        };
+        assert_eq!(u16::from(close.code), 1012);
+        daemon = connect_async(format!(
+            "ws://{}/ws?serverId=docker-cluster&role=server",
+            addresses[owner]
+        ))
+        .await
+        .unwrap()
+        .0;
+        daemon.send(Message::Ping(vec![2].into())).await.unwrap();
+        daemon.next().await.unwrap().unwrap();
+    }
+    let (mut client, _) = connect_async(format!(
+        "ws://{}/ws?serverId=docker-cluster&role=client",
+        addresses[owner]
+    ))
+    .await
+    .unwrap();
+    client
+        .send(Message::text("replayed to owner"))
+        .await
+        .unwrap();
+    assert_eq!(
+        timeout(Duration::from_secs(3), daemon.next())
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap(),
+        Message::text("replayed to owner")
+    );
+    daemon.send(Message::binary(vec![4, 5, 6])).await.unwrap();
+    assert_eq!(
+        timeout(Duration::from_secs(3), client.next())
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap(),
+        Message::binary(vec![4, 5, 6])
+    );
+    daemon.close(None).await.unwrap();
+    client.close(None).await.unwrap();
+    drop(containers);
+}

@@ -135,3 +135,33 @@ async fn request(addr: std::net::SocketAddr, path: &str) -> String {
         .unwrap();
     String::from_utf8(bytes).unwrap()
 }
+
+#[tokio::test]
+async fn stale_idle_timer_cannot_remove_a_reused_session_before_its_new_grace_period() {
+    let (addr, relay, task) = start(Config::default()).await;
+    for room in ["reused", "unused"] {
+        let (mut socket, _) = connect_async(format!("ws://{addr}/ws?serverId={room}&role=server"))
+            .await
+            .unwrap();
+        socket.send(Message::Ping(vec![1].into())).await.unwrap();
+        socket.next().await.unwrap().unwrap();
+        socket.close(None).await.unwrap();
+        relay.wait_idle().await;
+    }
+    tokio::time::sleep(Duration::from_secs(28)).await;
+    let (mut socket, _) = connect_async(format!("ws://{addr}/ws?serverId=reused&role=server"))
+        .await
+        .unwrap();
+    socket.send(Message::Ping(vec![2].into())).await.unwrap();
+    socket.next().await.unwrap().unwrap();
+    socket.close(None).await.unwrap();
+    relay.wait_idle().await;
+    tokio::time::sleep(Duration::from_secs(3)).await;
+    assert!(
+        request(addr, "/metrics")
+            .await
+            .contains("paseo_relay_active_sessions 1\n"),
+        "the previous idle timer must not expire a newer owner lease"
+    );
+    task.abort();
+}
