@@ -1,0 +1,32 @@
+{
+  "git_commit": "90e98b0fe73846dd7f0d8e9eaa56aa654e40624a",
+  "dirty": true,
+  "host": "Linux-7.2.11-arch1-1-x86_64-with-glibc2.44",
+  "cpu": "Intel(R) Core(TM) i5-14400",
+  "workload": {
+    "pairs": 64,
+    "seconds": 10,
+    "payload_bytes": 65536,
+    "protocol": "v2"
+  },
+  "source_dirty": false,
+  "source_sha256": {
+    "rust/Cargo.toml": "20cda81021426a327a1af9372fc9a7d5ecbc5520e756ef25edd9677439206d50",
+    "rust/Cargo.lock": "1c6bcbf6b96c3c8da737008303ecc4be23832061350ed1819f4e83d94b4e6a7f",
+    "Dockerfile": "e4b5720e8b030deccf71048db9ad6cd72737c705d09f4a696cd47b1820e5ceb1",
+    "Dockerfile.elixir": "2987b87aa4e46b51eaa5c51f566baf603f0e01b3640524e9152e01f9d5aca219",
+    "rust/examples/relay_bench.rs": "e4005021a9031c8d2fc242fe5487a0a45525e5f9af12e20114ce537082d47c05",
+    "/home/xxnuo/projects/getpaseo/paseo-relay/scripts/compare-rust.py": "dca7fb7dbf0f79474500adf0c95735268ff3a101439e358d5b8db2c82922d00e",
+    "rust/src/cluster.rs": "86c43f41110d27ae820a9b1ad53f076fdcf45724a9ca1834d672067b3e47bcf8",
+    "rust/src/config.rs": "cb1ddd8b6a62178a9c598467059d53418bb6362f2494ecfa1c81700756458329",
+    "rust/src/connection.rs": "0b5b0e573a7a17f77be4b6d28577b2edfb1c320e27c83d3f08557dbffcb68c6d",
+    "rust/src/lib.rs": "4b0d662374617b7e224461efcef08db8233f5943a3ff8f43f95dc15016c3bcf5",
+    "rust/src/main.rs": "70a847c272a13f6e258237a12e1e9fe917373166de8949b205f08ff00f083eb1",
+    "rust/src/metrics.rs": "e98e787111df167900133302092e94c385f8cf849a6ff79d8ca6220195d6c58a",
+    "rust/src/protocol.rs": "4fb98296ffe1104a05ddee952b30f0be5d380d9253433e7e9ecb2d295e67a794",
+    "rust/src/relay.rs": "5397a95dc1c76680f7dce50d20dd0183c62c93626288743ddf21dc9303bf60da",
+    "rust/src/server.rs": "00ff5756a334f0a11b931914dea4c152e708d8e369cf9421f96e454f3b5157c8",
+    "rust/src/session.rs": "571d7071fa19493f06440706b5a89cc3acafd3709715085a285438213501c050"
+  },
+  "bench_binary_sha256": "adbad8794f883693dc25a5ce48a1ed2cf20ab28254eb4b84f2f61e5ec3d21305"
+}

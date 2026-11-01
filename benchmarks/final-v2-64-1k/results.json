@@ -1,0 +1,254 @@
+[
+  {
+    "implementation": "elixir",
+    "image": "paseo-relay-elixir-baseline:5f4b763",
+    "image_id": "sha256:2b5b012667e1407c0e291a03cc6facef3cdd8aa7fcc504c131b1991866fc9ec3",
+    "limits": {
+      "cpus": 2,
+      "memory_bytes": 1073741824,
+      "worker_threads": 2
+    },
+    "load": {
+      "corruption": 0,
+      "forwarded_frames": 380562,
+      "frames_per_second": 38037.50544093841,
+      "latency_us": {
+        "max": 5316,
+        "p50": 1650,
+        "p95": 2249,
+        "p99": 2808
+      },
+      "loss": 0,
+      "measured_seconds": 10.00491477,
+      "ordering_errors": 0,
+      "pairs": 64,
+      "payload_bytes": 1024,
+      "payload_bytes_per_second": 38950405.57152093,
+      "protocol": 2,
+      "requested_seconds": 10,
+      "setup_seconds": 0.115351156
+    },
+    "cgroup_before": {
+      "cpu.stat": "usage_usec 893478\nuser_usec 793378\nsystem_usec 100100\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 5\nnr_throttled 1\nthrottled_usec 4598\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "130166784\n",
+      "memory.peak": "130166784\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    },
+    "cgroup_after": {
+      "cpu.stat": "usage_usec 20865870\nuser_usec 18012250\nsystem_usec 2853619\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 106\nnr_throttled 5\nthrottled_usec 5592\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "157315072\n",
+      "memory.peak": "165945344\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    }
+  },
+  {
+    "implementation": "rust",
+    "image": "paseo-relay-rust:final",
+    "image_id": "sha256:ab24225b68dded6b38f5f90a5000e2fae621ecd8b355c6af35d23a6e5bd117fa",
+    "limits": {
+      "cpus": 2,
+      "memory_bytes": 1073741824,
+      "worker_threads": 2
+    },
+    "load": {
+      "corruption": 0,
+      "forwarded_frames": 776546,
+      "frames_per_second": 77627.80387573798,
+      "latency_us": {
+        "max": 5383,
+        "p50": 659,
+        "p95": 1861,
+        "p99": 2344
+      },
+      "loss": 0,
+      "measured_seconds": 10.003451872,
+      "ordering_errors": 0,
+      "pairs": 64,
+      "payload_bytes": 1024,
+      "payload_bytes_per_second": 79490871.1687557,
+      "protocol": 2,
+      "requested_seconds": 10,
+      "setup_seconds": 0.110605924
+    },
+    "cgroup_before": {
+      "cpu.stat": "usage_usec 22619\nuser_usec 15071\nsystem_usec 7548\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 1\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "2347008\n",
+      "memory.peak": "9375744\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    },
+    "cgroup_after": {
+      "cpu.stat": "usage_usec 17324680\nuser_usec 12835406\nsystem_usec 4489274\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 102\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "1978368\n",
+      "memory.peak": "23408640\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    }
+  },
+  {
+    "implementation": "rust",
+    "image": "paseo-relay-rust:final",
+    "image_id": "sha256:ab24225b68dded6b38f5f90a5000e2fae621ecd8b355c6af35d23a6e5bd117fa",
+    "limits": {
+      "cpus": 2,
+      "memory_bytes": 1073741824,
+      "worker_threads": 2
+    },
+    "load": {
+      "corruption": 0,
+      "forwarded_frames": 790484,
+      "frames_per_second": 79010.94136306214,
+      "latency_us": {
+        "max": 5046,
+        "p50": 652,
+        "p95": 1826,
+        "p99": 2271
+      },
+      "loss": 0,
+      "measured_seconds": 10.004740943,
+      "ordering_errors": 0,
+      "pairs": 64,
+      "payload_bytes": 1024,
+      "payload_bytes_per_second": 80907203.95577563,
+      "protocol": 2,
+      "requested_seconds": 10,
+      "setup_seconds": 0.106178938
+    },
+    "cgroup_before": {
+      "cpu.stat": "usage_usec 22878\nuser_usec 15250\nsystem_usec 7627\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "2596864\n",
+      "memory.peak": "5120000\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    },
+    "cgroup_after": {
+      "cpu.stat": "usage_usec 17347822\nuser_usec 12895904\nsystem_usec 4451918\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 102\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "2998272\n",
+      "memory.peak": "23392256\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    }
+  },
+  {
+    "implementation": "elixir",
+    "image": "paseo-relay-elixir-baseline:5f4b763",
+    "image_id": "sha256:2b5b012667e1407c0e291a03cc6facef3cdd8aa7fcc504c131b1991866fc9ec3",
+    "limits": {
+      "cpus": 2,
+      "memory_bytes": 1073741824,
+      "worker_threads": 2
+    },
+    "load": {
+      "corruption": 0,
+      "forwarded_frames": 382244,
+      "frames_per_second": 38208.45163181338,
+      "latency_us": {
+        "max": 5703,
+        "p50": 1648,
+        "p95": 2212,
+        "p99": 2668
+      },
+      "loss": 0,
+      "measured_seconds": 10.004174042,
+      "ordering_errors": 0,
+      "pairs": 64,
+      "payload_bytes": 1024,
+      "payload_bytes_per_second": 39125454.470976904,
+      "protocol": 2,
+      "requested_seconds": 10,
+      "setup_seconds": 0.100965559
+    },
+    "cgroup_before": {
+      "cpu.stat": "usage_usec 911893\nuser_usec 838626\nsystem_usec 73266\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 6\nnr_throttled 1\nthrottled_usec 14745\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "122011648\n",
+      "memory.peak": "122384384\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    },
+    "cgroup_after": {
+      "cpu.stat": "usage_usec 20881661\nuser_usec 18008863\nsystem_usec 2872798\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 107\nnr_throttled 11\nthrottled_usec 25883\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "154124288\n",
+      "memory.peak": "159551488\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    }
+  },
+  {
+    "implementation": "elixir",
+    "image": "paseo-relay-elixir-baseline:5f4b763",
+    "image_id": "sha256:2b5b012667e1407c0e291a03cc6facef3cdd8aa7fcc504c131b1991866fc9ec3",
+    "limits": {
+      "cpus": 2,
+      "memory_bytes": 1073741824,
+      "worker_threads": 2
+    },
+    "load": {
+      "corruption": 0,
+      "forwarded_frames": 384306,
+      "frames_per_second": 38412.7325248948,
+      "latency_us": {
+        "max": 6281,
+        "p50": 1627,
+        "p95": 2244,
+        "p99": 2860
+      },
+      "loss": 0,
+      "measured_seconds": 10.004651446,
+      "ordering_errors": 0,
+      "pairs": 64,
+      "payload_bytes": 1024,
+      "payload_bytes_per_second": 39334638.10549227,
+      "protocol": 2,
+      "requested_seconds": 10,
+      "setup_seconds": 0.107748252
+    },
+    "cgroup_before": {
+      "cpu.stat": "usage_usec 914632\nuser_usec 822840\nsystem_usec 91792\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 6\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "124551168\n",
+      "memory.peak": "124817408\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    },
+    "cgroup_after": {
+      "cpu.stat": "usage_usec 20882973\nuser_usec 18017036\nsystem_usec 2865937\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 107\nnr_throttled 10\nthrottled_usec 6267\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "158986240\n",
+      "memory.peak": "164335616\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    }
+  },
+  {
+    "implementation": "rust",
+    "image": "paseo-relay-rust:final",
+    "image_id": "sha256:ab24225b68dded6b38f5f90a5000e2fae621ecd8b355c6af35d23a6e5bd117fa",
+    "limits": {
+      "cpus": 2,
+      "memory_bytes": 1073741824,
+      "worker_threads": 2
+    },
+    "load": {
+      "corruption": 0,
+      "forwarded_frames": 789310,
+      "frames_per_second": 78902.74065204397,
+      "latency_us": {
+        "max": 4822,
+        "p50": 645,
+        "p95": 1838,
+        "p99": 2287
+      },
+      "loss": 0,
+      "measured_seconds": 10.003581542,
+      "ordering_errors": 0,
+      "pairs": 64,
+      "payload_bytes": 1024,
+      "payload_bytes_per_second": 80796406.42769302,
+      "protocol": 2,
+      "requested_seconds": 10,
+      "setup_seconds": 0.113513249
+    },
+    "cgroup_before": {
+      "cpu.stat": "usage_usec 22379\nuser_usec 15863\nsystem_usec 6516\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "1945600\n",
+      "memory.peak": "8097792\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    },
+    "cgroup_after": {
+      "cpu.stat": "usage_usec 17350851\nuser_usec 12871372\nsystem_usec 4479479\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 102\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+      "memory.current": "2695168\n",
+      "memory.peak": "23674880\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+    }
+  }
+]

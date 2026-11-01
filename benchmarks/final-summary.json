@@ -1,0 +1,127 @@
+[
+  {
+    "dataset": "benchmarks/final-v2-single-1k",
+    "workload": {
+      "pairs": 1,
+      "seconds": 10,
+      "payload_bytes": 1024,
+      "protocol": "v2"
+    },
+    "implementations": {
+      "elixir": {
+        "image_id": "sha256:2b5b012667e1407c0e291a03cc6facef3cdd8aa7fcc504c131b1991866fc9ec3",
+        "median_frames_per_second": 25148.348936277485,
+        "median_p99_us": 64,
+        "median_cgroup_peak_bytes": 136568832
+      },
+      "rust": {
+        "image_id": "sha256:ab24225b68dded6b38f5f90a5000e2fae621ecd8b355c6af35d23a6e5bd117fa",
+        "median_frames_per_second": 48289.81425322948,
+        "median_p99_us": 31,
+        "median_cgroup_peak_bytes": 7995392
+      }
+    },
+    "rust_to_elixir_throughput_ratio": 1.920198195737992,
+    "rust_to_elixir_peak_memory_ratio": 0.05854477835762702
+  },
+  {
+    "dataset": "benchmarks/final-v2-64-1k",
+    "workload": {
+      "pairs": 64,
+      "seconds": 10,
+      "payload_bytes": 1024,
+      "protocol": "v2"
+    },
+    "implementations": {
+      "elixir": {
+        "image_id": "sha256:2b5b012667e1407c0e291a03cc6facef3cdd8aa7fcc504c131b1991866fc9ec3",
+        "median_frames_per_second": 38208.45163181338,
+        "median_p99_us": 2808,
+        "median_cgroup_peak_bytes": 164335616
+      },
+      "rust": {
+        "image_id": "sha256:ab24225b68dded6b38f5f90a5000e2fae621ecd8b355c6af35d23a6e5bd117fa",
+        "median_frames_per_second": 78902.74065204397,
+        "median_p99_us": 2287,
+        "median_cgroup_peak_bytes": 23408640
+      }
+    },
+    "rust_to_elixir_throughput_ratio": 2.065059882885896,
+    "rust_to_elixir_peak_memory_ratio": 0.14244410657760276
+  },
+  {
+    "dataset": "benchmarks/final-v2-64-64k",
+    "workload": {
+      "pairs": 64,
+      "seconds": 10,
+      "payload_bytes": 65536,
+      "protocol": "v2"
+    },
+    "implementations": {
+      "elixir": {
+        "image_id": "sha256:2b5b012667e1407c0e291a03cc6facef3cdd8aa7fcc504c131b1991866fc9ec3",
+        "median_frames_per_second": 10423.392241566406,
+        "median_p99_us": 9796,
+        "median_cgroup_peak_bytes": 252407808
+      },
+      "rust": {
+        "image_id": "sha256:ab24225b68dded6b38f5f90a5000e2fae621ecd8b355c6af35d23a6e5bd117fa",
+        "median_frames_per_second": 16198.582638466452,
+        "median_p99_us": 6782,
+        "median_cgroup_peak_bytes": 36978688
+      }
+    },
+    "rust_to_elixir_throughput_ratio": 1.554060546035075,
+    "rust_to_elixir_peak_memory_ratio": 0.14650374048650666
+  },
+  {
+    "dataset": "benchmarks/final-v1-64-1k",
+    "workload": {
+      "pairs": 64,
+      "seconds": 10,
+      "payload_bytes": 1024,
+      "protocol": "v2"
+    },
+    "implementations": {
+      "elixir": {
+        "image_id": "sha256:2b5b012667e1407c0e291a03cc6facef3cdd8aa7fcc504c131b1991866fc9ec3",
+        "median_frames_per_second": 38749.033555938244,
+        "median_p99_us": 2725,
+        "median_cgroup_peak_bytes": 167120896
+      },
+      "rust": {
+        "image_id": "sha256:ab24225b68dded6b38f5f90a5000e2fae621ecd8b355c6af35d23a6e5bd117fa",
+        "median_frames_per_second": 77911.26532783665,
+        "median_p99_us": 2351,
+        "median_cgroup_peak_bytes": 23629824
+      }
+    },
+    "rust_to_elixir_throughput_ratio": 2.0106634457182957,
+    "rust_to_elixir_peak_memory_ratio": 0.141393593294282
+  },
+  {
+    "dataset": "benchmarks/final-v2-max",
+    "workload": {
+      "pairs": 1,
+      "seconds": 3,
+      "payload_bytes": 33554418,
+      "protocol": "v2"
+    },
+    "implementations": {
+      "elixir": {
+        "image_id": "sha256:2b5b012667e1407c0e291a03cc6facef3cdd8aa7fcc504c131b1991866fc9ec3",
+        "median_frames_per_second": 11.952661781829608,
+        "median_p99_us": 95233,
+        "median_cgroup_peak_bytes": 630784000
+      },
+      "rust": {
+        "image_id": "sha256:ab24225b68dded6b38f5f90a5000e2fae621ecd8b355c6af35d23a6e5bd117fa",
+        "median_frames_per_second": 19.029703303774877,
+        "median_p99_us": 62195,
+        "median_cgroup_peak_bytes": 141500416
+      }
+    },
+    "rust_to_elixir_throughput_ratio": 1.5920891639972412,
+    "rust_to_elixir_peak_memory_ratio": 0.22432467532467532
+  }
+]

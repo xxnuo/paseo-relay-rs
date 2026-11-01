@@ -1,0 +1,42 @@
+{
+  "implementation": "rust",
+  "image": "paseo-relay-rust:final",
+  "image_id": "sha256:ab24225b68dded6b38f5f90a5000e2fae621ecd8b355c6af35d23a6e5bd117fa",
+  "limits": {
+    "cpus": 2,
+    "memory_bytes": 1073741824,
+    "worker_threads": 2
+  },
+  "load": {
+    "corruption": 0,
+    "forwarded_frames": 482900,
+    "frames_per_second": 48289.81425322948,
+    "latency_us": {
+      "max": 697,
+      "p50": 20,
+      "p95": 25,
+      "p99": 32
+    },
+    "loss": 0,
+    "measured_seconds": 10.000038465,
+    "ordering_errors": 0,
+    "pairs": 1,
+    "payload_bytes": 1024,
+    "payload_bytes_per_second": 49448769.79530699,
+    "protocol": 2,
+    "requested_seconds": 10,
+    "setup_seconds": 0.002489517
+  },
+  "cgroup_before": {
+    "cpu.stat": "usage_usec 25604\nuser_usec 17392\nsystem_usec 8211\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 1\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "1998848\n",
+    "memory.peak": "8314880\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  },
+  "cgroup_after": {
+    "cpu.stat": "usage_usec 3901550\nuser_usec 2324843\nsystem_usec 1576707\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 101\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "1343488\n",
+    "memory.peak": "8314880\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  }
+}

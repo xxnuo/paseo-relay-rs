@@ -205,36 +205,38 @@ the Rust image as above, compile the load client using
 `cargo build --locked --release --manifest-path rust/Cargo.toml --example relay_bench`,
 and run the driver with `uv run python scripts/compare-rust.py --help`.
 
-## Historical comparison
+## Final performance comparison
 
-The retained Elixir baseline `5f4b763` and Rust `9fef3e8` were measured on the
-same Linux host through loopback Docker port mappings. Each fresh container had
-a 2-CPU quota, 1 GiB memory limit and two runtime workers; the external client
-used four workers. Each pair warmed up for 20 bidirectional exchanges, then ran
-for 10 seconds. The table reports medians from three runs per implementation,
-with alternating execution order. Latency measures sending a frame until the
-other endpoint receives it, not an application round trip.
+The complete Rust implementation at `90e98b0` and retained Elixir baseline
+`5f4b763` were measured on the same Linux amd64 host through loopback Docker
+port mappings. Each fresh container had a 2-CPU quota, 1 GiB memory limit and
+two runtime workers; the external client used four workers. Each pair warmed
+up for 20 bidirectional exchanges, then ran for 10 seconds (three seconds for
+the maximum-size payload). Each row reports medians from three runs per
+implementation, alternating execution order. Latency measures sending a frame
+until the other endpoint receives it, not an application round trip.
 
-| v2 workload | Elixir frames/s | Rust frames/s | Rust throughput ratio | p99 ms, Elixir / Rust | Peak container MiB, Elixir / Rust |
+| Workload | Elixir frames/s | Rust frames/s | Rust throughput ratio | p99 ms, Elixir / Rust | Peak container MiB, Elixir / Rust |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 1 pair, 1 KiB | 24,313 | 46,688 | 1.92 | 0.065 / 0.035 | 114.6 / 5.2 |
-| 64 pairs, 1 KiB | 32,615 | 56,382 | 1.73 | 3.685 / 3.699 | 151.5 / 22.9 |
-| 64 pairs, 64 KiB | 8,451 | 12,156 | 1.44 | 12.629 / 9.230 | 237.7 / 35.3 |
+| v2, 1 pair, 1 KiB | 25,148 | 48,290 | 1.92 | 0.064 / 0.031 | 130.2 / 7.6 |
+| v2, 64 pairs, 1 KiB | 38,208 | 78,903 | 2.07 | 2.808 / 2.287 | 156.7 / 22.3 |
+| v2, 64 pairs, 64 KiB | 10,423 | 16,199 | 1.55 | 9.796 / 6.782 | 240.7 / 35.3 |
+| v1, 64 pairs, 1 KiB | 38,749 | 77,911 | 2.01 | 2.725 / 2.351 | 159.4 / 22.5 |
+| v2, 1 pair, 32 MiB − 14 bytes | 12 | 19 | 1.59 | 95.233 / 62.195 | 601.6 / 134.9 |
 
-Every measured frame passed content/order checks; server frame and byte counters
-matched the workload including warmup, WebSockets and ingress leases returned to
-zero, and no container reported OOM events. `benchmarks/2026-11-01-summary.json`
-indexes the medians; the adjacent directories retain load output, before/after
-metrics and cgroup observations, image identities and host metadata.
-`2026-11-01-provenance.json` records source/binary fingerprints and explains the
-pre-commit dirty metadata. Build the common load generator with
-`cargo build --locked --release --manifest-path rust/Cargo.toml --example relay_bench`;
-`scripts/compare-rust.py --help` describes the repeatable comparison driver
-(run it with `uv run python`).
+All 30 runs passed exact payload/order checks. Server frame/byte counters matched
+including warmup, WebSockets and ingress leases returned to zero, and OOM events
+were zero. [Final summary](benchmarks/final-summary.json) indexes the datasets;
+each retains load output, metrics, cgroup CPU/memory observations, image IDs and
+source/load-generator SHA256 fingerprints. All source fingerprints were verified
+against the committed implementation; `source_dirty` is false in every dataset.
+The extracted static executable fingerprint and validation gates are recorded in
+[delivery evidence](benchmarks/final-validation/delivery.json).
 
-These are closed-loop, single-outstanding-message measurements of the current
-local paths. Those measured Rust snapshots predate distributed ownership and
-complete metric parity; final comparisons of the current implementation remain
-pending. The historical results establish lower memory
-use and higher throughput for these workloads, not a universal latency or
-open-loop capacity improvement. In particular, 64-pair 1 KiB p99 did not improve.
+These are closed-loop, single-outstanding-message measurements of local routing.
+They show 1.55–2.07 times the throughput, lower p99 and 77.6–94.1% lower peak
+container memory for these five workloads. They do not establish open-loop
+capacity, WAN latency, cluster-gossip scaling or long-duration production
+reliability. The private cluster is functionally tested separately. Earlier
+pre-cluster results remain in `benchmarks/2026-11-01-summary.json` as historical
+evidence and are not the basis of this table.

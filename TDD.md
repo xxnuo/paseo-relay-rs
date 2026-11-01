@@ -964,3 +964,26 @@
 - The common load client now accepts the protocol's maximum data frame instead
   of tungstenite's smaller default. Near-limit end-to-end comparative validation
   and the final full-runtime performance results follow in the next evidence set.
+
+## Rust rewrite: final complete-runtime acceptance
+
+- Frozen source 90e98b0 was compared with Elixir 5f4b763 using the same checked
+  WebSocket load binary, alternating three fresh containers per implementation
+  for each of five workloads: v2 single/64-pair 1 KiB, v2 64-pair 64 KiB,
+  v1 64-pair 1 KiB, and v2 single-pair 33554418-byte payloads. The last workload
+  confirms the corrected client frame ceiling against both real implementations.
+- All 30 runs finished with exact content/order checks, matching emitted frame
+  and byte counters including warmup, zero remaining sockets/ingress reservations
+  and zero OOM events. Every dataset has source_dirty=false; source/driver hashes
+  match the frozen checkout and image IDs match the tested local images.
+- benchmarks/final-summary.json contains medians: Rust throughput is 1.55–2.07x
+  the reference across these loads; p99 and peak cgroup memory improve in all five.
+  README includes the final table and confines conclusions to loopback, closed-loop
+  local routing. This does not measure WAN, gossip scaling or production soak.
+- Delivery audit: root Dockerfile and image CI use Rust; standalone Linux amd64
+  static executable and systemd unit verified; reference sources unchanged;
+  49 native/example + 2 image tests and 106 reference tests pass. Runtime contract,
+  authenticated cluster migration boundary and upstream maintenance mapping are
+  documented. Remote origin/main had no updates beyond the baseline on fetch.
+- No remote deployment, registry publish or Git push was performed. Rust and
+  BEAM/Syn cannot share a cluster and require a complete cluster switch.

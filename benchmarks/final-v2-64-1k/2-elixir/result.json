@@ -1,0 +1,42 @@
+{
+  "implementation": "elixir",
+  "image": "paseo-relay-elixir-baseline:5f4b763",
+  "image_id": "sha256:2b5b012667e1407c0e291a03cc6facef3cdd8aa7fcc504c131b1991866fc9ec3",
+  "limits": {
+    "cpus": 2,
+    "memory_bytes": 1073741824,
+    "worker_threads": 2
+  },
+  "load": {
+    "corruption": 0,
+    "forwarded_frames": 382244,
+    "frames_per_second": 38208.45163181338,
+    "latency_us": {
+      "max": 5703,
+      "p50": 1648,
+      "p95": 2212,
+      "p99": 2668
+    },
+    "loss": 0,
+    "measured_seconds": 10.004174042,
+    "ordering_errors": 0,
+    "pairs": 64,
+    "payload_bytes": 1024,
+    "payload_bytes_per_second": 39125454.470976904,
+    "protocol": 2,
+    "requested_seconds": 10,
+    "setup_seconds": 0.100965559
+  },
+  "cgroup_before": {
+    "cpu.stat": "usage_usec 911893\nuser_usec 838626\nsystem_usec 73266\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 6\nnr_throttled 1\nthrottled_usec 14745\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "122011648\n",
+    "memory.peak": "122384384\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  },
+  "cgroup_after": {
+    "cpu.stat": "usage_usec 20881661\nuser_usec 18008863\nsystem_usec 2872798\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 107\nnr_throttled 11\nthrottled_usec 25883\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "154124288\n",
+    "memory.peak": "159551488\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  }
+}

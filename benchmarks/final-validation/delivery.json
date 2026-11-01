@@ -1,0 +1,20 @@
+{
+  "source_commit": "90e98b0fe73846dd7f0d8e9eaa56aa654e40624a",
+  "image_id": "sha256:ab24225b68dded6b38f5f90a5000e2fae621ecd8b355c6af35d23a6e5bd117fa",
+  "binary_sha256": "928ec53dc4c7c753b2d103d2a8299fd734f93f21b983ea649870f422607f68f5",
+  "binary_format": "Linux x86-64 static PIE, stripped",
+  "local_binary": "rust/target/delivery/paseo-relay-linux-amd64",
+  "validation": {
+    "native_and_example_tests_passed": 49,
+    "final_image_tests_passed": 2,
+    "elixir_reference_tests_passed": 106,
+    "cargo_fmt": "passed",
+    "cargo_clippy_warnings_as_errors": "passed",
+    "systemd_analyze_verify": "passed with extracted executable substituted for uninstalled /usr/local/bin path",
+    "reference_source_diff_from_5f4b763": "empty",
+    "comparative_runs_passed": 30,
+    "source_fingerprints_verified": true,
+    "oom_events": 0
+  },
+  "scope": "Local Linux amd64 containers and processes; no remote deployment, registry publication or Git push. Rust and BEAM/Syn clusters require an entire-cluster switch."
+}
