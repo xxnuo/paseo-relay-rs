@@ -1,0 +1,48 @@
+[
+  {
+    "payload_bytes": 1024,
+    "implementations": {
+      "two-workers": {
+        "median_fps": 52777.30336870185,
+        "fps_range": [
+          52770.06830987507,
+          53400.46203993614
+        ],
+        "median_p99_us": 23285,
+        "median_peak_bytes": 89325568
+      },
+      "one-worker": {
+        "median_fps": 56289.59580883664,
+        "fps_range": [
+          55481.85943734565,
+          56464.307938429076
+        ],
+        "median_p99_us": 7543,
+        "median_peak_bytes": 60272640
+      }
+    }
+  },
+  {
+    "payload_bytes": 65536,
+    "implementations": {
+      "two-workers": {
+        "median_fps": 7652.724167500109,
+        "fps_range": [
+          6037.158252159817,
+          8641.470505118881
+        ],
+        "median_p99_us": 37772,
+        "median_peak_bytes": 107339776
+      },
+      "one-worker": {
+        "median_fps": 8375.128552117243,
+        "fps_range": [
+          7993.156999486627,
+          8426.568883740518
+        ],
+        "median_p99_us": 10847,
+        "median_peak_bytes": 76238848
+      }
+    }
+  }
+]

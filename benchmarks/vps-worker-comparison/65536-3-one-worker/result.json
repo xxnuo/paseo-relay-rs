@@ -1,0 +1,43 @@
+{
+  "implementation": "one-worker",
+  "image": "paseo-relay-rust:vps",
+  "image_id": "sha256:b589d1d3843ca49ceb81c5ba579dd9cdd25ea02e110d5e0e02143dbc5c2d6ff4",
+  "processes": "PID                 PPID                COMMAND             COMMAND\n439421              439398              entrypoint.sh       /bin/sh /entrypoint.sh\n439493              439421              paseo-relay         /paseo-relay\n439498              439421              nginx               nginx: master process nginx -c /tmp/nginx.conf -g daemon off;\n439504              439498              nginx               nginx: worker process\n439809              439421              sleep               sleep 0.1",
+  "limits": {
+    "cpus": 2,
+    "memory_bytes": 1073741824,
+    "worker_threads": 2
+  },
+  "load": {
+    "corruption": 0,
+    "forwarded_frames": 83840,
+    "frames_per_second": 8375.128552117243,
+    "latency_us": {
+      "max": 20355,
+      "p50": 7391,
+      "p95": 9318,
+      "p99": 10847
+    },
+    "loss": 0,
+    "measured_seconds": 10.010592611,
+    "ordering_errors": 0,
+    "pairs": 64,
+    "payload_bytes": 65536,
+    "payload_bytes_per_second": 548872424.7915556,
+    "protocol": 2,
+    "requested_seconds": 10,
+    "setup_seconds": 0.355926706
+  },
+  "cgroup_before": {
+    "cpu.stat": "usage_usec 42522\nuser_usec 22756\nsystem_usec 19766\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 1\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "34234368\n",
+    "memory.peak": "34250752\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  },
+  "cgroup_after": {
+    "cpu.stat": "usage_usec 13173384\nuser_usec 4578568\nsystem_usec 8594816\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 104\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "34369536\n",
+    "memory.peak": "76238848\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  }
+}

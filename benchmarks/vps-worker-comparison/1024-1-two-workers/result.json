@@ -1,0 +1,43 @@
+{
+  "implementation": "two-workers",
+  "image": "paseo-relay-rust:nginx",
+  "image_id": "sha256:922f573dcb1163641ba41e9fba606e503113b31ca4d78a351f34918e8b37ffcd",
+  "processes": "PID                 PPID                COMMAND             COMMAND\n432499              432476              entrypoint.sh       /bin/sh /entrypoint.sh\n432567              432499              paseo-relay         /paseo-relay\n432577              432499              nginx               nginx: master process nginx -c /tmp/nginx.conf -g daemon off;\n432579              432577              nginx               nginx: worker process\n432580              432577              nginx               nginx: worker process\n432838              432499              sleep               sleep 0.1",
+  "limits": {
+    "cpus": 2,
+    "memory_bytes": 1073741824,
+    "worker_threads": 2
+  },
+  "load": {
+    "corruption": 0,
+    "forwarded_frames": 534134,
+    "frames_per_second": 53400.46203993614,
+    "latency_us": {
+      "max": 31779,
+      "p50": 833,
+      "p95": 1861,
+      "p99": 23247
+    },
+    "loss": 0,
+    "measured_seconds": 10.002422818,
+    "ordering_errors": 0,
+    "pairs": 64,
+    "payload_bytes": 1024,
+    "payload_bytes_per_second": 54682073.128894605,
+    "protocol": 2,
+    "requested_seconds": 10,
+    "setup_seconds": 0.110865673
+  },
+  "cgroup_before": {
+    "cpu.stat": "usage_usec 54115\nuser_usec 23237\nsystem_usec 30878\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 1\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "62644224\n",
+    "memory.peak": "62918656\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  },
+  "cgroup_after": {
+    "cpu.stat": "usage_usec 20237199\nuser_usec 10947345\nsystem_usec 9289853\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 102\nnr_throttled 100\nthrottled_usec 6058138\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "64278528\n",
+    "memory.peak": "89325568\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  }
+}

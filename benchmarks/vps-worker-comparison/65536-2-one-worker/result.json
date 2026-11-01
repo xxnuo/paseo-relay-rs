@@ -1,0 +1,43 @@
+{
+  "implementation": "one-worker",
+  "image": "paseo-relay-rust:vps",
+  "image_id": "sha256:b589d1d3843ca49ceb81c5ba579dd9cdd25ea02e110d5e0e02143dbc5c2d6ff4",
+  "processes": "PID                 PPID                COMMAND             COMMAND\n436491              436467              entrypoint.sh       /bin/sh /entrypoint.sh\n436556              436491              paseo-relay         /paseo-relay\n436562              436491              nginx               nginx: master process nginx -c /tmp/nginx.conf -g daemon off;\n436569              436562              nginx               nginx: worker process",
+  "limits": {
+    "cpus": 2,
+    "memory_bytes": 1073741824,
+    "worker_threads": 2
+  },
+  "load": {
+    "corruption": 0,
+    "forwarded_frames": 80032,
+    "frames_per_second": 7993.156999486627,
+    "latency_us": {
+      "max": 19676,
+      "p50": 7734,
+      "p95": 9748,
+      "p99": 11588
+    },
+    "loss": 0,
+    "measured_seconds": 10.012564498,
+    "ordering_errors": 0,
+    "pairs": 64,
+    "payload_bytes": 65536,
+    "payload_bytes_per_second": 523839537.1183556,
+    "protocol": 2,
+    "requested_seconds": 10,
+    "setup_seconds": 0.358852131
+  },
+  "cgroup_before": {
+    "cpu.stat": "usage_usec 42841\nuser_usec 20456\nsystem_usec 22385\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 1\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "33669120\n",
+    "memory.peak": "33669120\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  },
+  "cgroup_after": {
+    "cpu.stat": "usage_usec 13247947\nuser_usec 4637764\nsystem_usec 8610182\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 105\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "34938880\n",
+    "memory.peak": "76337152\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  }
+}

@@ -1080,3 +1080,15 @@
   49 native/example tests and all three real image tests (including default/
   overridden process counts and 61-second idle/restart). Logs are retained in
   benchmarks/vps-validation/docker-ci.log.
+
+- Final sizing evidence: twelve alternating v2 runs on two CPU/1 GiB containers
+  compare old two-worker and new one-worker images with identical extracted
+  relay binary SHA256 and the same Docker-built client. Both payload sizes
+  (1 KiB/64 KiB), three runs per configuration, pass content/order/counters,
+  socket/ingress cleanup and zero OOM events. Process inventories confirm counts.
+  One-worker median p99 is 7.543/10.847 ms versus 23.285/37.772 ms; peak memory
+  is 57.5/72.7 MiB versus 85.2/102.4 MiB. Throughput medians are higher here,
+  but the two-worker 64 KiB baseline varies widely; README reports the range
+  without treating this as a universal throughput improvement. Source hashes,
+  images, raw metrics/cgroups and summaries are in
+  benchmarks/vps-worker-comparison. No live VPS deployment or WAN test occurred.

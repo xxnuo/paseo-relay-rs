@@ -255,6 +255,28 @@ Pass `--bench rust/target/docker/relay_bench` to use that Docker-built client in
 every comparative run. Both implementations share the same total CPU/memory
 quota; the Rust container includes all Nginx workers in that quota.
 
+## VPS proxy sizing check
+
+The one-worker default at `a8cac64` was checked against the prior two-worker
+image using byte-identical Rust executables and the same Docker-built load
+client. Each container had 2 CPUs/1 GiB, Tokio used two workers, and v2 had
+64 pairs, 20 warmup exchanges and 10 measured seconds. Medians below are from
+three alternating runs per configuration; this is a local sizing experiment.
+
+| Payload | Frames/s, 2 / 1 workers | p99 ms, 2 / 1 workers | Peak container MiB, 2 / 1 workers |
+| --- | ---: | ---: | ---: |
+| 1 KiB | 52,777 / 56,290 | 23.285 / 7.543 | 85.2 / 57.5 |
+| 64 KiB | 7,653 / 8,375 | 37.772 / 10.847 | 102.4 / 72.7 |
+
+All 12 runs passed content/order, server counters and socket/byte cleanup, with
+zero OOM events. The 64 KiB two-worker throughput varied from 6,037 to 8,641
+frames/s, so its median throughput difference is not a robust capacity claim.
+The lower fixed footprint and p99 support a one-worker starting point for
+small VPS hosts; size larger hosts from their own measurements. Full records,
+image IDs, equal executable hashes and ranges are in
+[the sizing evidence](benchmarks/vps-worker-comparison/summary.json). This does
+not establish WAN latency or replace the earlier original-versus-Rust test.
+
 ## Original Docker versus Rust + Nginx Docker (two-worker snapshot)
 
 This historical two-worker snapshot predates the configurable one-worker VPS

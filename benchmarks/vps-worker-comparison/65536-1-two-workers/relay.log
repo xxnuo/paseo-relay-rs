@@ -1,0 +1,3 @@
+nginx: the configuration file /tmp/nginx.conf syntax is ok
+nginx: configuration file /tmp/nginx.conf test is successful
+paseo-relay listening on 127.0.0.1:4001

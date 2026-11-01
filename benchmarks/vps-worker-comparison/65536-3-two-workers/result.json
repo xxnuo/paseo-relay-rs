@@ -1,0 +1,43 @@
+{
+  "implementation": "two-workers",
+  "image": "paseo-relay-rust:nginx",
+  "image_id": "sha256:922f573dcb1163641ba41e9fba606e503113b31ca4d78a351f34918e8b37ffcd",
+  "processes": "PID                 PPID                COMMAND             COMMAND\n438450              438425              entrypoint.sh       /bin/sh /entrypoint.sh\n438572              438450              paseo-relay         /paseo-relay\n438596              438450              nginx               nginx: master process nginx -c /tmp/nginx.conf -g daemon off;\n438598              438596              nginx               nginx: worker process\n438599              438596              nginx               nginx: worker process\n439278              438450              sleep               sleep 0.1",
+  "limits": {
+    "cpus": 2,
+    "memory_bytes": 1073741824,
+    "worker_threads": 2
+  },
+  "load": {
+    "corruption": 0,
+    "forwarded_frames": 76594,
+    "frames_per_second": 7652.724167500109,
+    "latency_us": {
+      "max": 47361,
+      "p50": 6005,
+      "p95": 31546,
+      "p99": 37409
+    },
+    "loss": 0,
+    "measured_seconds": 10.008723472,
+    "ordering_errors": 0,
+    "pairs": 64,
+    "payload_bytes": 65536,
+    "payload_bytes_per_second": 501528931.0412871,
+    "protocol": 2,
+    "requested_seconds": 10,
+    "setup_seconds": 0.354473005
+  },
+  "cgroup_before": {
+    "cpu.stat": "usage_usec 57086\nuser_usec 21301\nsystem_usec 35785\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 2\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "66564096\n",
+    "memory.peak": "66830336\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  },
+  "cgroup_after": {
+    "cpu.stat": "usage_usec 20795018\nuser_usec 7261587\nsystem_usec 13533430\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 106\nnr_throttled 103\nthrottled_usec 7067041\nnr_bursts 0\nburst_usec 0\n",
+    "memory.current": "67391488\n",
+    "memory.peak": "110813184\n",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+  }
+}

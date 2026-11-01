@@ -1,0 +1,21 @@
+{
+  "git_commit": "a8cac6452e041af26349ced69b7e79c90ff9b994",
+  "source_dirty": false,
+  "bench_sha256": "ac3c947f5af88766eb41c0f8f5b39beb508d7cea4633ef8bf3f0363771a6cbaf",
+  "source_sha256": {
+    "Dockerfile": "12e3a364fc16aa8550ee9353b93d66f8f580e140c0c582b2d49813ed7c20292d",
+    "deploy/docker-entrypoint.sh": "f1b48c6dbab7cb26ecc74dc39a5ed31135d497eb1d1d7ab5ee99d3ac0825fc37",
+    "deploy/nginx.conf.template": "b8a6f629d09dc347f2a14412dcb38b7158c765d35b204087ddd435d639d8b523",
+    "scripts/compare-rust.py": "341dcafcaddf171ca4c8aed267b0807c8bbbf752118ea45db3e901c700723f8c"
+  },
+  "scope": "one versus two Nginx workers, same Rust binary, 2 CPU/1GiB, Tokio=2, client=4, loopback, three alternating runs per workload",
+  "baseline_image": "paseo-relay-rust:nginx",
+  "baseline_source": "a5df513",
+  "vps_image": "paseo-relay-rust:vps",
+  "host": "Linux-7.2.11-arch1-1-x86_64-with-glibc2.44",
+  "cpu": "Intel(R) Core(TM) i5-14400",
+  "relay_binary_sha256": {
+    "paseo-relay-rust:nginx": "928ec53dc4c7c753b2d103d2a8299fd734f93f21b983ea649870f422607f68f5",
+    "paseo-relay-rust:vps": "928ec53dc4c7c753b2d103d2a8299fd734f93f21b983ea649870f422607f68f5"
+  }
+}
