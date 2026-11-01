@@ -165,3 +165,71 @@ async fn stale_idle_timer_cannot_remove_a_reused_session_before_its_new_grace_pe
     );
     task.abort();
 }
+
+#[tokio::test]
+async fn preupgrade_slots_bound_slow_http_and_are_released_at_upgrade_not_first_ws_read() {
+    let config = Config::load(&std::collections::HashMap::from([
+        ("PASEO_RELAY_ACCEPTORS".into(), "1".into()),
+        ("PASEO_RELAY_HTTP_IDLE_TIMEOUT_MS".into(), "300".into()),
+    ]))
+    .unwrap();
+    let (addr, relay, task) = start(config).await;
+    let mut held = TcpStream::connect(addr).await.unwrap();
+    held.write_all(b"GET /health HTTP/1.1\r\nHost:")
+        .await
+        .unwrap();
+    let mut probe = TcpStream::connect(addr).await.unwrap();
+    probe
+        .write_all(b"GET /health HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n")
+        .await
+        .unwrap();
+    let mut bytes = Vec::new();
+    assert!(
+        timeout(Duration::from_millis(100), probe.read_to_end(&mut bytes))
+            .await
+            .is_err(),
+        "slow HTTP did not consume the configured pre-upgrade slot"
+    );
+    timeout(Duration::from_secs(2), probe.read_to_end(&mut bytes))
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(String::from_utf8_lossy(&bytes).starts_with("HTTP/1.1 200"));
+    let mut client = TcpStream::connect(addr).await.unwrap();
+    let mut upgrade=b"GET /ws?serverId=prefetched&role=client&v=2&connectionId=peer HTTP/1.1\r\nHost: localhost\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n\r\n".to_vec();
+    upgrade.extend_from_slice(&[0x81, 0x86, 1, 2, 3, 4]);
+    upgrade.extend(
+        b"queued"
+            .iter()
+            .enumerate()
+            .map(|(i, b)| b ^ [1, 2, 3, 4][i % 4]),
+    );
+    client.write_all(&upgrade).await.unwrap();
+    let mut response = [0; 1024];
+    let count = timeout(Duration::from_secs(2), client.read(&mut response))
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(String::from_utf8_lossy(&response[..count]).starts_with("HTTP/1.1 101"));
+    let (mut daemon, _) = timeout(
+        Duration::from_secs(2),
+        connect_async(format!(
+            "ws://{addr}/ws?serverId=prefetched&role=server&v=2&connectionId=peer"
+        )),
+    )
+    .await
+    .unwrap()
+    .unwrap();
+    assert_eq!(
+        timeout(Duration::from_secs(2), daemon.next())
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap(),
+        Message::text("queued")
+    );
+    client.write_all(&[0x88, 0x80, 1, 2, 3, 4]).await.unwrap();
+    let _ = daemon.close(None).await;
+    relay.wait_idle().await;
+    task.abort();
+}

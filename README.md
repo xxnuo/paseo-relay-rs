@@ -187,7 +187,10 @@ existing URLs. `PASEO_RELAY_HOST`, `PORT`, `DRAIN`, `ACCEPTORS`,
 `DATA_ATTACH_TIMEOUT_MS`, `HTTP_IDLE_TIMEOUT_MS`, `TCP_RECEIVE_BUFFER_BYTES` and
 `MEMORY_WATERMARK_BYTES` retain the defaults and bounds above (all names have the
 `PASEO_RELAY_` prefix). Acceptor settings determine the connection ceiling; Tokio
-schedules I/O. The transport timeout is validated as an upper bound; writes use
+schedules I/O. Its acceptor count also bounds concurrent pre-upgrade HTTP
+connections independently of the WebSocket ceiling. Upgrading releases that HTTP
+slot immediately; an idle HTTP connection releases it on timeout. The transport
+timeout is validated as an upper bound; writes use
 the stricter absolute delivery deadline. HTTP idle time includes incomplete
 headers and unread bodies; upgraded WebSockets are exempt.
 

@@ -7,7 +7,7 @@ use std::{
     io,
     pin::Pin,
     sync::{
-        Arc,
+        Arc, Mutex,
         atomic::{AtomicBool, Ordering},
     },
     task::{Context, Poll},
@@ -16,6 +16,7 @@ use std::{
 use tokio::{
     io::{AsyncRead, AsyncWrite, ReadBuf},
     net::{TcpListener, TcpStream},
+    sync::{OwnedSemaphorePermit, Semaphore},
     task::JoinSet,
     time::{Instant, Sleep},
 };
@@ -27,6 +28,8 @@ impl Relay {
         shutdown: impl Future<Output = ()>,
     ) -> io::Result<()> {
         let mut connections = JoinSet::new();
+        let app = self.router();
+        let http_slots = Arc::new(Semaphore::new(self.0.config.http_connection_limit));
         let monitor = self.monitor_memory();
         let cluster = self.run_cluster();
         tokio::pin!(shutdown, monitor, cluster);
@@ -43,11 +46,15 @@ impl Relay {
                         break Err(io::Error::other(error));
                     }
                 },
-                accepted = listener.accept() => {
-                    let (stream, _) = match accepted { Ok(accepted) => accepted, Err(error) => break Err(error) };
+                accepted = async {
+                    let permit=http_slots.clone().acquire_owned().await.map_err(io::Error::other)?;
+                    let (stream,_)=listener.accept().await?;
+                    Ok::<_,io::Error>((stream,permit))
+                } => {
+                    let (stream, permit) = match accepted { Ok(accepted) => accepted, Err(error) => break Err(error) };
                     if let Err(error) = stream.set_nodelay(true).and_then(|()| socket2::SockRef::from(&stream).set_recv_buffer_size(self.0.config.tcp_receive_buffer_bytes)) { break Err(error); }
-                    let upgraded = Arc::new(AtomicBool::new(false));
-                    let app = self.router().layer(Extension(upgraded.clone()));
+                    let upgraded = Arc::new(HttpLease { upgraded:AtomicBool::new(false),permit:Mutex::new(Some(permit)) });
+                    let app = app.clone().layer(Extension(upgraded.clone()));
                     let stream = IdleIo {
                         stream, upgraded,
                         timeout: self.0.config.http_idle_timeout,
@@ -142,7 +149,7 @@ pub(super) fn resident_bytes() -> io::Result<usize> {
 
 struct IdleIo {
     stream: TcpStream,
-    upgraded: Arc<AtomicBool>,
+    upgraded: Arc<HttpLease>,
     timeout: Duration,
     timer: Pin<Box<Sleep>>,
 }
@@ -155,7 +162,7 @@ impl AsyncRead for IdleIo {
     ) -> Poll<io::Result<()>> {
         let before = buf.filled().len();
         let result = Pin::new(&mut self.stream).poll_read(cx, buf);
-        if self.upgraded.load(Ordering::Relaxed) {
+        if self.upgraded.upgraded.load(Ordering::Acquire) {
             return result;
         }
         if buf.filled().len() > before {
@@ -184,5 +191,16 @@ impl AsyncWrite for IdleIo {
     }
     fn poll_shutdown(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
         Pin::new(&mut self.stream).poll_shutdown(cx)
+    }
+}
+
+pub(super) struct HttpLease {
+    upgraded: AtomicBool,
+    permit: Mutex<Option<OwnedSemaphorePermit>>,
+}
+impl HttpLease {
+    pub(super) fn upgrade(&self) {
+        self.upgraded.store(true, Ordering::Release);
+        self.permit.lock().unwrap().take();
     }
 }

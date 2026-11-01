@@ -79,7 +79,7 @@ impl Relay {
         }))
     }
 
-    pub fn router(&self) -> Router {
+    fn router(&self) -> Router {
         Router::new()
             .route(
                 "/health",
@@ -171,7 +171,7 @@ async fn upgrade(
     State(relay): State<Relay>,
     Query(query): Query<HashMap<String, String>>,
     RawQuery(raw): RawQuery,
-    idle: Option<Extension<Arc<AtomicBool>>>,
+    idle: Option<Extension<Arc<server::HttpLease>>>,
     ws: Result<WebSocketUpgrade, axum::extract::ws::rejection::WebSocketUpgradeRejection>,
 ) -> Response {
     let Ok(ws) = ws else {
@@ -233,7 +233,7 @@ async fn upgrade(
         MAX_MESSAGE_BYTES
     };
     if let Some(Extension(upgraded)) = idle {
-        upgraded.store(true, Ordering::Relaxed);
+        upgraded.upgrade();
     }
     ws.max_frame_size(max)
         .max_message_size(max)

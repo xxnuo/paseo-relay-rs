@@ -922,3 +922,24 @@
   warnings-as-errors, formatting, diff checks and the musl release build passed.
   Existing performance data remain historical; they were not reused as results
   for this newer runtime with complete instrumentation and bounded queues.
+
+
+## Rust rewrite: bounded pre-upgrade transport admission
+
+- Red: with ACCEPTORS=1 a deliberately incomplete HTTP request did not consume
+  any listener slot; a second health request responded immediately. Green:
+  ACCEPTORS now also bounds pre-upgrade HTTP connections independently from the
+  application WebSocket ceiling. An idle HTTP request occupies that slot until
+  its configured deadline, then the waiting health request succeeds.
+- Upgrade lifetime evidence: one raw TCP write includes the upgrade and its first
+  masked v2 frame. The client waits for daemon-data attachment with that frame
+  already prefetched. A second upgrade still succeeds under the one-slot HTTP
+  limit and receives the exact queued payload, proving HTTP capacity is released
+  at upgrade rather than only on a later WebSocket read.
+- The full-landing-node remote-owner regression still returns its configured
+  `409` target. Configuration retains the existing acceptor bounds and computes
+  the same application WebSocket ceiling. Immutable HTTP routing is shared across
+  connections; no public endpoint or provider configuration was added.
+- Focused real listener and cluster regressions, formatting, warnings-as-errors
+  Clippy and diff checks passed. Primary build promotion and final comparative
+  runs remain the final delivery steps.

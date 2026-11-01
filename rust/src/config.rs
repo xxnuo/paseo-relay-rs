@@ -12,6 +12,7 @@ pub struct Config {
     pub reroute_header: axum::http::HeaderName,
     pub listen: SocketAddr,
     pub http_idle_timeout: Duration,
+    pub http_connection_limit: usize,
     pub tcp_receive_buffer_bytes: usize,
     pub memory_watermark_bytes: usize,
     pub max_connections: usize,
@@ -32,6 +33,7 @@ impl Default for Config {
             reroute_header: axum::http::HeaderName::from_static("x-reroute-target"),
             listen: "127.0.0.1:4000".parse().unwrap(),
             http_idle_timeout: Duration::from_secs(15),
+            http_connection_limit: 100,
             tcp_receive_buffer_bytes: 65536,
             memory_watermark_bytes: 0,
             max_connections: 20_000,
@@ -150,7 +152,8 @@ impl Config {
             "false" => false,
             _ => return Err("PASEO_RELAY_DRAIN must be true or false".into()),
         };
-        let max_connections = number("PASEO_RELAY_ACCEPTORS", 100, 1, 1000)?
+        let http_connection_limit = number("PASEO_RELAY_ACCEPTORS", 100, 1, 1000)?;
+        let max_connections = http_connection_limit
             * number("PASEO_RELAY_CONNECTIONS_PER_ACCEPTOR", 200, 1, 1_000_000)?;
         let ingress_budget_bytes = number(
             "PASEO_RELAY_INGRESS_BUDGET_BYTES",
@@ -172,6 +175,7 @@ impl Config {
             ownership_target,
             reroute_header,
             listen: SocketAddr::new(host, port),
+            http_connection_limit,
             http_idle_timeout: Duration::from_millis(number(
                 "PASEO_RELAY_HTTP_IDLE_TIMEOUT_MS",
                 15000,
