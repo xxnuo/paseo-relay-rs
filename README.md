@@ -1,4 +1,4 @@
-# Paseo Relay
+# Paseo Relay RS
 
 A distributed, protocol-compatible relay for [Paseo](https://github.com/getpaseo/paseo),
 implemented in Rust as one Linux executable. The default Dockerfile and image
@@ -8,9 +8,9 @@ compatibility and performance reference, not a runtime dependency. Frames remain
 
 ## Published Docker images
 
-Docker Hub: `xxnuo/paseo-relay:latest`
+Docker Hub: `xxnuo/paseo-relay-rs:latest`
 
-GHCR: `ghcr.io/xxnuo/paseo-relay:latest`
+GHCR: `ghcr.io/xxnuo/paseo-relay-rs:latest`
 
 Both names publish the same direct Rust runtime for `linux/amd64` and
 `linux/arm64` (64-bit x86 and ARM). Docker selects the host architecture.
@@ -19,14 +19,14 @@ Use `sha-<full Git commit>` or the published manifest digest to pin a release;
 CI tests Rust on native amd64 and arm64 runners before publishing both registries.
 
 ```sh
-docker run -d --name paseo-relay --restart unless-stopped \
+docker run -d --name paseo-relay-rs --restart unless-stopped \
   --stop-timeout 40 --ulimit nofile=65536:65536 \
   -p 127.0.0.1:4000:4000 \
-  ghcr.io/xxnuo/paseo-relay:latest
+  ghcr.io/xxnuo/paseo-relay-rs:latest
 curl --fail http://127.0.0.1:4000/ready
 ```
 
-Replace the image with `xxnuo/paseo-relay:latest` to use Docker Hub.
+Replace the image with `xxnuo/paseo-relay-rs:latest` to use Docker Hub.
 The loopback binding is for a local ingress; clients use its public WebSocket
 endpoint, with both session roles routed to the same node. The image has no TLS.
 An orange-cloud Full (strict) deployment still needs origin HTTPS; see below.

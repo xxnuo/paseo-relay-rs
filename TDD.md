@@ -1293,3 +1293,11 @@
   bidirectional 64 KiB WebSocket forwarding and exit-code-zero graceful stop.
   Local arm64 smoke runs used QEMU; native ARM coverage is in the linked CI run.
   Evidence: benchmarks/multiarch-release-validation/.
+
+## Correct project image namespace
+
+- The project is paseo-relay-rs. Correct Docker Hub/GHCR publication and README
+  examples to xxnuo/paseo-relay-rs. Keep the tested runtime and wire protocol
+  unchanged; republish the already verified amd64/arm64 manifest.
+- Previous paseo-relay registry names were a publication naming error. Historical
+  evidence is retained; it is not the supported image name for this project.
