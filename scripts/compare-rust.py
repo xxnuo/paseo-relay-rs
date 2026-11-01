@@ -73,7 +73,7 @@ def run(args, image, label, directory):
         assert int(after_gauges["paseo_relay_bytes_forwarded_total"]) - int(before_gauges["paseo_relay_bytes_forwarded_total"]) == expected_frames * args.payload_bytes
         after = cgroup(inspection["State"]["Pid"])
         (directory / "metrics-after.txt").write_text(after_metrics)
-        result = {"implementation": label, "image": image, "image_id": inspection["Image"], "limits": {"cpus": 2, "memory_bytes": 1073741824, "worker_threads": 2}, "load": load, "cgroup_before": before, "cgroup_after": after}
+        result = {"implementation": label, "image": image, "image_id": inspection["Image"], "processes": command("docker", "top", cid, "-eo", "pid,ppid,comm,args"), "limits": {"cpus": 2, "memory_bytes": 1073741824, "worker_threads": 2}, "load": load, "cgroup_before": before, "cgroup_after": after}
         (directory / "result.json").write_text(json.dumps(result, indent=2)+"\n")
         print(json.dumps({"run": directory.name, "fps": round(load["frames_per_second"]), "p99_us": load["latency_us"]["p99"], "peak_bytes": int(after["memory.peak"])}), flush=True)
         return result
@@ -100,7 +100,7 @@ def main():
     args.output.mkdir(parents=True, exist_ok=False)
     results = []
     metadata = {"git_commit": command("git", "rev-parse", "HEAD"), "dirty": bool(command("git", "status", "--porcelain")), "host": platform.platform(), "cpu": next(line.split(":",1)[1].strip() for line in Path("/proc/cpuinfo").read_text().splitlines() if line.startswith("model name")), "workload": {"pairs": args.pairs, "seconds": args.seconds, "payload_bytes": args.payload_bytes, "protocol": args.protocol}}
-    sources = [Path("rust/Cargo.toml"), Path("rust/Cargo.lock"), Path("Dockerfile"), Path("Dockerfile.elixir"), Path("rust/examples/relay_bench.rs"), Path(__file__)] + sorted(Path("rust/src").glob("*.rs"))
+    sources = [Path("rust/Cargo.toml"), Path("rust/Cargo.lock"), Path("Dockerfile"), Path("Dockerfile.elixir"), Path("deploy/docker-entrypoint.sh"), Path("deploy/nginx.conf.template"), Path("scripts/ci-rust.sh"), Path("rust/examples/relay_bench.rs"), Path(__file__)] + sorted(Path("rust/src").glob("*.rs"))
     metadata["source_dirty"] = bool(command("git", "status", "--porcelain", "--", *(str(path) for path in sources)))
     metadata["source_sha256"] = {str(path): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources}
     metadata["bench_binary_sha256"] = hashlib.sha256(args.bench.read_bytes()).hexdigest()

@@ -1,0 +1,27 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.05s
+     Running tests/binary.rs (target/debug/deps/binary-69541ddf63e8196c)
+
+running 1 test
+test nginx_nonroot_container_serves_websockets_after_restart ... FAILED
+
+failures:
+
+---- nginx_nonroot_container_serves_websockets_after_restart stdout ----
+
+thread 'nginx_nonroot_container_serves_websockets_after_restart' (18) panicked at tests/binary.rs:294:9:
+Nginx was bypassed: HTTP/1.1 200 OK
+content-type: application/json
+content-length: 15
+connection: close
+date: Sun, 01 Nov 2026 08:04:08 GMT
+
+{"status":"ok"}
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    nginx_nonroot_container_serves_websockets_after_restart
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.34s
+
+error: test failed, to rerun pass `--test binary`

@@ -1,0 +1,32 @@
+[
+  {
+    "setting": "PASEO_RELAY_PORT=",
+    "exit_code": 1,
+    "logs": "Invalid PASEO_RELAY_PORT\n"
+  },
+  {
+    "setting": "PASEO_RELAY_PORT=0",
+    "exit_code": 1,
+    "logs": "Invalid PASEO_RELAY_PORT\n"
+  },
+  {
+    "setting": "PASEO_RELAY_PORT=65536",
+    "exit_code": 1,
+    "logs": "Invalid PASEO_RELAY_PORT\n"
+  },
+  {
+    "setting": "PASEO_RELAY_HOST=not-an-ip",
+    "exit_code": 1,
+    "logs": "Invalid PASEO_RELAY_HOST\n"
+  },
+  {
+    "setting": "PASEO_RELAY_HTTP_IDLE_TIMEOUT_MS=",
+    "exit_code": 1,
+    "logs": "Invalid PASEO_RELAY_HTTP_IDLE_TIMEOUT_MS\n"
+  },
+  {
+    "setting": "PASEO_RELAY_HTTP_IDLE_TIMEOUT_MS=0",
+    "exit_code": 1,
+    "logs": "nginx: the configuration file /tmp/nginx.conf syntax is ok\nnginx: configuration file /tmp/nginx.conf test is successful\nError: \"PASEO_RELAY_HTTP_IDLE_TIMEOUT_MS must be an integer between 100 and 120000\"\n"
+  }
+]

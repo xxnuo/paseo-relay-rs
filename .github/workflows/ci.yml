@@ -26,30 +26,12 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
-      - name: Rust checks and Linux executable
-        run: |
-          cargo fmt --manifest-path rust/Cargo.toml --check
-          cargo clippy --locked --manifest-path rust/Cargo.toml --all-targets -- -D warnings
-          cargo test --locked --manifest-path rust/Cargo.toml --all-targets
-          cargo build --locked --release --manifest-path rust/Cargo.toml
-      - name: Static Linux image, restart and private cluster
-        run: |
-          docker build -t paseo-relay-rust:local .
-          cargo test --locked --manifest-path rust/Cargo.toml --test binary -- --ignored
-      - name: Extract standalone Linux executable
-        run: |
-          image_container=$(docker create paseo-relay-rust:local)
-          trap 'docker rm -f "$image_container" >/dev/null' EXIT
-          mkdir -p dist
-          docker cp "$image_container:/paseo-relay" dist/paseo-relay-linux-amd64
-          sha256sum dist/paseo-relay-linux-amd64 > dist/SHA256SUMS
+      - name: Docker Rust checks, Nginx lifecycle, cluster and Linux artifacts
+        run: scripts/ci-rust.sh
       - uses: actions/upload-artifact@v4
         with:
           name: paseo-relay-linux-amd64
-          path: dist/
+          path: rust/target/docker/
   publish:
     needs: [verify, rust-verify]
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository

@@ -2,26 +2,28 @@
 
 A distributed, protocol-compatible relay for [Paseo](https://github.com/getpaseo/paseo),
 implemented in Rust as one Linux executable. The default Dockerfile and image
-publishing pipeline build Rust. The Elixir implementation remains at its upstream
-source paths as a tested compatibility and performance reference, not a runtime
+publishing pipeline build Rust with Nginx in one container. The Elixir
+implementation remains at its upstream source paths as a tested compatibility and performance reference, not a runtime
 dependency. Frames remain end-to-end encrypted; the relay routes opaque payloads.
 
 ## Build and Linux deployment
 
 ```sh
-cargo build --locked --release --manifest-path rust/Cargo.toml
-PASEO_RELAY_HOST=127.0.0.1 PASEO_RELAY_PORT=4000 rust/target/release/paseo-relay
+scripts/ci-rust.sh
 ```
 
-The executable accepts environment configuration and needs no Erlang installation.
-The normal host build uses the host libc. A self-contained Linux amd64 build is:
+This Docker-only Rust pipeline checks formatting and Clippy, runs all native
+and real-process tests inside the pinned Rust toolchain image, builds the
+Rust + Nginx runtime image, and runs real container lifecycle/cluster tests.
+It needs Docker on Linux and access to its socket; no host Rust installation is
+required. It extracts the static amd64 executable, common load client and
+SHA256SUMS to `rust/target/docker/`. CI uses this same script and retains those
+artifacts. The standalone binary needs neither Erlang nor Nginx:
 
 ```sh
-rustup target add x86_64-unknown-linux-musl
-cargo build --locked --release --manifest-path rust/Cargo.toml --target x86_64-unknown-linux-musl
+PASEO_RELAY_HOST=127.0.0.1 PASEO_RELAY_PORT=4000 rust/target/docker/paseo-relay-linux-amd64
 ```
 
-Use `rust/target/x86_64-unknown-linux-musl/release/paseo-relay` on the server.
 `deploy/paseo-relay.service` runs `/usr/local/bin/paseo-relay` as an unprivileged
 systemd dynamic user, optionally reads `/etc/paseo-relay/environment`, and allows
 40 seconds for shutdown. Set the host and memory watermark for the deployment.
@@ -29,16 +31,30 @@ The repository contains no provider inventories or proxy/operator configuration.
 
 ```sh
 docker build -t paseo-relay-rust .
-docker run --rm -p 127.0.0.1:4000:4000 paseo-relay-rust
+docker run --rm --stop-timeout 40 --ulimit nofile=65536:65536 -p 127.0.0.1:4000:4000 paseo-relay-rust
 ```
 
-The scratch image contains only the static executable and runs as UID/GID 65532.
-It listens on 0.0.0.0:4000; native defaults are loopback. CI verifies tests, image
-restart and a private two-container cluster, then retains the standalone amd64
-binary with SHA256SUMS as a workflow artifact. Successful main/tag/same-repository
-PR workflows are configured to publish `ghcr.io/getpaseo/paseo-relay`; pin a
-consumer to the digest reported by that workflow. Existing registry images are
-not changed just by checking out this branch. See [LICENSE](LICENSE).
+The default image runs Rust and pinned Nginx 1.30.6 as UID/GID 65532. Nginx owns
+the public `PASEO_RELAY_HOST:PORT` listener (default 0.0.0.0:4000); Rust listens
+only on 127.0.0.1:4001 inside the container, or :4002 when the public port is
+4001. The independent cluster port remains unchanged. The entrypoint raises
+the soft file limit to 65536, requiring a hard limit of at least that value.
+Two Nginx workers have 65536 connection slots each; proxy sockets also consume
+slots and file descriptors. WebSocket upgrades and ownership headers pass
+through with HTTP/1.1, without response/request buffering or URI rewriting.
+The Nginx upstream read/write inactivity timeout is 24 hours, including idle
+WebSockets. HTTP header/body/keepalive timeouts follow `HTTP_IDLE_TIMEOUT_MS`.
+The Rust pre-upgrade slot limit applies to backend connections; Nginx can hold
+additional front-end connections. The RSS watermark measures Rust only, so
+leave headroom for the proxy and kernel buffers in the container memory limit.
+
+SIGTERM first drains Rust while Nginx continues forwarding, then gracefully
+stops Nginx. An unexpected exit of either service stops its sibling and exits
+the container unsuccessfully. Give Docker at least 40 seconds to stop it. The
+`binary` Docker build target retains the standalone scratch image when needed.
+Successful main/tag/same-repository PR workflows publish the default Rust + Nginx
+image to `ghcr.io/getpaseo/paseo-relay`; pin consumers to the reported digest.
+Checking out this branch does not update registry images. See [LICENSE](LICENSE).
 
 ## Runtime contract
 
@@ -165,11 +181,7 @@ internals.
 ## Development and upstream maintenance
 
 ```sh
-cargo fmt --manifest-path rust/Cargo.toml --check
-cargo clippy --locked --manifest-path rust/Cargo.toml --all-targets -- -D warnings
-cargo test --locked --manifest-path rust/Cargo.toml --all-targets
-docker build -t paseo-relay-rust:local .
-cargo test --locked --manifest-path rust/Cargo.toml --test binary -- --ignored
+scripts/ci-rust.sh
 ```
 
 The build image pins Rust 1.97.1 and Cargo.lock pins dependencies. Tests use real
@@ -201,11 +213,13 @@ Comparisons use the same compiled WebSocket client for both images, validate eac
 payload/order, check server counters and final socket/byte cleanup, and retain
 cgroup peaks, logs, source hashes and exact image IDs. Rebuild the baseline with
 `docker build -f Dockerfile.elixir -t paseo-relay-elixir-baseline:5f4b763 .`, build
-the Rust image as above, compile the load client using
-`cargo build --locked --release --manifest-path rust/Cargo.toml --example relay_bench`,
-and run the driver with `uv run python scripts/compare-rust.py --help`.
+the Rust image and load client with `scripts/ci-rust.sh`, and run
+`uv run python scripts/compare-rust.py --bench rust/target/docker/relay_bench --help`.
+Pass `--bench rust/target/docker/relay_bench` to use that Docker-built client in
+every comparative run. Both implementations share the same total CPU/memory
+quota; the Rust container includes the two Nginx workers in that quota.
 
-## Final performance comparison
+## Historical direct-Rust performance comparison
 
 The complete Rust implementation at `90e98b0` and retained Elixir baseline
 `5f4b763` were measured on the same Linux amd64 host through loopback Docker
@@ -240,3 +254,6 @@ capacity, WAN latency, cluster-gossip scaling or long-duration production
 reliability. The private cluster is functionally tested separately. Earlier
 pre-cluster results remain in `benchmarks/2026-11-01-summary.json` as historical
 evidence and are not the basis of this table.
+
+The table above predates the Nginx packaging. A fresh original-Docker versus
+Rust + Nginx comparison is required before drawing conclusions for that image.

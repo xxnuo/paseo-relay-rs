@@ -987,3 +987,42 @@
   documented. Remote origin/main had no updates beyond the baseline on fetch.
 - No remote deployment, registry publish or Git push was performed. Rust and
   BEAM/Syn cannot share a cluster and require a complete cluster switch.
+
+## Rust + Nginx: Docker-only build, tests and publication
+
+- Red: the new real-container health-header assertion failed against the previous
+  direct Rust image: health was 200 but no Server: nginx header existed. The
+  default image now contains pinned Nginx 1.30.6 plus the static Rust executable;
+  both run as UID/GID 65532. Nginx exposes the configured host/port and proxies
+  HTTP/1.1 upgrades without buffering; Rust binds container loopback only.
+- Docker test target runs formatting, warnings-as-errors Clippy, all 49 native
+  and example tests, and builds the common static load client. scripts/ci-rust.sh
+  builds that target and the final image, runs ignored tests inside a container
+  against sibling images, and extracts the static binary/client and SHA256SUMS.
+  CI now calls this Docker-only entry point; existing Docker image publication
+  builds the default Rust + Nginx runtime, retaining the separate binary target.
+- New image tests cover Nginx response headers, real bidirectional WebSockets,
+  61-second idle survival, restart, port 4001 with backend 4002 unreachable via
+  the container interface, live traffic during drain, clean exit on normal
+  SIGTERM, and nonzero whole-container exit on Nginx/Rust failure. Existing
+  container DNS/ownership tests exercise 409 headers and replay through Nginx.
+- Real startup exposed nonroot temporary-directory permissions and the low soft
+  file limit; all temporary paths now use /tmp and the entrypoint raises the
+  soft limit to 65536. Six malformed/out-of-range environment settings failed
+  closed. Docker port proxies can accept TCP before Nginx is ready; only startup
+  readiness polls retry HTTP errors, while subsequent requests remain strict.
+- Failure injection exposed BusyBox ash wait -n failing to observe the older
+  child exiting. A bounded 100-ms liveness loop now detects either service
+  failure; the focused three-scenario lifecycle regression passes. This small
+  supervisor overhead is included in the subsequent container comparison.
+- README records proxy idle/timeouts, aggregate worker/file ceilings, Rust-only
+  RSS accounting and the 40-second Docker shutdown allowance. Nginx WebSocket
+  header/timeout behavior follows https://nginx.org/en/docs/http/websocket.html.
+  Final complete-image gates and comparative evidence are recorded below.
+
+- Final gate: scripts/ci-rust.sh completed successfully against
+  paseo-relay-rust:nginx: 49 native/example tests, Clippy/formatting, and all
+  three ignored image tests passed. Both extracted artifacts are stripped
+  Linux amd64 static-PIE executables. Original Dockerfile.elixir rebuilt
+  successfully and its reference application sources remain unchanged.
+  benchmarks/nginx-validation retains red/green and Docker build/gate logs.

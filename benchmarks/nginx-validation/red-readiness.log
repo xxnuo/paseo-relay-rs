@@ -1,0 +1,143 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.32kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/rust:1.97.1-alpine
+#2 DONE 0.5s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 104B done
+#3 DONE 0.0s
+
+#4 [toolchain 1/5] FROM docker.io/library/rust:1.97.1-alpine@sha256:3c38f3f82c2f3d73da3b38e18d279393a04cb43ddded0e35088a8c3324d40900
+#4 resolve docker.io/library/rust:1.97.1-alpine@sha256:3c38f3f82c2f3d73da3b38e18d279393a04cb43ddded0e35088a8c3324d40900 done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 97.52kB done
+#5 DONE 0.0s
+
+#6 [test 2/3] COPY rust/examples ./examples
+#6 CACHED
+
+#7 [toolchain 5/5] COPY rust/src ./src
+#7 CACHED
+
+#8 [test 1/3] COPY rust/tests ./tests
+#8 CACHED
+
+#9 [toolchain 3/5] WORKDIR /app
+#9 CACHED
+
+#10 [toolchain 2/5] RUN apk add --no-cache bash docker-cli && rustup component add rustfmt clippy
+#10 CACHED
+
+#11 [toolchain 4/5] COPY rust/Cargo.toml rust/Cargo.lock ./
+#11 CACHED
+
+#12 [test 3/3] RUN cargo fmt --check && cargo clippy --locked --all-targets -- -D warnings     && cargo test --locked --all-targets     && cargo build --locked --release --example relay_bench
+#12 CACHED
+
+#13 exporting to image
+#13 exporting layers done
+#13 exporting manifest sha256:ea7c61ab4d29d6a5460d2c10513d242007915db9f7c6c9da23b21c7f81dfbebc done
+#13 exporting config sha256:fce47df1f30a792eff6efaeb6540adaabcdd6a27b809037ac3af20f86e0f57a4 done
+#13 exporting attestation manifest sha256:6b248af341133a7714bd8f696890e43896d5d9cd70f428341d63127468cb95c1 done
+#13 exporting manifest list sha256:aa3a3cd4f521816154e39c034efba68e65347001aba78bf2e5e9b216ab80339f done
+#13 naming to docker.io/library/paseo-relay-rust:nginx-test done
+#13 unpacking to docker.io/library/paseo-relay-rust:nginx-test done
+#13 DONE 0.0s
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.32kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/nginx:stable-alpine@sha256:0e52bd054126cdc040b1276c0af347aeb02a41b9cfe305d6094767ac30e97949
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/rust:1.97.1-alpine
+#3 DONE 0.3s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 104B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 3.79kB done
+#5 DONE 0.0s
+
+#6 [toolchain 1/5] FROM docker.io/library/rust:1.97.1-alpine@sha256:3c38f3f82c2f3d73da3b38e18d279393a04cb43ddded0e35088a8c3324d40900
+#6 resolve docker.io/library/rust:1.97.1-alpine@sha256:3c38f3f82c2f3d73da3b38e18d279393a04cb43ddded0e35088a8c3324d40900 0.0s done
+#6 DONE 0.0s
+
+#7 [runtime 1/4] FROM docker.io/library/nginx:stable-alpine@sha256:0e52bd054126cdc040b1276c0af347aeb02a41b9cfe305d6094767ac30e97949
+#7 resolve docker.io/library/nginx:stable-alpine@sha256:0e52bd054126cdc040b1276c0af347aeb02a41b9cfe305d6094767ac30e97949 0.0s done
+#7 DONE 0.0s
+
+#8 [toolchain 5/5] COPY rust/src ./src
+#8 CACHED
+
+#9 [build 1/1] RUN cargo build --locked --release
+#9 CACHED
+
+#10 [runtime 2/4] COPY --from=build /app/target/release/paseo-relay /paseo-relay
+#10 CACHED
+
+#11 [toolchain 3/5] WORKDIR /app
+#11 CACHED
+
+#12 [toolchain 2/5] RUN apk add --no-cache bash docker-cli && rustup component add rustfmt clippy
+#12 CACHED
+
+#13 [toolchain 4/5] COPY rust/Cargo.toml rust/Cargo.lock ./
+#13 CACHED
+
+#14 [runtime 3/4] COPY deploy/nginx.conf.template /etc/nginx/paseo.conf.template
+#14 CACHED
+
+#15 [runtime 4/4] COPY --chmod=755 deploy/docker-entrypoint.sh /entrypoint.sh
+#15 CACHED
+
+#16 exporting to image
+#16 exporting layers done
+#16 exporting manifest sha256:1d0b507d2cc8d81f160a51223fe01336f2dedd1dc20576562888081864dc427d done
+#16 exporting config sha256:7dd99aab6a8e207d6e82399b2afe7f77cbf7ac5829c514d383a0f65e69dfc865 done
+#16 exporting attestation manifest sha256:cbfd7b9bc6cc2472f8cd97852a1263c6332e927239aacdf1567201b0c1563357 done
+#16 exporting manifest list sha256:d401cd93e32a058deb7e2b11192a23a5e775fa1b72286b2e97b12ce18509c248 done
+#16 naming to docker.io/library/paseo-relay-rust:nginx done
+#16 unpacking to docker.io/library/paseo-relay-rust:nginx done
+#16 DONE 0.0s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.05s
+     Running tests/binary.rs (target/debug/deps/binary-69541ddf63e8196c)
+
+running 3 tests
+wget: can't connect to remote host (172.17.0.2): Connection refused
+test nginx_container_preserves_drain_and_exits_if_either_service_dies ... FAILED
+test static_cluster_uses_real_container_dns_and_reroutes_public_websockets ... ok
+test nginx_nonroot_container_serves_websockets_after_restart has been running for over 60 seconds
+test nginx_nonroot_container_serves_websockets_after_restart ... FAILED
+
+failures:
+
+---- nginx_container_preserves_drain_and_exits_if_either_service_dies stdout ----
+
+thread 'nginx_container_preserves_drain_and_exits_if_either_service_dies' (18) panicked at tests/binary.rs:223:10:
+called `Result::unwrap()` on an `Err` value: Os { code: 104, kind: ConnectionReset, message: "Connection reset by peer" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- nginx_nonroot_container_serves_websockets_after_restart stdout ----
+
+thread 'nginx_nonroot_container_serves_websockets_after_restart' (19) panicked at tests/binary.rs:223:10:
+called `Result::unwrap()` on an `Err` value: Os { code: 104, kind: ConnectionReset, message: "Connection reset by peer" }
+
+
+failures:
+    nginx_container_preserves_drain_and_exits_if_either_service_dies
+    nginx_nonroot_container_serves_websockets_after_restart
+
+test result: FAILED. 1 passed; 2 failed; 0 ignored; 0 measured; 5 filtered out; finished in 61.80s
+
+error: test failed, to rerun pass `--test binary`

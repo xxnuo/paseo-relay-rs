@@ -13,11 +13,7 @@ configuration, inventories, proxies and operator procedures outside this repo.
 ## Development
 
 ```sh
-cargo fmt --manifest-path rust/Cargo.toml --check
-cargo clippy --locked --manifest-path rust/Cargo.toml --all-targets -- -D warnings
-cargo test --locked --manifest-path rust/Cargo.toml --all-targets
-docker build -t paseo-relay-rust:local .
-cargo test --locked --manifest-path rust/Cargo.toml --test binary -- --ignored
+scripts/ci-rust.sh
 ```
 
 ## Conventions
@@ -26,7 +22,9 @@ cargo test --locked --manifest-path rust/Cargo.toml --test binary -- --ignored
 - Use real TCP listeners, WebSockets, Rust child processes and Docker/DNS,
   without mocks. The retained Elixir tests use real Cowboy/:peer BEAM nodes.
 - Keep reference source paths stable for upstream rebases. Dockerfile.elixir
-  builds that baseline; Dockerfile builds Rust. scripts/ci.sh verifies Elixir.
+  builds that baseline; Dockerfile builds Rust + Nginx by default. Its test
+  target runs Rust gates in Docker; scripts/ci-rust.sh also tests the final image
+  and extracts static artifacts. scripts/ci.sh verifies Elixir.
 - Every behavior change needs a red test first and evidence in TDD.md.
 - Fail closed on session, Writer, capacity and cluster authority loss; never
   release charged payload memory while a queue can still retain it.
