@@ -27,9 +27,10 @@ scripts/ci-rust.sh
 - Use real TCP listeners, WebSockets, Rust child processes and Docker/DNS,
   without mocks. The retained Elixir tests use real Cowboy/:peer BEAM nodes.
 - Keep reference source paths stable for upstream rebases. Dockerfile.elixir
-  builds that baseline; Dockerfile defaults to direct Rust, with an optional
-  nginx target. Planned Cloudflare ingress uses orange-cloud DNS proxying,
-  not Tunnel; origin TLS must be handled explicitly. Its test
+  builds that baseline; Dockerfile builds direct Rust only. Nginx support was
+  removed; see benchmarks/README.md for the decision and historical evidence.
+  Planned Cloudflare ingress uses orange-cloud DNS proxying, not Tunnel; origin
+  TLS must be handled explicitly. The test
   target runs Rust gates in Docker; scripts/ci-rust.sh also tests the final image
   and extracts static artifacts. scripts/ci.sh verifies Elixir.
 - Every behavior change needs a red test first and evidence in TDD.md.

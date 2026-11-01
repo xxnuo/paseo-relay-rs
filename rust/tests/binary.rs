@@ -229,7 +229,7 @@ async fn try_binary_request(address: std::net::SocketAddr, path: &str) -> std::i
 async fn wait_container_ready(address: std::net::SocketAddr) {
     timeout(Duration::from_secs(8), async {
         loop {
-            // Docker's port proxy can accept TCP before Nginx has bound its listener.
+            // Docker's port proxy can accept TCP before the relay has bound its listener.
             if let Ok(response) = try_binary_request(address, "/ready").await
                 && response.starts_with("HTTP/1.1 200")
             {
@@ -255,22 +255,10 @@ impl Drop for Container {
 
 #[tokio::test]
 #[ignore = "requires a built Rust Docker image and a local Docker daemon"]
-async fn nginx_nonroot_container_serves_websockets_after_restart() {
-    let image = std::env::var("PASEO_RELAY_TEST_IMAGE").unwrap_or("paseo-relay-rust:local".into());
-    container_serves_websockets_after_restart(image, true).await;
-}
-
-#[tokio::test]
-#[ignore = "requires a built direct Rust Docker image and a local Docker daemon"]
 async fn direct_nonroot_container_serves_websockets_after_restart() {
-    let image =
-        std::env::var("PASEO_RELAY_DIRECT_TEST_IMAGE").unwrap_or("paseo-relay-rust:direct".into());
-    container_serves_websockets_after_restart(image, false).await;
-}
-
-async fn container_serves_websockets_after_restart(image: String, nginx: bool) {
     use futures_util::{SinkExt, StreamExt};
     use tokio_tungstenite::{connect_async, tungstenite::Message};
+    let image = std::env::var("PASEO_RELAY_TEST_IMAGE").unwrap_or("paseo-relay-rust:local".into());
     let output = Command::new("docker")
         .args(["run", "--detach", "--publish", "127.0.0.1::4000", &image])
         .output()
@@ -310,24 +298,18 @@ async fn container_serves_websockets_after_restart(image: String, nginx: bool) {
             .parse()
             .unwrap();
         wait_container_ready(address).await;
-        let workers = Command::new("docker")
+        let processes = Command::new("docker")
             .args(["top", &container.0, "-eo", "pid,args"])
             .output()
             .unwrap();
-        assert!(workers.status.success());
+        assert!(processes.status.success());
         assert_eq!(
-            String::from_utf8(workers.stdout)
-                .unwrap()
-                .matches("nginx: worker process")
-                .count(),
-            usize::from(nginx)
+            String::from_utf8(processes.stdout).unwrap().lines().count(),
+            2,
+            "image must run only the relay process"
         );
         let health = binary_request(address, "/health").await;
         assert!(health.contains(r#"{"status":"ok"}"#));
-        assert!(
-            health.to_ascii_lowercase().contains("server: nginx") == nginx,
-            "unexpected proxy: {health}"
-        );
         assert!(
             binary_request(address, "/ready")
                 .await
@@ -346,7 +328,7 @@ async fn container_serves_websockets_after_restart(image: String, nginx: bool) {
             Message::text("container relay")
         );
         if round == 0 {
-            // The proxy must not impose Nginx's default 60-second idle cutoff.
+            // Long-lived relay sockets must survive an idle minute.
             tokio::time::sleep(Duration::from_secs(61)).await;
             client
                 .send(Message::text("after proxy idle"))
@@ -380,162 +362,93 @@ async fn container_serves_websockets_after_restart(image: String, nginx: bool) {
 }
 
 #[tokio::test]
-#[ignore = "requires a built Rust + Nginx image and a local Docker daemon"]
-async fn nginx_container_preserves_drain_and_exits_if_either_service_dies() {
+#[ignore = "requires a built Rust Docker image and a local Docker daemon"]
+async fn direct_container_drains_existing_traffic_before_exit() {
     use futures_util::{SinkExt, StreamExt};
     use tokio_tungstenite::{connect_async, tungstenite::Message};
     let image = std::env::var("PASEO_RELAY_TEST_IMAGE").unwrap_or("paseo-relay-rust:local".into());
-    for scenario in ["drain", "nginx", "relay"] {
-        let output = Command::new("docker")
-            .args([
-                "run",
-                "--detach",
-                "--publish",
-                "127.0.0.1::4001",
-                "--env",
-                "PASEO_RELAY_PORT=4001",
-                "--env",
-                "PASEO_RELAY_NGINX_WORKERS=3",
-                "--stop-timeout",
-                "40",
-                &image,
-            ])
-            .output()
-            .unwrap();
-        assert!(output.status.success());
-        let container = Container(String::from_utf8(output.stdout).unwrap().trim().to_owned());
-        let output = Command::new("docker")
-            .args(["port", &container.0, "4001/tcp"])
-            .output()
-            .unwrap();
-        let address = String::from_utf8(output.stdout)
-            .unwrap()
-            .trim()
-            .parse()
-            .unwrap();
-        wait_container_ready(address).await;
-        let workers = Command::new("docker")
-            .args(["top", &container.0, "-eo", "pid,args"])
-            .output()
-            .unwrap();
-        assert!(workers.status.success());
-        assert_eq!(
-            String::from_utf8(workers.stdout)
-                .unwrap()
-                .matches("nginx: worker process")
-                .count(),
-            3
-        );
-        let output = Command::new("docker")
-            .args([
-                "inspect",
-                "--format",
-                "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}",
-                &container.0,
-            ])
-            .output()
-            .unwrap();
-        let ip = String::from_utf8(output.stdout).unwrap();
-        assert!(
-            !Command::new("docker")
-                .args([
-                    "exec",
-                    &container.0,
-                    "wget",
-                    "-q",
-                    "-T",
-                    "1",
-                    "-O",
-                    "/dev/null",
-                    &format!("http://{}:4002/health", ip.trim())
-                ])
-                .status()
-                .unwrap()
-                .success(),
-            "backend must be loopback-only"
-        );
-        if scenario == "drain" {
-            let (mut daemon, _) =
-                connect_async(format!("ws://{address}/ws?serverId=drain&role=server"))
-                    .await
-                    .unwrap();
-            let (mut client, _) =
-                connect_async(format!("ws://{address}/ws?serverId=drain&role=client"))
-                    .await
-                    .unwrap();
-            assert!(
-                Command::new("docker")
-                    .args(["kill", "--signal=TERM", &container.0])
-                    .output()
-                    .unwrap()
-                    .status
-                    .success()
-            );
-            timeout(Duration::from_secs(3), async {
-                while !binary_request(address, "/ready")
-                    .await
-                    .starts_with("HTTP/1.1 503")
-                {
-                    tokio::time::sleep(Duration::from_millis(20)).await;
-                }
-            })
-            .await
-            .unwrap();
-            client.send(Message::text("during drain")).await.unwrap();
-            assert_eq!(
-                timeout(Duration::from_secs(3), daemon.next())
-                    .await
-                    .unwrap()
-                    .unwrap()
-                    .unwrap(),
-                Message::text("during drain")
-            );
-            daemon.close(None).await.unwrap();
-            client.close(None).await.unwrap();
-        } else {
-            let kill = if scenario == "nginx" {
-                "kill -TERM \"$(cat /tmp/nginx.pid)\""
-            } else {
-                "kill -KILL \"$(pidof paseo-relay)\""
-            };
-            assert!(
-                Command::new("docker")
-                    .args(["exec", &container.0, "sh", "-c", kill])
-                    .output()
-                    .unwrap()
-                    .status
-                    .success()
-            );
-        }
-        let state = timeout(Duration::from_secs(8), async {
-            loop {
-                let output = Command::new("docker")
-                    .args([
-                        "inspect",
-                        "--format",
-                        "{{.State.Running}} {{.State.ExitCode}}",
-                        &container.0,
-                    ])
-                    .output()
-                    .unwrap();
-                let state = String::from_utf8(output.stdout).unwrap();
-                if state.starts_with("false ") {
-                    break state;
-                }
-                tokio::time::sleep(Duration::from_millis(20)).await;
-            }
-        })
+    let output = Command::new("docker")
+        .args([
+            "run",
+            "--detach",
+            "--publish",
+            "127.0.0.1::4001",
+            "--env",
+            "PASEO_RELAY_PORT=4001",
+            "--stop-timeout",
+            "40",
+            &image,
+        ])
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    let container = Container(String::from_utf8(output.stdout).unwrap().trim().to_owned());
+    let output = Command::new("docker")
+        .args(["port", &container.0, "4001/tcp"])
+        .output()
+        .unwrap();
+    let address = String::from_utf8(output.stdout)
+        .unwrap()
+        .trim()
+        .parse()
+        .unwrap();
+    wait_container_ready(address).await;
+    let (mut daemon, _) = connect_async(format!("ws://{address}/ws?serverId=drain&role=server"))
         .await
-        .expect("one failed service left the container running");
-        assert_eq!(
-            state.trim(),
-            if scenario == "drain" {
-                "false 0"
-            } else {
-                "false 1"
+        .unwrap();
+    let (mut client, _) = connect_async(format!("ws://{address}/ws?serverId=drain&role=client"))
+        .await
+        .unwrap();
+    assert!(
+        Command::new("docker")
+            .args(["kill", "--signal=TERM", &container.0])
+            .output()
+            .unwrap()
+            .status
+            .success()
+    );
+    timeout(Duration::from_secs(3), async {
+        while !binary_request(address, "/ready")
+            .await
+            .starts_with("HTTP/1.1 503")
+        {
+            tokio::time::sleep(Duration::from_millis(20)).await;
+        }
+    })
+    .await
+    .unwrap();
+    client.send(Message::text("during drain")).await.unwrap();
+    assert_eq!(
+        timeout(Duration::from_secs(3), daemon.next())
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap(),
+        Message::text("during drain")
+    );
+    daemon.close(None).await.unwrap();
+    client.close(None).await.unwrap();
+    let state = timeout(Duration::from_secs(8), async {
+        loop {
+            let output = Command::new("docker")
+                .args([
+                    "inspect",
+                    "--format",
+                    "{{.State.Running}} {{.State.ExitCode}}",
+                    &container.0,
+                ])
+                .output()
+                .unwrap();
+            let state = String::from_utf8(output.stdout).unwrap();
+            if state.starts_with("false ") {
+                break state;
             }
-        );
-    }
+            tokio::time::sleep(Duration::from_millis(20)).await;
+        }
+    })
+    .await
+    .expect("drained relay did not exit");
+    assert_eq!(state.trim(), "false 0");
 }
 
 struct Network(String);

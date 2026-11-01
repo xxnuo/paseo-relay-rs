@@ -26,7 +26,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Docker Rust checks, direct and optional Nginx images, Linux artifacts
+      - name: Docker Rust checks, relay image and Linux artifacts
         run: scripts/ci-rust.sh
       - uses: actions/upload-artifact@v4
         with:

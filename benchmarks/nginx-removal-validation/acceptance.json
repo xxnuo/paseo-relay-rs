@@ -1,0 +1,15 @@
+{
+  "runtime_image": "paseo-relay-rust:nginx-removed",
+  "image_id": "sha256:3e12c5e0084d069ed9713ca73233d52d22c8dd12efd733a067fdfbc765ae1c79",
+  "binary_sha256": "928ec53dc4c7c753b2d103d2a8299fd734f93f21b983ea649870f422607f68f5",
+  "binary_unchanged_from_cost_comparison": true,
+  "native_example_tests_passed": 49,
+  "docker_tests_passed": 3,
+  "format_clippy": "passed",
+  "removed_target_negative_check": "passed",
+  "active_code_nginx_reference_scan": "no matches",
+  "current_documentation_links": "verified",
+  "comparison_driver_smoke": "2 runs passed; 1-second functional smoke only, not new performance evidence",
+  "first_attempt": "cluster child bind failed with AddrInUse; unchanged source retry passed; failure log retained",
+  "remote_deployment_or_publication": "not performed"
+}

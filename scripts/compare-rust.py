@@ -149,7 +149,7 @@ def main():
     args.output.mkdir(parents=True, exist_ok=False)
     results = []
     metadata = {"git_commit": command("git", "rev-parse", "HEAD"), "dirty": bool(command("git", "status", "--porcelain")), "host": platform.platform(), "cpu": next(line.split(":",1)[1].strip() for line in Path("/proc/cpuinfo").read_text().splitlines() if line.startswith("model name")), "workload": {"pairs": args.pairs, "seconds": args.seconds, "payload_bytes": args.payload_bytes, "protocol": args.protocol, "idle": args.idle, "paced": args.paced, "cpus": args.cpus, "workers": args.workers}}
-    sources = [Path("rust/Cargo.toml"), Path("rust/Cargo.lock"), Path("Dockerfile"), Path("Dockerfile.elixir"), Path("deploy/docker-entrypoint.sh"), Path("deploy/nginx.conf.template"), Path("scripts/ci-rust.sh"), Path("rust/examples/relay_bench.rs"), Path(__file__)] + sorted(Path("rust/src").glob("*.rs"))
+    sources = [Path("rust/Cargo.toml"), Path("rust/Cargo.lock"), Path("Dockerfile"), Path("Dockerfile.elixir"), Path("scripts/ci-rust.sh"), Path("rust/examples/relay_bench.rs"), Path(__file__)] + sorted(Path("rust/src").glob("*.rs"))
     metadata["source_dirty"] = bool(command("git", "status", "--porcelain", "--", *(str(path) for path in sources)))
     metadata["source_sha256"] = {str(path): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources}
     metadata["bench_binary_sha256"] = hashlib.sha256(args.bench.read_bytes()).hexdigest()

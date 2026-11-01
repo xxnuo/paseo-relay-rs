@@ -1163,3 +1163,38 @@
   without payload/order errors, and the image exited zero after cleanup.
   Evidence: final-docker-ci.log and direct-default-drain.json. No host service,
   remote registry, Cloudflare account or VPS configuration was changed.
+
+## Complete Nginx removal (2026-11-01)
+
+- Operator decision: remove all Nginx support, rather than retain an optional
+  target. The 46-run cost evidence and earlier experiments are preserved in
+  benchmarks/README.md, indexed by source checkpoint and immutable artifacts.
+  The main README now documents only current Rust deployment/settings.
+- Red: the old nginx Docker target still built successfully, proving support
+  remained. Green: the same --target nginx build now fails because the stage
+  does not exist (nginx-removal-validation/red-target.log, removed-target.log).
+- Removed the proxy stage, template, supervisor and worker setting, proxy image
+  build/environment plumbing in CI, proxy-specific test wrapper and child
+  failure cases. The direct test now asserts one relay process; the live drain
+  scenario remains a real Rust container regression on a custom public port.
+  Cluster DNS/reroute/replay and 61-second idle/resume/restart remain covered.
+- Updated comparison fingerprints so new original-versus-Rust runs no longer
+  try reading deleted proxy files. Old datasets remain untouched and reproducible
+  from their recorded commits; no old measurement was relabeled as a new run.
+- No relay application code, reference Elixir source, limits or timeouts changed.
+  Origin TLS and live Cloudflare/WAN acceptance remain outside this removal.
+  Final Docker-only acceptance evidence follows.
+
+- Final acceptance: Docker formatting/Clippy, all 49 native/example tests and
+  three direct-image tests passed. The initial cluster test attempt hit an
+  AddrInUse child-start failure; unchanged source passed the full gate on retry.
+  Both the failure and successful logs are retained in nginx-removal-validation.
+  No port-test workaround or unrelated relay change was introduced.
+- A one-second original-versus-Rust functional smoke confirms the comparison
+  driver works after deleted-file fingerprint cleanup. It checks real delivery,
+  counters and resource cleanup; its dirty-worktree metadata and short duration
+  are not presented as new performance evidence. The final static executable
+  SHA256 equals the previously measured direct runtime. Active Docker/scripts/
+  deployment/Rust/CI paths contain no Nginx references. Documentation links pass.
+  Acceptance details: benchmarks/nginx-removal-validation/acceptance.json.
+  No remote deploy, image publish or Git push was performed.

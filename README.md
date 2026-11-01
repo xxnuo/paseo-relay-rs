@@ -2,7 +2,7 @@
 
 A distributed, protocol-compatible relay for [Paseo](https://github.com/getpaseo/paseo),
 implemented in Rust as one Linux executable. The default Dockerfile and image
-publishing pipeline build a direct Rust scratch image. Nginx is optional.
+publishing pipeline build a direct Rust scratch image without Nginx.
 The Elixir implementation remains at its upstream source paths as a tested
 compatibility and performance reference, not a runtime dependency. Frames remain end-to-end encrypted; the relay routes opaque payloads.
 
@@ -14,8 +14,8 @@ scripts/ci-rust.sh
 
 This Docker-only Rust pipeline checks formatting and Clippy, runs all native
 and real-process tests inside the pinned Rust toolchain image, builds the
-direct Rust and optional Nginx images, and runs real container lifecycle/cluster
-tests. Both paths include a 61-second idle/resume and restart test.
+the Rust image, and runs real container lifecycle/cluster tests, including
+61-second idle/resume, restart and live shutdown drain.
 It needs Docker on Linux and access to its socket; no host Rust installation is
 required. It extracts the static amd64 executable, common load client and
 SHA256SUMS to `rust/target/docker/`. CI uses this same script and retains those
@@ -45,24 +45,6 @@ direct image after both reference and Rust gates. Pin consumers to its reported
 digest; checking out this branch does not change previously published images.
 See [LICENSE](LICENSE).
 
-### Optional Nginx image
-
-```sh
-docker build --target nginx -t paseo-relay-nginx .
-```
-
-This optional target retains pinned Nginx 1.30.6, UID/GID 65532 and the tested
-supervisor. Nginx owns the configured public host/port; Rust uses loopback
-:4001, or :4002 when the public port is 4001. The independent cluster port is
-unchanged. The entrypoint raises the file limit to 65536, so its hard limit
-must allow that. Each proxy worker has 65536 connection slots; both sides of a
-proxied connection consume slots/descriptors. Proxy buffering is disabled.
-WebSocket inactivity is limited to 24 hours; HTTP timeouts follow
-`HTTP_IDLE_TIMEOUT_MS`. Backend HTTP slots do not bound all Nginx front-end
-connections, and Rust's RSS watermark excludes proxy/kernel memory. SIGTERM
-first drains Rust, then stops Nginx; either service failing stops the sibling.
-This target serves plain HTTP/WebSocket unless deployment-specific TLS is added.
-
 ## Self-managed VPS deployment target
 
 Rust targets long-running nodes on independently purchased VPS hosts around the
@@ -74,7 +56,7 @@ outside this repository.
 Use systemd's existing restart policy for the native binary, or Docker's
 `--restart unless-stopped` for the image, with the documented 40-second stop
 allowance. Terminate public TLS at the VPS ingress and expose a stable `wss://`
-endpoint; neither image currently supplies TLS or automatic certificates. Keep `/metrics` and the cluster listener on management
+endpoint; the image currently supplies neither TLS nor automatic certificates. Keep `/metrics` and the cluster listener on management
 or private-network paths. Authenticated cluster traffic is not encrypted: use
 an encrypted private overlay between public VPS hosts rather than exposing its
 control port globally.
@@ -82,16 +64,15 @@ control port globally.
 For independent regional nodes, connect both roles of a session to the same
 regional endpoint. Geography-based DNS alone can send the two roles to different
 owners. A shared multi-region cluster requires an owner-aware ingress or client
-that consumes `409 + x-reroute-target`: direct Rust and the optional proxy pass
-that response through, without Fly-style replay or automatic global forwarding.
+that consumes `409 + x-reroute-target`: the relay returns that
+response without Fly-style replay or automatic global forwarding.
 A target is an opaque routing identity, not permission to proxy an arbitrary URL.
 No automatic nearest-region selection or live cross-region socket migration is
 claimed. These integration decisions belong to the consuming deployment.
 
 Direct Rust is the measured starting point for low-cost VPS hosts. Set
-`TOKIO_WORKER_THREADS` for actual resources; the optional Nginx target defaults
-to one worker and accepts `PASEO_RELAY_NGINX_WORKERS` (1–64). CPU quotas/worker
-counts from the local comparison are not universal deployment recommendations.
+`TOKIO_WORKER_THREADS` for actual resources. CPU quotas and worker counts from
+the local comparison are not universal deployment recommendations.
 Choose ingress/RSS limits with kernel and OS headroom. Current 2-second cluster
 exchanges and 3-second membership expiry remain unchanged; assess regional
 RTT/loss/partitions before changing them.
@@ -103,7 +84,7 @@ heartbeats and reconnect handling. Affinity for one client does not by itself
 place both relay roles on the same owner. For
 [Full (strict)](https://developers.cloudflare.com/ssl/origin-configuration/ssl-modes/full-strict/),
 the origin must supply HTTPS with a matching valid certificate. Removing Nginx
-does not implement Rust TLS; both current targets remain plaintext and this
+does not implement Rust TLS; the current runtime remains plaintext and this
 integration is not yet accepted. Public URLs must use a
 [Cloudflare-supported port](https://developers.cloudflare.com/fundamentals/reference/network-ports/);
 define the origin port mapping/routing separately for the local :4000 listener.
@@ -118,7 +99,6 @@ All rows below have the `PASEO_RELAY_` prefix unless named otherwise.
 | --- | --- | --- |
 | `HOST` | `127.0.0.1` | Public listener IP address. |
 | `PORT` | `4000` | HTTP/WebSocket port, 1–65535. |
-| `NGINX_WORKERS` | `1` | Optional nginx target only, 1–64; ignored by direct Rust. |
 | `DRAIN` | `false` | Start unready and reject new upgrades; true/false. |
 | `ACCEPTORS` | `100` | Maximum pre-upgrade HTTP connections, 1–1000; also a factor in the WebSocket ceiling. Tokio schedules I/O. |
 | `CONNECTIONS_PER_ACCEPTOR` | `200` | Second ceiling factor, 1–1000000. The default active WebSocket ceiling is 20000. |
@@ -272,183 +252,16 @@ the Rust image and load client with `scripts/ci-rust.sh`, and run
 `uv run python scripts/compare-rust.py --bench rust/target/docker/relay_bench --help`.
 Pass `--bench rust/target/docker/relay_bench` to use that Docker-built client in
 every comparative run. Both implementations share the same total CPU/memory
-quota; the Rust container includes all Nginx workers in that quota.
+quota. Earlier proxy comparison reports remain archived separately.
 
-## Direct Rust versus Nginx: relay cost decision
+## Performance decision and history
 
-The default image now omits Nginx. The relay workload did not need the extra
-proxy to preserve connection lifetime, route opaque traffic or enforce the
-application limits. Its removal reduced measured memory/CPU cost and increased
-saturated throughput. The optional `nginx` target remains available for a
-deployment that needs separate proxy features. Origin TLS for ordinary
-Cloudflare DNS proxying still needs implementation/configuration; this decision
-does not claim a complete Cloudflare-ready HTTPS deployment.
+Nginx support was removed after the 46-run relay-cost comparison: direct Rust
+used less memory and less CPU at matched traffic, and delivered higher saturated
+throughput. The source-level removal also deletes the optional proxy image and
+its worker/configuration/supervisor paths. The tested direct runtime is retained.
 
-Both images contain byte-identical Rust executables. The Nginx image uses the
-previously optimized single worker. Measurements used isolated 1-GiB containers,
-2 CPUs/two Tokio workers except the explicit 1-CPU/one-worker row, the same
-Docker-built external client with four workers, loopback port mappings and
-alternating order. Rows below are medians of three runs per image. Memory is
-cgroup container accounting, including proxy processes/kernel allocations; it
-is not complete VPS RAM usage. Idle rows sample ten seconds after warmup with
-no application traffic, then prove both directions still work. They do not
-include production heartbeat traffic.
-
-| Idle connections | Memory MiB, Nginx / direct | CPU % of one core, Nginx / direct |
-| --- | ---: | ---: |
-| 2 | 31.5 / 1.2 | 0.598 / 0.045 |
-| 1024 | 211.6 / 148.3 | 0.594 / 0.071 |
-
-The 1024-connection idle sample saves about 63 MiB (30%). Absolute idle CPU is
-low in both modes. To compare CPU under the same business volume, a separate
-paced test sends 200 frames/s per pair and asserts the achieved rate within 2%.
-CPU below is container CPU time divided by the full observed wall window,
-including setup/warmup and cleanup; 100% means one CPU core. The traffic rate is
-the measured data phase. Each load phase lasts ten seconds.
-
-| Matched traffic | Frames/s, Nginx / direct | CPU % of one core, Nginx / direct | p99 ms, Nginx / direct |
-| --- | ---: | ---: | ---: |
-| 64 pairs, 1 KiB | 12,803 / 12,802 | 53.2 / 38.7 | 2.490 / 2.563 |
-| 16 pairs, 64 KiB | 3,202 / 3,202 | 45.2 / 22.4 | 3.271 / 1.244 |
-
-At matched traffic, CPU falls 27% and 51%. The small-frame paced p99 increases
-slightly by 0.073 ms; no claim is made that every latency metric improves.
-Maximum-throughput tests use ten seconds after 20 warmup exchanges per pair:
-
-| Saturated workload | Frames/s, Nginx / direct | p99 ms, Nginx / direct | Peak MiB, Nginx / direct |
-| --- | ---: | ---: | ---: |
-| 2 CPUs, 64 pairs, 1 KiB | 55,847 / 76,779 | 7.856 / 2.324 | 57.3 / 22.3 |
-| 2 CPUs, 64 pairs, 64 KiB | 8,376 / 15,270 | 10.860 / 7.371 | 72.5 / 35.3 |
-| 1 CPU, 64 pairs, 1 KiB | 35,566 / 51,460 | 25.914 / 3.367 | 56.9 / 21.8 |
-
-A further single 30-second v2 4-KiB run and single five-second v1 run per image
-also delivered every frame and recovered socket/byte reservations. These are
-smoke/sustained-local observations, not production soak tests. All 46 runs
-passed payload/order, exact counters including warmup, resource cleanup and
-zero OOM events. Both images passed 61-second idle/resume/restart tests; direct
-Rust separately passed real-container ownership/reroute/replay tests.
-[Summary](benchmarks/proxy-decision-summary.json) indexes the raw evidence,
-CPU windows, image IDs and source/client fingerprints. Driver snapshots are
-`aa26cc2` (idle/saturation) and `4003e45` (matched rate).
-
-For repeatability, build both images and the client with `scripts/ci-rust.sh`.
-Use `scripts/compare-rust.py` with `--elixir-image` set to the Nginx image and
-`--rust-image` to the direct image, `--baseline-label nginx --candidate-label
-direct`, and `--bench rust/target/docker/relay_bench`. `--idle` measures established
-idle sockets; `--paced` measures matched traffic; otherwise it measures saturated
-throughput. `--cpus 1 --workers 1` selects the cheap-VPS case. Historical image
-option names remain compatible with earlier original-versus-Rust comparisons.
-
-Cloudflare, origin TLS encryption/handshakes, WAN loss and real VPS pricing are
-outside these tests. Removing proxy overhead creates headroom; it does not by
-itself prove that a lower RAM-priced VPS tier can handle maximum messages and
-the deployment's real connection/traffic profile. Current plaintext images
-must not be mistaken for a Full (strict) origin.
-
-## Historical VPS proxy sizing check
-
-The then-default one-worker image at `a8cac64` was checked against the prior two-worker
-image using byte-identical Rust executables and the same Docker-built load
-client. Each container had 2 CPUs/1 GiB, Tokio used two workers, and v2 had
-64 pairs, 20 warmup exchanges and 10 measured seconds. Medians below are from
-three alternating runs per configuration; this is a local sizing experiment.
-
-| Payload | Frames/s, 2 / 1 workers | p99 ms, 2 / 1 workers | Peak container MiB, 2 / 1 workers |
-| --- | ---: | ---: | ---: |
-| 1 KiB | 52,777 / 56,290 | 23.285 / 7.543 | 85.2 / 57.5 |
-| 64 KiB | 7,653 / 8,375 | 37.772 / 10.847 | 102.4 / 72.7 |
-
-All 12 runs passed content/order, server counters and socket/byte cleanup, with
-zero OOM events. The 64 KiB two-worker throughput varied from 6,037 to 8,641
-frames/s, so its median throughput difference is not a robust capacity claim.
-The lower fixed footprint and p99 support a one-worker starting point for
-small VPS hosts; size larger hosts from their own measurements. Full records,
-image IDs, equal executable hashes and ranges are in
-[the sizing evidence](benchmarks/vps-worker-comparison/summary.json). This does
-not establish WAN latency or replace the earlier original-versus-Rust test.
-
-## Original Docker versus Rust + Nginx Docker (two-worker snapshot)
-
-This historical two-worker snapshot predates the configurable one-worker VPS
-default described above. The Docker-only build at `a5df513` was compared with the original Elixir image
-rebuilt from the unchanged `5f4b763` source/Dockerfile. The same Docker-built
-static load client checked both implementations. Each fresh container had a
-2-CPU quota and 1 GiB memory limit; Elixir and Tokio each used two runtime
-workers. Rust's quota and memory measurements include its Nginx master, two
-Nginx workers and entrypoint. The external load client used four workers.
-
-These are loopback Docker port mappings, closed-loop bidirectional exchanges,
-20 warmup exchanges per pair, three runs per implementation with alternating
-order, and 10 measured seconds per run (three for the maximum payload).
-Latency is from sending a frame to receipt at the other endpoint. The table
-reports medians; maximum-message runs contain only a few dozen measured frames,
-so their p99 is particularly sensitive to scheduling.
-
-| Workload | Original frames/s | Rust + Nginx frames/s | Throughput ratio | p99 ms, original / Rust + Nginx | Peak container MiB, original / Rust + Nginx |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| v2, 1 pair, 1 KiB | 23,943 | 33,016 | 1.38 | 0.083 / 0.054 | 115.6 / 61.2 |
-| v2, 64 pairs, 1 KiB | 36,830 | 51,628 | 1.40 | 3.006 / 23.942 | 151.1 / 85.1 |
-| v2, 64 pairs, 64 KiB | 10,061 | 8,401 | 0.84 | 10.636 / 38.355 | 231.9 / 102.3 |
-| v1, 64 pairs, 1 KiB | 38,017 | 54,181 | 1.43 | 2.741 / 23.421 | 150.1 / 85.3 |
-| v2, 1 pair, 32 MiB − 14 bytes | 10.5 | 9.8 | 0.93 | 102.804 / 128.201 | 563.7 / 194.0 |
-
-For these workloads, small-message throughput is 38–43% higher, while 64 KiB
-throughput is 16.5% lower and maximum-message throughput is 6.6% lower. Peak
-container memory is 43–66% lower. Concurrent p99 is substantially worse with
-Nginx. CPU quota throttling is directly recorded: for v2 64-pair 1 KiB,
-Rust + Nginx has a median 101 throttled periods out of 102 observed periods.
-This coincides with the latency regression; it is not proof that quota
-throttling alone explains every difference. No CPU quota was increased to hide
-proxy overhead. This image is not a universal performance improvement.
-
-All 30 runs passed exact payload/order checks, matching server frame/byte
-counters including warmup, final socket/ingress cleanup and zero OOM events.
-Every Rust process inventory confirms the relay, Nginx master and two workers.
-[Summary and CPU observations](benchmarks/nginx-summary.json) link the raw load,
-metrics and cgroup records. Source/image/load-client fingerprints were verified
-against the frozen checkout; `source_dirty` is false in every dataset. WAN,
-open-loop capacity, cluster scaling and long-duration reliability were not
-measured. The direct-Rust results below are historical and exclude
-Nginx, so they must not be substituted for this table.
-
-Docker publication was also exercised with a temporary local registry: push,
-pull by immutable digest, Nginx-backed readiness and graceful stop all passed.
-[Publication evidence](benchmarks/nginx-validation/publication.json) records the
-digest and image ID. No remote registry or Git push was performed; the workflow at that snapshot built the default Nginx image. The current
-default is direct Rust as described above.
-
-## Historical direct-Rust performance comparison
-
-The complete Rust implementation at `90e98b0` and retained Elixir baseline
-`5f4b763` were measured on the same Linux amd64 host through loopback Docker
-port mappings. Each fresh container had a 2-CPU quota, 1 GiB memory limit and
-two runtime workers; the external client used four workers. Each pair warmed
-up for 20 bidirectional exchanges, then ran for 10 seconds (three seconds for
-the maximum-size payload). Each row reports medians from three runs per
-implementation, alternating execution order. Latency measures sending a frame
-until the other endpoint receives it, not an application round trip.
-
-| Workload | Elixir frames/s | Rust frames/s | Rust throughput ratio | p99 ms, Elixir / Rust | Peak container MiB, Elixir / Rust |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| v2, 1 pair, 1 KiB | 25,148 | 48,290 | 1.92 | 0.064 / 0.031 | 130.2 / 7.6 |
-| v2, 64 pairs, 1 KiB | 38,208 | 78,903 | 2.07 | 2.808 / 2.287 | 156.7 / 22.3 |
-| v2, 64 pairs, 64 KiB | 10,423 | 16,199 | 1.55 | 9.796 / 6.782 | 240.7 / 35.3 |
-| v1, 64 pairs, 1 KiB | 38,749 | 77,911 | 2.01 | 2.725 / 2.351 | 159.4 / 22.5 |
-| v2, 1 pair, 32 MiB − 14 bytes | 12 | 19 | 1.59 | 95.233 / 62.195 | 601.6 / 134.9 |
-
-All 30 runs passed exact payload/order checks. Server frame/byte counters matched
-including warmup, WebSockets and ingress leases returned to zero, and OOM events
-were zero. [Final summary](benchmarks/final-summary.json) indexes the datasets;
-each retains load output, metrics, cgroup CPU/memory observations, image IDs and
-source/load-generator SHA256 fingerprints. All source fingerprints were verified
-against the committed implementation; `source_dirty` is false in every dataset.
-The extracted static executable fingerprint and validation gates are recorded in
-[delivery evidence](benchmarks/final-validation/delivery.json).
-
-These are closed-loop, single-outstanding-message measurements of local routing.
-They show 1.55–2.07 times the throughput, lower p99 and 77.6–94.1% lower peak
-container memory for these five workloads. They do not establish open-loop
-capacity, WAN latency, cluster-gossip scaling or long-duration production
-reliability. The private cluster is functionally tested separately. Earlier
-pre-cluster results remain in `benchmarks/2026-11-01-summary.json` as historical
-evidence and are not the basis of this table.
+[Decision, work log and historical comparisons](benchmarks/README.md) preserve
+the rationale, source checkpoints, measurement limits and raw evidence links.
+[TDD.md](TDD.md) records red/green checks and final acceptance. Historical proxy
+experiments must use their recorded source snapshots, not the current build.

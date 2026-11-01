@@ -1,0 +1,2 @@
+{"run": "1-elixir", "fps": 19949, "p99_us": 114, "peak_bytes": 149254144}
+{"run": "1-rust", "fps": 46509, "p99_us": 37, "peak_bytes": 5378048}

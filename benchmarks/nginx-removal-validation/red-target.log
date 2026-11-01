@@ -1,0 +1,64 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.34kB done
+#1 DONE 0.0s
+
+#2 [auth] library/rust:pull token for registry-1.docker.io
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/nginx:stable-alpine@sha256:0e52bd054126cdc040b1276c0af347aeb02a41b9cfe305d6094767ac30e97949
+#3 DONE 0.0s
+
+#4 [internal] load metadata for docker.io/library/rust:1.97.1-alpine
+#4 DONE 1.0s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 104B done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 629B done
+#6 DONE 0.0s
+
+#7 [toolchain 1/5] FROM docker.io/library/rust:1.97.1-alpine@sha256:3c38f3f82c2f3d73da3b38e18d279393a04cb43ddded0e35088a8c3324d40900
+#7 resolve docker.io/library/rust:1.97.1-alpine@sha256:3c38f3f82c2f3d73da3b38e18d279393a04cb43ddded0e35088a8c3324d40900 0.0s done
+#7 DONE 0.0s
+
+#8 [nginx 1/4] FROM docker.io/library/nginx:stable-alpine@sha256:0e52bd054126cdc040b1276c0af347aeb02a41b9cfe305d6094767ac30e97949
+#8 resolve docker.io/library/nginx:stable-alpine@sha256:0e52bd054126cdc040b1276c0af347aeb02a41b9cfe305d6094767ac30e97949 0.0s done
+#8 DONE 0.0s
+
+#9 [toolchain 3/5] WORKDIR /app
+#9 CACHED
+
+#10 [build 1/1] RUN cargo build --locked --release
+#10 CACHED
+
+#11 [nginx 2/4] COPY --from=build /app/target/release/paseo-relay /paseo-relay
+#11 CACHED
+
+#12 [toolchain 4/5] COPY rust/Cargo.toml rust/Cargo.lock ./
+#12 CACHED
+
+#13 [toolchain 5/5] COPY rust/src ./src
+#13 CACHED
+
+#14 [nginx 3/4] COPY deploy/nginx.conf.template /etc/nginx/paseo.conf.template
+#14 CACHED
+
+#15 [toolchain 2/5] RUN apk add --no-cache bash docker-cli && rustup component add rustfmt clippy
+#15 CACHED
+
+#16 [nginx 4/4] COPY --chmod=755 deploy/docker-entrypoint.sh /entrypoint.sh
+#16 CACHED
+
+#17 exporting to image
+#17 exporting layers done
+#17 exporting manifest sha256:4f720be651a816a1455a488dff6fee13fd89985c8bce1bf512d9102b06670948 done
+#17 exporting config sha256:2a332cfb1b56ad95c247ce9c1fc1c837435930d9feb3285779b9220e8f37d4bc done
+#17 exporting attestation manifest sha256:c4f7241c2d3ec9e2743fe5cf0766f5a68bc6cd8b34277d35cf776e2f2a346a27 done
+#17 exporting manifest list sha256:5802454585502dc022c059ba2eada3296d1978990a1eb382bec3321d591556d2 done
+#17 naming to docker.io/library/paseo-relay-rust:nginx-removal-red done
+#17 unpacking to docker.io/library/paseo-relay-rust:nginx-removal-red done
+#17 DONE 0.0s
