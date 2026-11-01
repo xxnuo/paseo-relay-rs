@@ -1,0 +1,118 @@
+[
+  {
+    "image": "xxnuo/paseo-relay",
+    "digest": "sha256:34ba2eb32a0f329b71109d2e796f79f5e071032f7f944010a433f3acc4165135",
+    "arch": "amd64",
+    "anonymous_pull": true,
+    "forwarding": {
+      "corruption": 0,
+      "forwarded_frames": 13108,
+      "frames_per_second": 13105.150953287904,
+      "idle": false,
+      "latency_us": {
+        "max": 533,
+        "p50": 149,
+        "p95": 163,
+        "p99": 289
+      },
+      "loss": 0,
+      "measured_seconds": 1.000217399,
+      "ordering_errors": 0,
+      "paced": false,
+      "pairs": 2,
+      "payload_bytes": 65536,
+      "payload_bytes_per_second": 858859172.8746761,
+      "protocol": 2,
+      "requested_seconds": 1,
+      "setup_seconds": 0.012367938
+    },
+    "exit_code": 0
+  },
+  {
+    "image": "xxnuo/paseo-relay",
+    "digest": "sha256:34ba2eb32a0f329b71109d2e796f79f5e071032f7f944010a433f3acc4165135",
+    "arch": "arm64",
+    "anonymous_pull": true,
+    "forwarding": {
+      "corruption": 0,
+      "forwarded_frames": 6520,
+      "frames_per_second": 6513.48869983237,
+      "idle": false,
+      "latency_us": {
+        "max": 1209,
+        "p50": 303,
+        "p95": 329,
+        "p99": 376
+      },
+      "loss": 0,
+      "measured_seconds": 1.000999664,
+      "ordering_errors": 0,
+      "paced": false,
+      "pairs": 2,
+      "payload_bytes": 65536,
+      "payload_bytes_per_second": 426867995.4322142,
+      "protocol": 2,
+      "requested_seconds": 1,
+      "setup_seconds": 0.040729675
+    },
+    "exit_code": 0
+  },
+  {
+    "image": "ghcr.io/xxnuo/paseo-relay",
+    "digest": "sha256:34ba2eb32a0f329b71109d2e796f79f5e071032f7f944010a433f3acc4165135",
+    "arch": "amd64",
+    "anonymous_pull": true,
+    "forwarding": {
+      "corruption": 0,
+      "forwarded_frames": 12830,
+      "frames_per_second": 12829.474017224242,
+      "idle": false,
+      "latency_us": {
+        "max": 480,
+        "p50": 148,
+        "p95": 198,
+        "p99": 289
+      },
+      "loss": 0,
+      "measured_seconds": 1.000040998,
+      "ordering_errors": 0,
+      "paced": false,
+      "pairs": 2,
+      "payload_bytes": 65536,
+      "payload_bytes_per_second": 840792409.1928079,
+      "protocol": 2,
+      "requested_seconds": 1,
+      "setup_seconds": 0.007684433
+    },
+    "exit_code": 0
+  },
+  {
+    "image": "ghcr.io/xxnuo/paseo-relay",
+    "digest": "sha256:34ba2eb32a0f329b71109d2e796f79f5e071032f7f944010a433f3acc4165135",
+    "arch": "arm64",
+    "anonymous_pull": true,
+    "forwarding": {
+      "corruption": 0,
+      "forwarded_frames": 6464,
+      "frames_per_second": 6462.215510884394,
+      "idle": false,
+      "latency_us": {
+        "max": 1332,
+        "p50": 302,
+        "p95": 355,
+        "p99": 558
+      },
+      "loss": 0,
+      "measured_seconds": 1.000276142,
+      "ordering_errors": 0,
+      "paced": false,
+      "pairs": 2,
+      "payload_bytes": 65536,
+      "payload_bytes_per_second": 423507755.7213196,
+      "protocol": 2,
+      "requested_seconds": 1,
+      "setup_seconds": 0.036908781
+    },
+    "exit_code": 0
+  }
+]

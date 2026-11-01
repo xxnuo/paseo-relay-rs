@@ -1,0 +1,16 @@
+{
+  "source_commit": "8eb435186c0671f5475eef11a60399cc6d599edb",
+  "runtime_test_commit": "dbe578b90b340539c2c3ff8b852bf3175967e990",
+  "native_checks": "https://github.com/xxnuo/paseo-relay-rs/actions/runs/41302773301",
+  "platforms": [
+    "linux/amd64",
+    "linux/arm64"
+  ],
+  "registries": [
+    "docker.io/xxnuo/paseo-relay",
+    "ghcr.io/xxnuo/paseo-relay"
+  ],
+  "digest": "sha256:34ba2eb32a0f329b71109d2e796f79f5e071032f7f944010a433f3acc4165135",
+  "arm64_local_validation": "QEMU; full native arm64 tests passed in GitHub Actions",
+  "reference_check": "Elixir 105/106 passed twice; maximum message backpressure test timed out; independent from Rust publishing"
+}

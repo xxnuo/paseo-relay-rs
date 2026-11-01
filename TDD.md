@@ -1287,3 +1287,9 @@
   relay_backpressure_test.exs:223 timed out awaiting a maximum-sized frame.
   Keep this job visible, but gate the Rust-only publication on both native Rust
   architecture jobs instead of the independent legacy runtime.
+- Published sha-8eb435186c0671f5475eef11a60399cc6d599edb and latest to both
+  registries. Both allow anonymous pulls and advertise amd64 plus arm64.
+  All four pulled registry/platform combinations passed readiness, byte-checked
+  bidirectional 64 KiB WebSocket forwarding and exit-code-zero graceful stop.
+  Local arm64 smoke runs used QEMU; native ARM coverage is in the linked CI run.
+  Evidence: benchmarks/multiarch-release-validation/.
