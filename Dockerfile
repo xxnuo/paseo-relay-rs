@@ -1,5 +1,5 @@
 FROM rust:1.97.1-alpine AS toolchain
-RUN apk add --no-cache bash docker-cli && rustup component add rustfmt clippy
+RUN apk add --no-cache bash docker-cli gcc musl-dev && rustup component add rustfmt clippy
 WORKDIR /app
 COPY rust/Cargo.toml rust/Cargo.lock ./
 COPY rust/src ./src
@@ -10,7 +10,7 @@ COPY rust/examples ./examples
 RUN cargo fmt --check && cargo clippy --locked --all-targets -- -D warnings \
     && cargo test --locked --all-targets \
     && cargo build --locked --release --example relay_bench
-CMD ["cargo", "test", "--locked", "--test", "binary", "--", "--ignored"]
+CMD ["cargo", "test", "--locked", "--tests", "--", "--ignored"]
 
 FROM toolchain AS build
 RUN cargo build --locked --release

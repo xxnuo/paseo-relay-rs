@@ -28,7 +28,7 @@ curl --fail http://127.0.0.1:4000/ready
 
 Replace the image with `xxnuo/paseo-relay-rs:latest` to use Docker Hub.
 The loopback binding is for a local ingress; clients use its public WebSocket
-endpoint, with both session roles routed to the same node. The image has no TLS.
+endpoint, with both session roles routed to the same node. Native TLS is optional; see below.
 An orange-cloud Full (strict) deployment still needs origin HTTPS; see below.
 
 ## Build and Linux deployment
@@ -81,8 +81,8 @@ outside this repository.
 
 Use systemd's existing restart policy for the native binary, or Docker's
 `--restart unless-stopped` for the image, with the documented 40-second stop
-allowance. Terminate public TLS at the VPS ingress and expose a stable `wss://`
-endpoint; the image currently supplies neither TLS nor automatic certificates. Keep `/metrics` and the cluster listener on management
+allowance. Expose a stable `wss://` endpoint using native TLS below or a VPS
+ingress. The image does not issue or renew certificates. Keep `/metrics` and the cluster listener on management
 or private-network paths. Authenticated cluster traffic is not encrypted: use
 an encrypted private overlay between public VPS hosts rather than exposing its
 control port globally.
@@ -109,13 +109,56 @@ but can terminate idle connections or restart edge servers; clients need
 heartbeats and reconnect handling. Affinity for one client does not by itself
 place both relay roles on the same owner. For
 [Full (strict)](https://developers.cloudflare.com/ssl/origin-configuration/ssl-modes/full-strict/),
-the origin must supply HTTPS with a matching valid certificate. Removing Nginx
-does not implement Rust TLS; the current runtime remains plaintext and this
-integration is not yet accepted. Public URLs must use a
+the origin must supply HTTPS with a matching valid certificate. The native TLS
+mode below provides HTTPS without a separate proxy. Cloudflare/WAN integration
+still requires deployment acceptance. Public URLs must use a
 [Cloudflare-supported port](https://developers.cloudflare.com/fundamentals/reference/network-ports/);
-define the origin port mapping/routing separately for the local :4000 listener.
+define the origin port mapping/routing separately for the configured listener.
 These local measurements exclude TLS, Cloudflare and WAN costs; do not infer
 complete VPS sizing or a production RAM tier solely from them.
+
+## Native TLS
+
+Set both `PASEO_RELAY_TLS_CERT_FILE` and `PASEO_RELAY_TLS_KEY_FILE` to enable
+HTTPS/WSS on the existing listener. Without either setting the listener remains
+HTTP/WS. A partial/empty pair, unreadable files, malformed PEM, missing key or
+certificate/key mismatch fails startup; TLS never falls back to plaintext.
+Provide a PEM leaf certificate followed by intermediate certificates, and an
+unencrypted PEM private key (PKCS#8, PKCS#1 or SEC1). TLS 1.2/1.3 and HTTP/1.1
+are supported. Cluster transport is unchanged and is not covered by TLS.
+
+```sh
+docker run -d --name paseo-relay-rs --restart unless-stopped \
+  --stop-timeout 40 --ulimit nofile=65536:65536 \
+  -p 8443:4000 \
+  --mount type=bind,src=/etc/paseo-relay/tls,dst=/tls,readonly \
+  -e PASEO_RELAY_TLS_CERT_FILE=/tls/fullchain.pem \
+  -e PASEO_RELAY_TLS_KEY_FILE=/tls/key.pem \
+  "ghcr.io/xxnuo/paseo-relay-rs:sha-<full-commit>"
+```
+
+The example uses port 8443 without binding 80/443; pin an image built from the
+TLS implementation commit. Give UID/GID 65532 read access to the mounted files
+and directory traversal, while keeping the production private key inaccessible
+to other users. No production certificates or keys belong in the repository
+or image. Certificates load once at startup; restart the relay after renewal
+using its normal drain allowance. No ACME, automatic renewal or hot reload is
+provided. The server checks certificate/key compatibility, but the operator
+must ensure the certificate is valid, unexpired and matches the public hostname.
+
+The TLS handshake holds a pre-upgrade HTTP slot and has an absolute timeout
+of `HTTP_IDLE_TIMEOUT_MS`. After the handshake, existing HTTP idle protection
+applies to decrypted traffic; a WebSocket upgrade releases the HTTP slot and
+remains governed by relay admission/delivery limits. TLS record buffers add
+per-connection memory outside the payload ledger; size the RSS watermark and
+container limits with TLS headroom. `/health`, `/ready` and `/metrics` use HTTPS
+on this listener; restrict metrics at the network/ingress layer.
+
+For Cloudflare Full (strict), use a matching public certificate or Cloudflare
+Origin CA certificate. Origin CA is trusted by Cloudflare, not by ordinary
+browsers connecting directly. Set the origin port separately if the public URL
+uses 443 and the VPS listens on 8443. This does not configure DNS, firewall,
+origin rules or certificates automatically.
 
 ## Runtime contract
 
@@ -124,11 +167,12 @@ All rows below have the `PASEO_RELAY_` prefix unless named otherwise.
 | Setting | Default | Meaning / accepted bounds |
 | --- | --- | --- |
 | `HOST` | `127.0.0.1` | Public listener IP address. |
-| `PORT` | `4000` | HTTP/WebSocket port, 1–65535. |
+| `PORT` | `4000` | HTTP/WS or HTTPS/WSS port, 1–65535. |
+| `TLS_CERT_FILE` / `TLS_KEY_FILE` | unset | Both nonempty PEM file paths enable TLS on the public listener; loaded at startup. |
 | `DRAIN` | `false` | Start unready and reject new upgrades; true/false. |
-| `ACCEPTORS` | `100` | Maximum pre-upgrade HTTP connections, 1–1000; also a factor in the WebSocket ceiling. Tokio schedules I/O. |
+| `ACCEPTORS` | `100` | Maximum pre-upgrade TLS/HTTP connections, 1–1000; also a factor in the WebSocket ceiling. Tokio schedules I/O. |
 | `CONNECTIONS_PER_ACCEPTOR` | `200` | Second ceiling factor, 1–1000000. The default active WebSocket ceiling is 20000. |
-| `HTTP_IDLE_TIMEOUT_MS` | `15000` | Incomplete headers/unread bodies/HTTP keepalive idle limit, 100–120000 ms. Upgraded sockets are exempt and release their HTTP slot immediately. |
+| `HTTP_IDLE_TIMEOUT_MS` | `15000` | Absolute TLS handshake timeout, then incomplete headers/unread bodies/HTTP keepalive idle limit, 100–120000 ms. Upgraded sockets are exempt and release their HTTP slot immediately. |
 | `INGRESS_BUDGET_BYTES` | `536870912` | Weighted complete-message ceiling, 128 MiB–8 GiB; must admit one maximum message at its configured weight. |
 | `INGRESS_WEIGHT` | `4` | Charge per payload byte, 1–16. |
 | `DELIVERY_TIMEOUT_MS` | `30000` | Absolute attachment/queue/write budget, 100–120000 ms. |

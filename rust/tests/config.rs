@@ -105,3 +105,21 @@ fn cluster_environment_validates_identity_authentication_and_http_headers() {
         assert!(load(&invalid).is_err(), "accepted {key}");
     }
 }
+
+#[test]
+fn tls_requires_both_nonempty_certificate_and_key_paths() {
+    for entries in [
+        vec![("PASEO_RELAY_TLS_CERT_FILE", "/cert.pem")],
+        vec![("PASEO_RELAY_TLS_KEY_FILE", "/key.pem")],
+        vec![
+            ("PASEO_RELAY_TLS_CERT_FILE", ""),
+            ("PASEO_RELAY_TLS_KEY_FILE", "/key.pem"),
+        ],
+        vec![
+            ("PASEO_RELAY_TLS_CERT_FILE", "/cert.pem"),
+            ("PASEO_RELAY_TLS_KEY_FILE", ""),
+        ],
+    ] {
+        assert!(load(&entries).is_err(), "accepted {entries:?}");
+    }
+}

@@ -20,6 +20,8 @@ tokio-tungstenite = "0.29"
 hyper = { version = "1", features = ["server", "http1"] }
 hyper-util = { version = "0.1", features = ["tokio", "service"] }
 socket2 = "0.6"
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12"] }
+rustls-pemfile = "2"
 
 [profile.release]
 lto = "thin"

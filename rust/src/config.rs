@@ -6,6 +6,7 @@ use std::{
 
 #[derive(Clone, Debug)]
 pub struct Config {
+    pub tls: Option<TlsConfig>,
     pub cluster: Option<ClusterConfig>,
     pub minimum_cluster_size: usize,
     pub ownership_target: String,
@@ -27,6 +28,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
+            tls: None,
             cluster: None,
             minimum_cluster_size: 1,
             ownership_target: "local".into(),
@@ -62,6 +64,13 @@ impl Config {
             } else {
                 Err(format!("{key} must be an integer between {min} and {max}"))
             }
+        };
+        let tls = match (get("PASEO_RELAY_TLS_CERT_FILE"), get("PASEO_RELAY_TLS_KEY_FILE")) {
+            (None, None) => None,
+            (Some(cert), Some(key)) if !cert.is_empty() && !key.is_empty() => Some(TlsConfig {
+                cert_file: cert.into(), key_file: key.into(),
+            }),
+            _ => return Err("PASEO_RELAY_TLS_CERT_FILE and PASEO_RELAY_TLS_KEY_FILE must both be nonempty paths".into()),
         };
         let minimum_cluster_size = number("PASEO_RELAY_MIN_CLUSTER_SIZE", 1, 1, 1000)?;
         let ownership_target = get("PASEO_RELAY_OWNERSHIP_TARGET")
@@ -170,6 +179,7 @@ impl Config {
             return Err("PASEO_RELAY_DELIVERY_TIMEOUT_MS must be lower than PASEO_RELAY_TRANSPORT_SEND_TIMEOUT_MS".into());
         }
         Ok(Self {
+            tls,
             cluster,
             minimum_cluster_size,
             ownership_target,
@@ -270,4 +280,47 @@ pub(crate) fn node_address(node: &str) -> Result<String, String> {
         return Err(error());
     }
     Ok(format!("{host}:{port}"))
+}
+
+#[derive(Clone, Debug)]
+pub struct TlsConfig {
+    pub cert_file: std::path::PathBuf,
+    pub key_file: std::path::PathBuf,
+}
+
+impl TlsConfig {
+    pub(crate) fn acceptor(&self) -> std::io::Result<tokio_rustls::TlsAcceptor> {
+        use std::{
+            fs::File,
+            io::{self, BufReader},
+            sync::Arc,
+        };
+        use tokio_rustls::{TlsAcceptor, rustls};
+        let certs = rustls_pemfile::certs(&mut BufReader::new(
+            File::open(&self.cert_file)
+                .map_err(|e| io::Error::new(e.kind(), format!("TLS certificate file: {e}")))?,
+        ))
+        .collect::<io::Result<Vec<_>>>()?;
+        let key = rustls_pemfile::private_key(&mut BufReader::new(
+            File::open(&self.key_file)
+                .map_err(|e| io::Error::new(e.kind(), format!("TLS private key file: {e}")))?,
+        ))?
+        .ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "TLS private key missing from PEM",
+            )
+        })?;
+        let mut config = rustls::ServerConfig::builder()
+            .with_no_client_auth()
+            .with_single_cert(certs, key)
+            .map_err(|e| {
+                io::Error::new(
+                    io::ErrorKind::InvalidInput,
+                    format!("TLS certificate/key: {e}"),
+                )
+            })?;
+        config.alpn_protocols = vec![b"http/1.1".to_vec()];
+        Ok(TlsAcceptor::from(Arc::new(config)))
+    }
 }

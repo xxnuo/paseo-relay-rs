@@ -15,7 +15,7 @@ use std::{
 };
 use tokio::{
     io::{AsyncRead, AsyncWrite, ReadBuf},
-    net::{TcpListener, TcpStream},
+    net::TcpListener,
     sync::{OwnedSemaphorePermit, Semaphore},
     task::JoinSet,
     time::{Instant, Sleep},
@@ -27,6 +27,13 @@ impl Relay {
         listener: TcpListener,
         shutdown: impl Future<Output = ()>,
     ) -> io::Result<()> {
+        let tls = self
+            .0
+            .config
+            .tls
+            .as_ref()
+            .map(|tls| tls.acceptor())
+            .transpose()?;
         let mut connections = JoinSet::new();
         let app = self.router();
         let http_slots = Arc::new(Semaphore::new(self.0.config.http_connection_limit));
@@ -55,15 +62,17 @@ impl Relay {
                     if let Err(error) = stream.set_nodelay(true).and_then(|()| socket2::SockRef::from(&stream).set_recv_buffer_size(self.0.config.tcp_receive_buffer_bytes)) { break Err(error); }
                     let upgraded = Arc::new(HttpLease { upgraded:AtomicBool::new(false),permit:Mutex::new(Some(permit)) });
                     let app = app.clone().layer(Extension(upgraded.clone()));
-                    let stream = IdleIo {
-                        stream, upgraded,
-                        timeout: self.0.config.http_idle_timeout,
-                        timer: Box::pin(tokio::time::sleep(self.0.config.http_idle_timeout)),
-                    };
+                    let tls = tls.clone();
+                    let idle_timeout = self.0.config.http_idle_timeout;
                     connections.spawn(async move {
-                        let _ = hyper::server::conn::http1::Builder::new()
-                            .serve_connection(TokioIo::new(stream), TowerToHyperService::new(app))
-                            .with_upgrades().await;
+                        if let Some(tls) = tls {
+                            // Keep the HTTP permit throughout a bounded TLS handshake.
+                            if let Ok(Ok(stream)) = tokio::time::timeout(idle_timeout, tls.accept(stream)).await {
+                                serve_http(stream, app, upgraded, idle_timeout).await;
+                            }
+                        } else {
+                            serve_http(stream, app, upgraded, idle_timeout).await;
+                        }
                     });
                 },
             }
@@ -147,14 +156,30 @@ pub(super) fn resident_bytes() -> io::Result<usize> {
         .ok_or_else(|| io::Error::other("missing process RSS"))
 }
 
-struct IdleIo {
-    stream: TcpStream,
+async fn serve_http<T>(stream: T, app: axum::Router, upgraded: Arc<HttpLease>, timeout: Duration)
+where
+    T: AsyncRead + AsyncWrite + Unpin + Send + 'static,
+{
+    let stream = IdleIo {
+        stream,
+        upgraded,
+        timeout,
+        timer: Box::pin(tokio::time::sleep(timeout)),
+    };
+    let _ = hyper::server::conn::http1::Builder::new()
+        .serve_connection(TokioIo::new(stream), TowerToHyperService::new(app))
+        .with_upgrades()
+        .await;
+}
+
+struct IdleIo<T> {
+    stream: T,
     upgraded: Arc<HttpLease>,
     timeout: Duration,
     timer: Pin<Box<Sleep>>,
 }
 
-impl AsyncRead for IdleIo {
+impl<T: AsyncRead + Unpin> AsyncRead for IdleIo<T> {
     fn poll_read(
         mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,
@@ -178,7 +203,7 @@ impl AsyncRead for IdleIo {
     }
 }
 
-impl AsyncWrite for IdleIo {
+impl<T: AsyncWrite + Unpin> AsyncWrite for IdleIo<T> {
     fn poll_write(
         mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,

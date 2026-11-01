@@ -1301,3 +1301,37 @@
   unchanged; republish the already verified amd64/arm64 manifest.
 - Previous paseo-relay registry names were a publication naming error. Historical
   evidence is retained; it is not the supported image name for this project.
+
+## Optional native Rust TLS
+
+- Red: `cargo test --test config tls_requires -- --nocapture` accepted a lone
+  `PASEO_RELAY_TLS_CERT_FILE` and failed. After adding only the TLS dependencies
+  and real-process test, `cargo test --test tls https_and -- --nocapture` failed
+  with `InvalidMessage(InvalidContentType)` against the plaintext listener.
+- Enable TLS only when both nonempty certificate/key paths are configured.
+  Rustls (ring) validates the PEM certificate/key before accepting connections;
+  invalid or unreadable material exits without plaintext fallback. No provider
+  dependencies, certificate issuance or renewal were introduced.
+- Preserve the TCP socket options, HTTP admission permit, idle wrapper, upgrade
+  path and relay shutdown. A handshake holds the HTTP permit for an absolute
+  HTTP idle timeout; decrypted HTTP gets its own existing idle protection.
+- Real child-process tests verify TLS 1.2/1.3 with certificate verification and
+  HTTP/1.1 ALPN, HTTPS readiness, bidirectional byte-checked 64 KiB WSS, v2 control
+  and data forwarding, upgrade survival beyond HTTP idle, drain readiness and
+  clean SIGTERM exit. Negative cases cover partial/empty settings, missing or
+  malformed material, mismatched keys, untrusted server certificates, plaintext
+  and stalled handshakes with recovery at a one-slot pre-upgrade ceiling.
+- The scratch-image test supplies test-only PEM files to a nonroot, capability-free container and verifies HTTPS/WSS with both TLS versions and
+  clean stop. Docker CI now runs all ignored integration targets so this test
+  joins the existing lifecycle/DNS/cluster tests. GCC/musl headers are build-only
+  ring prerequisites; the runtime remains one static executable.
+- Certificate fixtures and private keys in `rust/tests/fixtures` are exclusively
+  for localhost tests, never deployment credentials. README defines TLS paths,
+  handshake bounds, certificate lifecycle, permissions and buffer overhead.
+- No production server, Cloudflare, DNS or certificate configuration was changed;
+  no TLS/WAN throughput or VPS memory acceptance is claimed.
+- Green: final `scripts/ci-rust.sh` exited 0 with formatting, Clippy, 53 Rust
+  tests and all four final-image container tests passing (including the new TLS
+  test). Host Clippy and the real-process TLS tests also passed. The final Docker
+  run covers Linux amd64; native arm64, registry publication, production TLS,
+  Cloudflare/WAN performance and certificate renewal were not exercised.
