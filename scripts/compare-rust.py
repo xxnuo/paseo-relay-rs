@@ -57,6 +57,8 @@ def run(args, image, label, directory):
         load_args = [str(args.bench), f"127.0.0.1:{port}", str(args.pairs), str(args.seconds + 5 if idle else args.seconds), str(args.payload_bytes), args.protocol]
         if idle:
             load_args.append("idle")
+        if getattr(args, "paced", False):
+            load_args.append("paced")
         idle_observation = None
         with subprocess.Popen(load_args, env={**os.environ, "TOKIO_WORKER_THREADS": "4"}, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
             try:
@@ -91,6 +93,8 @@ def run(args, image, label, directory):
         assert load["loss"] == load["ordering_errors"] == load["corruption"] == 0
         if idle:
             assert load["idle"] and load["forwarded_frames"] == 2 * args.pairs
+        if getattr(args, "paced", False):
+            assert load["paced"] and 0.98 <= load["frames_per_second"] / (200 * args.pairs) <= 1.02, "fixed traffic rate was not sustained"
         deadline = time.monotonic() + 5
         while True:
             after_metrics = get(base + "/metrics")
@@ -134,7 +138,9 @@ def main():
     parser.add_argument("--payload-bytes", type=int, default=1024)
     parser.add_argument("--repetitions", type=int, default=3)
     parser.add_argument("--protocol", choices=["v1", "v2"], default="v2")
-    parser.add_argument("--idle", action="store_true", help="measure established idle sockets, then verify bidirectional delivery")
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument("--idle", action="store_true", help="measure established idle sockets, then verify bidirectional delivery")
+    modes.add_argument("--paced", action="store_true", help="send 200 frames/s per pair to compare CPU at equal traffic")
     parser.add_argument("--cpus", type=int, choices=[1, 2], default=2)
     parser.add_argument("--workers", type=int, choices=[1, 2], default=2)
     args = parser.parse_args()
@@ -142,7 +148,7 @@ def main():
         parser.error("invalid workload bounds")
     args.output.mkdir(parents=True, exist_ok=False)
     results = []
-    metadata = {"git_commit": command("git", "rev-parse", "HEAD"), "dirty": bool(command("git", "status", "--porcelain")), "host": platform.platform(), "cpu": next(line.split(":",1)[1].strip() for line in Path("/proc/cpuinfo").read_text().splitlines() if line.startswith("model name")), "workload": {"pairs": args.pairs, "seconds": args.seconds, "payload_bytes": args.payload_bytes, "protocol": args.protocol, "idle": args.idle, "cpus": args.cpus, "workers": args.workers}}
+    metadata = {"git_commit": command("git", "rev-parse", "HEAD"), "dirty": bool(command("git", "status", "--porcelain")), "host": platform.platform(), "cpu": next(line.split(":",1)[1].strip() for line in Path("/proc/cpuinfo").read_text().splitlines() if line.startswith("model name")), "workload": {"pairs": args.pairs, "seconds": args.seconds, "payload_bytes": args.payload_bytes, "protocol": args.protocol, "idle": args.idle, "paced": args.paced, "cpus": args.cpus, "workers": args.workers}}
     sources = [Path("rust/Cargo.toml"), Path("rust/Cargo.lock"), Path("Dockerfile"), Path("Dockerfile.elixir"), Path("deploy/docker-entrypoint.sh"), Path("deploy/nginx.conf.template"), Path("scripts/ci-rust.sh"), Path("rust/examples/relay_bench.rs"), Path(__file__)] + sorted(Path("rust/src").glob("*.rs"))
     metadata["source_dirty"] = bool(command("git", "status", "--porcelain", "--", *(str(path) for path in sources)))
     metadata["source_sha256"] = {str(path): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources}

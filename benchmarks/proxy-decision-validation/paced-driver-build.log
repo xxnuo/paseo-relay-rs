@@ -1,0 +1,13 @@
+    Checking paseo-relay v0.1.0 (/app)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.35s
+   Compiling paseo-relay v0.1.0 (/app)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.44s
+     Running unittests examples/relay_bench.rs (target/debug/examples/relay_bench-727c58852adf260a)
+
+running 1 test
+test percentile_is_nearest_rank_with_defined_small_sample_behavior ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Compiling paseo-relay v0.1.0 (/app)
+    Finished `release` profile [optimized] target(s) in 7.38s

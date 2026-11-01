@@ -1118,3 +1118,12 @@
 - Gate passed: Docker formatting/Clippy and 49 native/example tests; all four
   final-image tests passed. A further real Docker DNS/ownership/reroute/replay
   test passed against the direct image itself (direct-cluster.log).
+
+- Saturated CPU figures alone cannot compare equal business volume. Added a
+  paced client mode (200 frames/s/pair) and a driver assertion that actual
+  traffic stays within 2% of the requested rate. Idle and paced modes are
+  mutually exclusive. Red: the previous client rejects paced mode; green:
+  Docker formatting, Clippy, example test and release driver build pass.
+  The relay executable/images are unchanged; the paced experiment uses the
+  separately fingerprinted Docker-built driver, with original driver artifacts
+  retained for the first experiment.

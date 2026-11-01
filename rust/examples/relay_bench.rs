@@ -54,10 +54,13 @@ fn percentile(sorted: &[u64], percent: usize) -> u64 {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<_> = std::env::args().collect();
-    if args.len() != 6 && !(args.len() == 7 && args[6] == "idle") {
-        return Err("usage: relay_bench HOST:PORT PAIRS SECONDS PAYLOAD_BYTES v1|v2 [idle]".into());
+    if args.len() != 6 && !(args.len() == 7 && matches!(args[6].as_str(), "idle" | "paced")) {
+        return Err(
+            "usage: relay_bench HOST:PORT PAIRS SECONDS PAYLOAD_BYTES v1|v2 [idle|paced]".into(),
+        );
     }
-    let idle = args.len() == 7;
+    let idle = args.get(6).is_some_and(|arg| arg == "idle");
+    let paced = args.get(6).is_some_and(|arg| arg == "paced");
     let address = args[1].clone();
     let pairs: usize = args[2].parse()?;
     let seconds: u64 = args[3].parse()?;
@@ -91,10 +94,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
             let start = Instant::now();
             let mut latencies = Vec::new();
             let mut sequence = 0u64;
+            let mut interval = tokio::time::interval(Duration::from_millis(10));
+            interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
             if idle {
                 tokio::time::sleep(Duration::from_secs(seconds)).await;
             }
             loop {
+                if paced {
+                    interval.tick().await;
+                }
                 payload[..8].copy_from_slice(&sequence.to_le_bytes());
                 payload[8] = 0;
                 let frame_start = Instant::now();
@@ -131,7 +139,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     println!(
         "{}",
         serde_json::json!({
-            "protocol":version,"pairs":pairs,"payload_bytes":bytes,"requested_seconds":seconds,"idle":idle,
+            "protocol":version,"pairs":pairs,"payload_bytes":bytes,"requested_seconds":seconds,"idle":idle,"paced":paced,
             "measured_seconds":elapsed.as_secs_f64(),"setup_seconds":setup.as_secs_f64(),
             "forwarded_frames":latencies.len(),"frames_per_second":latencies.len() as f64/elapsed.as_secs_f64(),
             "payload_bytes_per_second":latencies.len() as f64 * bytes as f64/elapsed.as_secs_f64(),
