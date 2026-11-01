@@ -1,0 +1,32 @@
+[
+  {
+    "image": "xxnuo/paseo-relay-rs:latest",
+    "anonymous_pull": true,
+    "digest": "sha256:34ba2eb32a0f329b71109d2e796f79f5e071032f7f944010a433f3acc4165135",
+    "platforms": [
+      {
+        "architecture": "amd64",
+        "os": "linux"
+      },
+      {
+        "architecture": "arm64",
+        "os": "linux"
+      }
+    ]
+  },
+  {
+    "image": "ghcr.io/xxnuo/paseo-relay-rs:latest",
+    "anonymous_pull": true,
+    "digest": "sha256:34ba2eb32a0f329b71109d2e796f79f5e071032f7f944010a433f3acc4165135",
+    "platforms": [
+      {
+        "architecture": "amd64",
+        "os": "linux"
+      },
+      {
+        "architecture": "arm64",
+        "os": "linux"
+      }
+    ]
+  }
+]
