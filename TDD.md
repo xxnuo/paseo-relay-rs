@@ -1237,3 +1237,12 @@
   remain separately labeled in real-clients-scenarios*, real-clients-complete-
   smoke and real-clients-pressure-smoke; they are not acceptance/performance
   results. Large-run and original-image acceptance evidence follows.
+
+- First frozen run d6b78c9: all 16 scenarios pass with 64 clients and a 60-second
+  mixed load on 1 CPU/512 MiB. The same suite passes all 16 against the original
+  Elixir image at four clients/two seconds (compatibility reference only).
+  Reports retain source hashes, metrics and OOM event logs across restart.
+- Tightened teardown acceptance: cleanup still attempts every client/daemon,
+  but any rejection or physical client socket left open now fails the suite,
+  instead of being hidden by allSettled/process exit. A repeat large run and
+  original-image smoke verify this stricter final test harness.

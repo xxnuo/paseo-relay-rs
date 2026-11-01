@@ -739,8 +739,20 @@ try {
   failure = error;
   emit({ status: "failed", error: error.stack });
 } finally {
-  await Promise.allSettled(clients.map((e) => e.client.close()));
-  await Promise.allSettled(daemons.map((e) => e.daemon.stop()));
+  const cleanup = [
+    ...(await Promise.allSettled(clients.map((e) => e.client.close()))),
+    ...(await Promise.allSettled(daemons.map((e) => e.daemon.stop()))),
+  ];
+  try {
+    assert(
+      cleanup.every((result) => result.status === "fulfilled"),
+      "client/daemon cleanup rejected",
+    );
+    await until(() => sockets.size === 0, "all physical client sockets closed", 5000);
+  } catch (error) {
+    failure ??= error;
+    emit({ status: "failed", error: error.stack });
+  }
   loopDelay.disable();
   const modules = [];
   for (const url of imported) {
@@ -775,6 +787,10 @@ try {
         wire,
         modules,
         sourceVerification: { missing, stale },
+        cleanup: {
+          rejected: cleanup.filter((result) => result.status === "rejected").length,
+          openClientSockets: sockets.size,
+        },
         driver: {
           cpu: process.cpuUsage(cpuStart),
           maxRssKiB: process.resourceUsage().maxRSS,
