@@ -4,3 +4,6 @@ deps
 test
 scripts
 README.md
+
+rust/target
+benchmarks

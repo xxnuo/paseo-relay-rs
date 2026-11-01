@@ -1,0 +1,21 @@
+[Unit]
+Description=Paseo WebSocket Relay
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/paseo-relay
+EnvironmentFile=-/etc/paseo-relay/environment
+DynamicUser=true
+Restart=on-failure
+RestartSec=2
+TimeoutStopSec=40
+LimitNOFILE=65536
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

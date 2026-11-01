@@ -5,7 +5,10 @@ use crate::{
 use axum::extract::ws::Message;
 use std::{
     collections::{HashMap, HashSet},
-    sync::{Arc, Mutex},
+    sync::{
+        Arc, Mutex,
+        atomic::{AtomicBool, Ordering},
+    },
     time::Duration,
 };
 use tokio::{
@@ -24,6 +27,7 @@ pub struct Write {
 
 pub struct Peer {
     pub id: u64,
+    pub delivering: AtomicBool,
     pub connection: Connection,
     pub writes: mpsc::UnboundedSender<Write>,
     pub close: watch::Sender<Option<Close>>,
@@ -234,6 +238,16 @@ impl Session {
         self.changed.send_replace(());
     }
 
+    pub fn peers(&self) -> Vec<Arc<Peer>> {
+        self.topology
+            .lock()
+            .unwrap()
+            .peers
+            .values()
+            .cloned()
+            .collect()
+    }
+
     pub fn close_all(&self) {
         for peer in self.topology.lock().unwrap().peers.values() {
             peer.close(1012, "Session owner moved");
@@ -303,5 +317,12 @@ pub fn payload(message: &Message) -> &[u8] {
         Message::Text(text) => text.as_bytes(),
         Message::Binary(bytes) | Message::Ping(bytes) | Message::Pong(bytes) => bytes,
         Message::Close(_) => &[],
+    }
+}
+
+pub struct Delivery<'a>(pub &'a Peer);
+impl Drop for Delivery<'_> {
+    fn drop(&mut self) {
+        self.0.delivering.store(false, Ordering::Relaxed);
     }
 }

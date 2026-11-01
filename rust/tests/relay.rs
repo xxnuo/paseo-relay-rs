@@ -1,11 +1,12 @@
-use axum::serve::ListenerExt;
 use futures_util::{SinkExt, StreamExt};
 use paseo_relay::{Config, Relay};
 use tokio::{
     net::{TcpListener, TcpStream},
     time::{Duration, timeout},
 };
-use tokio_tungstenite::{MaybeTlsStream, WebSocketStream, connect_async, tungstenite::Message};
+use tokio_tungstenite::{
+    MaybeTlsStream, WebSocketStream, connect_async, connect_async_with_config, tungstenite::Message,
+};
 
 type Socket = WebSocketStream<MaybeTlsStream<TcpStream>>;
 
@@ -13,20 +14,23 @@ async fn start(config: Config) -> (String, Relay, tokio::task::JoinHandle<()>) {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
     let relay = Relay::new(config);
-    let app = relay.router();
+    let service = relay.clone();
     let task = tokio::spawn(async move {
-        axum::serve(
-            listener.tap_io(|stream| stream.set_nodelay(true).unwrap()),
-            app,
-        )
-        .await
-        .unwrap();
+        service
+            .serve(listener, std::future::pending::<()>())
+            .await
+            .unwrap();
     });
     (format!("ws://{addr}/ws?serverId=test"), relay, task)
 }
 
 async fn connect(url: &str, query: &str) -> Socket {
-    connect_async(format!("{url}&{query}")).await.unwrap().0
+    let config = tokio_tungstenite::tungstenite::protocol::WebSocketConfig::default()
+        .max_frame_size(Some(paseo_relay::protocol::MAX_MESSAGE_BYTES));
+    connect_async_with_config(format!("{url}&{query}"), Some(config), true)
+        .await
+        .unwrap()
+        .0
 }
 
 async fn receive(socket: &mut Socket) -> Message {
@@ -300,6 +304,64 @@ async fn slow_fanout_peer_does_not_deadlock_reverse_traffic_or_healthy_order() {
     let mut sender = produce.await.unwrap();
     sender.close().await.unwrap();
     closed(&mut healthy, 1012).await;
+    relay.wait_idle().await;
+    task.abort();
+}
+
+#[tokio::test]
+async fn exact_maximum_fragmented_payload_delivers_and_one_byte_more_closes_1009() {
+    use tokio::io::AsyncWriteExt;
+    use tokio_tungstenite::tungstenite::protocol::frame::{
+        Frame,
+        coding::{Data, OpCode},
+    };
+    let (url, relay, task) = start(Config::default()).await;
+    let mut daemon = connect(&url, "role=server").await;
+    let mut client = connect(&url, "role=client").await;
+    let maximum = paseo_relay::protocol::MAX_MESSAGE_BYTES;
+    let payload = vec![0xa5; maximum];
+    let half = maximum / 2;
+    client
+        .send(Message::Frame(Frame::message(
+            payload[..half].to_vec(),
+            OpCode::Data(Data::Binary),
+            false,
+        )))
+        .await
+        .unwrap();
+    client
+        .send(Message::Ping(vec![4, 5, 6].into()))
+        .await
+        .unwrap();
+    assert_eq!(
+        receive(&mut client).await,
+        Message::Pong(vec![4, 5, 6].into())
+    );
+    client
+        .send(Message::Frame(Frame::message(
+            payload[half..].to_vec(),
+            OpCode::Data(Data::Continue),
+            true,
+        )))
+        .await
+        .unwrap();
+    assert_eq!(
+        timeout(Duration::from_secs(35), daemon.next())
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap()
+            .into_data()
+            .as_ref(),
+        payload.as_slice()
+    );
+    // Send only the oversized declared length; the parser must reject before allocating its body.
+    let mut header = vec![0x82, 0xff];
+    header.extend_from_slice(&((maximum + 1) as u64).to_be_bytes());
+    header.extend_from_slice(&[1, 2, 3, 4]);
+    client.get_mut().write_all(&header).await.unwrap();
+    closed(&mut client, 1009).await;
+    daemon.close(None).await.unwrap();
     relay.wait_idle().await;
     task.abort();
 }

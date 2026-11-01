@@ -349,7 +349,10 @@ dependencies = [
  "base64",
  "futures-util",
  "getrandom",
+ "hyper",
+ "hyper-util",
  "serde_json",
+ "socket2",
  "tokio",
  "tokio-tungstenite",
 ]

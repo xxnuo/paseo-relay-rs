@@ -1,4 +1,3 @@
-use axum::serve::ListenerExt;
 use paseo_relay::{Config, Relay};
 use std::{error::Error, time::Duration};
 use tokio::net::TcpListener;
@@ -9,14 +8,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let listener = TcpListener::bind(config.listen).await?;
     eprintln!("paseo-relay listening on {}", listener.local_addr()?);
     let relay = Relay::new(config);
-    let listener = listener.tap_io(|stream| {
-        if let Err(error) = stream.set_nodelay(true) {
-            eprintln!("TCP_NODELAY: {error}");
-        }
-    });
-    axum::serve(listener, relay.router())
-        .with_graceful_shutdown(shutdown(relay))
-        .await?;
+    relay.serve(listener, shutdown(relay.clone())).await?;
     Ok(())
 }
 

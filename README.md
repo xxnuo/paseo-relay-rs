@@ -162,23 +162,47 @@ cargo build --locked --release --manifest-path rust/Cargo.toml
 PASEO_RELAY_HOST=127.0.0.1 PASEO_RELAY_PORT=4000 rust/target/release/paseo-relay
 ```
 
-The executable uses the host's libc. It implements v1/v2 local routing,
-control sync/connected/disconnected/ping, duplicate-role replacement, byte-budget
-admission, bounded control notifications, synchronous destination writes and
-slow-consumer shedding. SIGTERM/SIGINT disables admission, allows 30 seconds for
-sessions to drain, then sends retryable `1012` closes before exit. Health,
-readiness and core Prometheus counters use the existing URLs. `PASEO_RELAY_HOST`,
-`PORT`, `DRAIN`, `ACCEPTORS`, `CONNECTIONS_PER_ACCEPTOR`, `INGRESS_BUDGET_BYTES`,
-`INGRESS_WEIGHT`, `DELIVERY_TIMEOUT_MS`, `TRANSPORT_SEND_TIMEOUT_MS`,
-`CONTROL_QUEUE_BYTES` and `DATA_ATTACH_TIMEOUT_MS` retain the defaults and bounds
-above (all names have the `PASEO_RELAY_` prefix). Acceptor settings determine the
-connection ceiling; Tokio schedules I/O. The transport timeout is validated as
-an upper bound; writes use the stricter absolute delivery deadline.
+For a self-contained Linux amd64 executable, install the Rust
+`x86_64-unknown-linux-musl` target and build with
+`--target x86_64-unknown-linux-musl`. The resulting
+`rust/target/x86_64-unknown-linux-musl/release/paseo-relay` needs no system libc or
+Erlang runtime. `deploy/paseo-relay.service` runs `/usr/local/bin/paseo-relay` as
+an unprivileged dynamic systemd user and optionally reads
+`/etc/paseo-relay/environment`. Its stop timeout includes the relay drain grace.
+The generic, nonroot container also contains only the static executable:
+
+```sh
+docker build -f rust/Dockerfile -t paseo-relay-rust .
+docker run --rm -p 127.0.0.1:4000:4000 paseo-relay-rust
+```
+
+Rust implements v1/v2 local routing, control sync/connected/disconnected/ping,
+duplicate-role replacement, byte-budget admission, bounded control notifications,
+synchronous destination writes and slow-consumer shedding. SIGTERM/SIGINT disables
+admission, allows 30 seconds for sessions to drain, then sends retryable `1012`
+closes before exit. Health, readiness and core Prometheus counters use the
+existing URLs. `PASEO_RELAY_HOST`, `PORT`, `DRAIN`, `ACCEPTORS`,
+`CONNECTIONS_PER_ACCEPTOR`, `INGRESS_BUDGET_BYTES`, `INGRESS_WEIGHT`,
+`DELIVERY_TIMEOUT_MS`, `TRANSPORT_SEND_TIMEOUT_MS`, `CONTROL_QUEUE_BYTES`,
+`DATA_ATTACH_TIMEOUT_MS`, `HTTP_IDLE_TIMEOUT_MS`, `TCP_RECEIVE_BUFFER_BYTES` and
+`MEMORY_WATERMARK_BYTES` retain the defaults and bounds above (all names have the
+`PASEO_RELAY_` prefix). Acceptor settings determine the connection ceiling; Tokio
+schedules I/O. The transport timeout is validated as an upper bound; writes use
+the stricter absolute delivery deadline. HTTP idle time includes incomplete
+headers and unread bodies; upgraded WebSockets are exempt.
+
+The Rust watermark measures Linux process RSS, not BEAM allocated memory. An
+episode pauses admission and readiness, sheds blocked sources first and then
+newest remaining sockets, and remeasures RSS every 100 ms between bounded batches.
+Admission recovers after RSS falls below the watermark minus one maximum payload.
+`paseo_relay_process_resident_memory_bytes` exposes RSS; runtime-specific BEAM
+metrics do not apply. A failed enabled RSS observation stops admission, closes
+sessions and terminates the service rather than assuming zero memory usage.
 
 This is not yet a replacement for distributed deployments: configured cluster
-peers, DNS discovery, a cluster floor above one and a nonzero memory watermark
-currently fail startup explicitly. HTTP idle-timeout tuning, TCP receive-buffer
-tuning, full metric parity, the Linux container/service packaging and comparative
-performance gates are still pending. BEAM heap/distribution settings do not apply
-to Rust. Do not infer performance improvements from language choice or from the
-small protocol tests.
+peers, DNS discovery and a cluster floor above one currently fail startup
+explicitly. Distributed ownership, full metric parity and the final comparative
+performance gates remain pending. BEAM heap/distribution settings do not apply to
+Rust; the Capacity mutation timeout has no Rust counterpart because semaphore
+mutations do not wait on an authority process. The generic published image still
+runs the retained Elixir implementation.

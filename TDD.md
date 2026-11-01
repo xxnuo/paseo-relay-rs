@@ -742,3 +742,36 @@
   Linux executable built. CI now includes the Rust gates alongside the retained
   Elixir gates. Distributed ownership, memory pressure, full metric parity,
   idle HTTP limits, Linux packaging and performance comparisons remain pending.
+
+
+## Rust rewrite: Linux admission protection and packaging
+
+- Red: the production-server regressions initially failed to compile without
+  `Relay::serve`, HTTP idle-timeout configuration and the memory-watermark
+  control. Configuration tests cover the existing bounds and the one-maximum-
+  message hysteresis contract.
+- Green: the real listener sets TCP_NODELAY and its configured receive buffer.
+  An HTTP-only read-idle timer closes incomplete headers and withheld request
+  bodies, and is disabled only for an admitted upgrade. A real idle WebSocket
+  survives the same limit and answers ping/pong.
+- Memory evidence: a real incomplete 1 MiB fragment is outside the complete-
+  message ledger, receives explicit `1013 Relay memory pressure`, and admission
+  stays unready until pressure is disabled. Separately, a child executable with
+  an unchanged 256 MiB watermark accumulates real 8 MiB fragments, records memory
+  shedding, releases those buffers, recovers readiness from measured RSS relief,
+  and preserves an older healthy WebSocket. No mocked memory measurements are
+  involved. Enabled observation failure drains/closes before returning an error.
+- Protocol ceiling: a fragmented `32 MiB - 14` payload with interleaved ping
+  arrives byte-for-byte; a raw masked header declaring one extra byte receives
+  `1009` without sending its body. The initial receive-side fixture rejected the
+  valid relayed frame at Tungstenite's default 16 MiB frame ceiling; configuring
+  that client to the public relay limit fixed the fixture without changing the
+  server ceiling.
+- Linux evidence: the musl release is a static-pie ELF (`ldd`: statically linked).
+  The scratch image runs as numeric UID/GID 65532, serves probes and v2 traffic,
+  and passes the same traffic again after a real Docker restart. The systemd unit
+  passes `systemd-analyze verify` with ExecStart resolved to the built executable;
+  it was not installed as a host service. CI includes the real image/restart gate.
+- Gates: application tests, explicit Docker integration, warnings-as-errors
+  Clippy and the static release build passed. Distributed ownership and remaining
+  metric parity are still outstanding; these checks do not prove them complete.

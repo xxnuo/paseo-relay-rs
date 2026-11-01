@@ -1,11 +1,14 @@
+#[path = "server.rs"]
+mod server;
+
 use crate::{
     Config,
     connection::{Connection, Role},
     protocol::{MAX_CONTROL_BYTES, MAX_MESSAGE_BYTES, valid_handshake},
-    session::{Close, Peer, Session, Write, payload},
+    session::{Close, Delivery, Peer, Session, Write, payload},
 };
 use axum::{
-    Router,
+    Extension, Router,
     extract::{
         Query, State, WebSocketUpgrade,
         ws::{CloseFrame, Message, WebSocket},
@@ -34,8 +37,15 @@ use tokio::{
 #[derive(Clone)]
 pub struct Relay(Arc<Runtime>);
 
+pub(crate) struct Pressure {
+    pub watermark: usize,
+    pub active: bool,
+}
+
 struct Runtime {
     config: Config,
+    pressure: Mutex<Pressure>,
+    pressure_closes: AtomicU64,
     draining: AtomicBool,
     slots: Arc<Semaphore>,
     ingress: Arc<Semaphore>,
@@ -52,6 +62,11 @@ impl Relay {
         assert!(config.max_connections > 0);
         assert!(config.ingress_weight > 0);
         Self(Arc::new(Runtime {
+            pressure: Mutex::new(Pressure {
+                watermark: config.memory_watermark_bytes,
+                active: false,
+            }),
+            pressure_closes: AtomicU64::new(0),
             draining: AtomicBool::new(config.drain),
             slots: Arc::new(Semaphore::new(config.max_connections)),
             ingress: Arc::new(Semaphore::new(config.ingress_budget_bytes)),
@@ -109,7 +124,9 @@ impl Relay {
     }
 
     fn ready(&self) -> bool {
-        !self.0.draining.load(Ordering::Relaxed) && self.0.slots.available_permits() > 0
+        !self.0.draining.load(Ordering::Relaxed)
+            && !self.0.pressure.lock().unwrap().active
+            && self.0.slots.available_permits() > 0
     }
 }
 
@@ -131,6 +148,10 @@ async fn metrics(State(relay): State<Relay>) -> Response {
             u64::from(runtime.draining.load(Ordering::Relaxed)),
         ),
         ("active_websockets", relay.active_connections() as u64),
+        (
+            "memory_pressure_disconnects_total",
+            runtime.pressure_closes.load(Ordering::Relaxed),
+        ),
         (
             "active_sessions",
             runtime.sessions.lock().unwrap().len() as u64,
@@ -156,16 +177,22 @@ async fn metrics(State(relay): State<Relay>) -> Response {
             runtime.slow.load(Ordering::Relaxed),
         ),
     ];
-    let body = metrics
+    let mut body = metrics
         .into_iter()
         .map(|(name, value)| format!("paseo_relay_{name} {value}\n"))
         .collect::<String>();
+    if let Ok(rss) = server::resident_bytes() {
+        body.push_str(&format!(
+            "paseo_relay_process_resident_memory_bytes {rss}\n"
+        ));
+    }
     ([("content-type", "text/plain; version=0.0.4")], body).into_response()
 }
 
 async fn upgrade(
     State(relay): State<Relay>,
     Query(query): Query<HashMap<String, String>>,
+    idle: Option<Extension<Arc<AtomicBool>>>,
     ws: Result<WebSocketUpgrade, axum::extract::ws::rejection::WebSocketUpgradeRejection>,
 ) -> Response {
     let Ok(ws) = ws else {
@@ -178,6 +205,10 @@ async fn upgrade(
     if relay.0.draining.load(Ordering::Relaxed) {
         return (StatusCode::SERVICE_UNAVAILABLE, "draining").into_response();
     }
+    if relay.0.pressure.lock().unwrap().active {
+        relay.0.rejected.fetch_add(1, Ordering::Relaxed);
+        return (StatusCode::SERVICE_UNAVAILABLE, "Relay memory pressure").into_response();
+    }
     let Ok(slot) = relay.0.slots.clone().try_acquire_owned() else {
         relay.0.rejected.fetch_add(1, Ordering::Relaxed);
         return (StatusCode::SERVICE_UNAVAILABLE, "Relay connection capacity").into_response();
@@ -187,6 +218,9 @@ async fn upgrade(
     } else {
         MAX_MESSAGE_BYTES
     };
+    if let Some(Extension(upgraded)) = idle {
+        upgraded.store(true, Ordering::Relaxed);
+    }
     ws.max_frame_size(max)
         .max_message_size(max)
         .write_buffer_size(0)
@@ -238,6 +272,7 @@ async fn serve_socket(
     let (close, closed) = watch::channel(None);
     let peer = Arc::new(Peer {
         id: relay.0.next_id.fetch_add(1, Ordering::Relaxed),
+        delivering: AtomicBool::new(false),
         connection,
         writes: tx,
         close,
@@ -381,6 +416,8 @@ async fn reader(
             peer.close(1008, "Invalid handshake key");
             break;
         }
+        peer.delivering.store(true, Ordering::Relaxed);
+        let _delivery = Delivery(peer);
         let deadline = Instant::now() + relay.0.config.delivery_timeout;
         let delivery = async {
             let destinations = session

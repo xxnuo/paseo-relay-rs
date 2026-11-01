@@ -7,6 +7,9 @@ use std::{
 #[derive(Clone, Debug)]
 pub struct Config {
     pub listen: SocketAddr,
+    pub http_idle_timeout: Duration,
+    pub tcp_receive_buffer_bytes: usize,
+    pub memory_watermark_bytes: usize,
     pub max_connections: usize,
     pub ingress_budget_bytes: usize,
     pub ingress_weight: usize,
@@ -20,6 +23,9 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             listen: "127.0.0.1:4000".parse().unwrap(),
+            http_idle_timeout: Duration::from_secs(15),
+            tcp_receive_buffer_bytes: 65536,
+            memory_watermark_bytes: 0,
             max_connections: 20_000,
             ingress_budget_bytes: 512 * 1024 * 1024,
             ingress_weight: 4,
@@ -57,14 +63,16 @@ impl Config {
         if number("PASEO_RELAY_MIN_CLUSTER_SIZE", 1, 1, 1000)? != 1 {
             return Err("distributed ownership is not implemented in Rust yet".into());
         }
-        if number(
+        let memory_watermark_bytes = number(
             "PASEO_RELAY_MEMORY_WATERMARK_BYTES",
             0,
             0,
             64 * 1024 * 1024 * 1024,
-        )? != 0
-        {
-            return Err("Rust memory watermark is not implemented yet".into());
+        )?;
+        if memory_watermark_bytes != 0 && memory_watermark_bytes < 256 * 1024 * 1024 {
+            return Err(
+                "PASEO_RELAY_MEMORY_WATERMARK_BYTES must be zero or at least 268435456".into(),
+            );
         }
         let host: IpAddr = get("PASEO_RELAY_HOST")
             .unwrap_or("127.0.0.1")
@@ -94,6 +102,19 @@ impl Config {
         }
         Ok(Self {
             listen: SocketAddr::new(host, port),
+            http_idle_timeout: Duration::from_millis(number(
+                "PASEO_RELAY_HTTP_IDLE_TIMEOUT_MS",
+                15000,
+                100,
+                120000,
+            )? as u64),
+            tcp_receive_buffer_bytes: number(
+                "PASEO_RELAY_TCP_RECEIVE_BUFFER_BYTES",
+                65536,
+                4096,
+                1024 * 1024,
+            )?,
+            memory_watermark_bytes,
             drain,
             max_connections,
             ingress_budget_bytes,

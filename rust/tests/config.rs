@@ -34,6 +34,9 @@ fn rejects_invalid_values_and_unsafe_budget_and_timeout_combinations() {
         vec![("PASEO_RELAY_HOST", "localhost")],
         vec![("PASEO_RELAY_PORT", "0")],
         vec![("PASEO_RELAY_DRAIN", "1")],
+        vec![("PASEO_RELAY_HTTP_IDLE_TIMEOUT_MS", "0")],
+        vec![("PASEO_RELAY_TCP_RECEIVE_BUFFER_BYTES", "1")],
+        vec![("PASEO_RELAY_MEMORY_WATERMARK_BYTES", "1")],
         vec![("PASEO_RELAY_ACCEPTORS", "0")],
         vec![("PASEO_RELAY_INGRESS_WEIGHT", "17")],
         vec![
@@ -52,4 +55,17 @@ fn unsupported_distributed_settings_cannot_silently_start_a_local_relay() {
         assert!(load(&[(key, "peer")]).is_err());
     }
     assert!(load(&[("PASEO_RELAY_MIN_CLUSTER_SIZE", "2")]).is_err());
+}
+
+#[test]
+fn linux_runtime_protection_settings_are_loaded() {
+    let config = load(&[
+        ("PASEO_RELAY_MEMORY_WATERMARK_BYTES", "268435456"),
+        ("PASEO_RELAY_HTTP_IDLE_TIMEOUT_MS", "200"),
+        ("PASEO_RELAY_TCP_RECEIVE_BUFFER_BYTES", "131072"),
+    ])
+    .unwrap();
+    assert_eq!(config.memory_watermark_bytes, 268435456);
+    assert_eq!(config.http_idle_timeout.as_millis(), 200);
+    assert_eq!(config.tcp_receive_buffer_bytes, 131072);
 }
